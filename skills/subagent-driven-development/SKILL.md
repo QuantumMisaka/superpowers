@@ -112,16 +112,16 @@ not change the serial implement-review-fix lifecycle.
 **Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
 
 **Architecture and design tasks**: use the most capable available model.
-The final whole-branch review is one of these — dispatch it on the most
-capable available model, not the session default.
+The final whole-branch review uses the most capable available reviewer role when selectable,
+with the generic fallback otherwise.
 
 **Review tasks**: choose the model with the same judgment, scaled to the
 diff's size, complexity, and risk. A small mechanical diff does not need the
 most capable model; a subtle concurrency change does.
 
-Use an explicit named role or model when the active dispatch schema supports
-it. Never invent unsupported fields; a generic subagent is the required
-fallback when the schema exposes no role or model control.
+On Codex, use a matching advertised role when the dispatch schema supports it.
+Never invent routing fields; use a generic subagent when no matching role is
+available. Concrete model and effort selection remain configuration-owned.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the

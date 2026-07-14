@@ -20,6 +20,14 @@ assert_literal "$REFERENCE" 'sequential-gated' 'sequential workflow mode'
 assert_literal "$REFERENCE" 'independent-parallel' 'parallel workflow mode'
 assert_literal "$REFERENCE" 'generic subagent' 'capability fallback'
 assert_literal "$REFERENCE" 'fork_turns: "none"' 'isolated child context'
+assert_literal \
+  "$REFERENCE" \
+  'If `agent_type` is absent or no' \
+  'named-role fallback condition'
+assert_literal \
+  "$REFERENCE" \
+  'advertised role matches, omit routing fields and dispatch a generic subagent' \
+  'named-role to generic fallback order'
 
 for skill in \
   subagent-driven-development \
@@ -31,7 +39,7 @@ for skill in \
     "$skill uses shared Codex routing"
 done
 
-if rg -n 'codex-routing-kit|luna_worker|luna_deep|luna_monitor|sol_reviewer|gpt-5\.6' \
+if rg -ni 'codex-routing-kit|\b(luna|sol)([_ -]|\b)|gpt-5\.6' \
   "$REPO_ROOT/skills"; then
   printf '  [FAIL] skills must not depend on one routing kit or model family\n'
   exit 1
@@ -44,6 +52,19 @@ if grep -Fq -- 'Always specify the model explicitly' \
   exit 1
 fi
 printf '  [PASS] no impossible model-field requirement\n'
+
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  'most capable available reviewer role when selectable' \
+  'final review uses capability role when selectable'
+
+if rg -ni 'explicit model|model controls|named role or model' \
+  "$REFERENCE" \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md"; then
+  printf '  [FAIL] Superpowers must not select concrete Codex models\n'
+  exit 1
+fi
+printf '  [PASS] concrete Codex models remain routing-config owned\n'
 
 if rg -n '\[MODEL|^[[:space:]]*model:' \
   "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \

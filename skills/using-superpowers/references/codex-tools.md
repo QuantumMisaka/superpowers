@@ -28,11 +28,10 @@ cycle stays serial. Treat parallel dispatch as `independent-parallel`, only
 after the calling skill establishes independent domains and disjoint writes.
 
 When `agent_type` is visible, prefer the matching configured role and let its
-configuration select model and effort. Otherwise use explicit model controls
-only when the schema exposes them. If neither is available, omit unsupported
-fields and dispatch a generic subagent; mandatory reviews still proceed.
-Always pass `fork_turns: "none"` and put the complete task contract in
-`message`.
+configuration select model and effort. If `agent_type` is absent or no
+advertised role matches, omit routing fields and dispatch a generic subagent;
+mandatory reviews still proceed. Always pass `fork_turns: "none"` and put the
+complete task contract in `message`.
 
 ## Environment Detection
 
