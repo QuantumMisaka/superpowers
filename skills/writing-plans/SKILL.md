@@ -177,7 +177,11 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After self-review, give the exact plan path and ask the human partner to review
+it. Revise until they explicitly approve it. Do not offer execution or invoke
+an execution skill before approval.
+
+After approval, offer execution choice:
 
 **"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
 
