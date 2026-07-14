@@ -9,6 +9,31 @@ multi_agent = true
 
 This enables `spawn_agent`, `wait_agent`, and `close_agent` for skills like `dispatching-parallel-agents` and `subagent-driven-development`. When using subagent-driven-development, you should always close implementer and reviewer subagents when they have finished all their work.
 
+## Capability-Aware Routing
+
+Inspect the active `spawn_agent` schema; optional routing fields differ by
+Codex surface and version. Skills use abstract roles, while Codex configuration
+owns role identifiers, models, reasoning effort, sandboxing, and limits.
+
+| Abstract role | Select an advertised role described for |
+| --- | --- |
+| Routine implementer | Bounded, mechanical implementation |
+| Difficult implementer | Bounded cross-file reasoning or debugging |
+| Reviewer | High-judgment, read-only review |
+| Monitor | Read-only external-job waiting |
+
+Keep controller, architecture, and escalation work in the parent. Treat
+subagent-driven development as `sequential-gated`; its implement-review-fix
+cycle stays serial. Treat parallel dispatch as `independent-parallel`, only
+after the calling skill establishes independent domains and disjoint writes.
+
+When `agent_type` is visible, prefer the matching configured role and let its
+configuration select model and effort. Otherwise use explicit model controls
+only when the schema exposes them. If neither is available, omit unsupported
+fields and dispatch a generic subagent; mandatory reviews still proceed.
+Always pass `fork_turns: "none"` and put the complete task contract in
+`message`.
+
 ## Environment Detection
 
 Skills that create worktrees or finish branches should detect their

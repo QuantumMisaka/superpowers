@@ -31,7 +31,10 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. Dispatch code reviewer subagent:**
 
-Dispatch a `general-purpose` subagent, filling the template at [code-reviewer.md](code-reviewer.md)
+Dispatch the abstract reviewer role using the capability-aware Codex rules in
+[codex-tools.md](../using-superpowers/references/codex-tools.md), then fill the
+template at [code-reviewer.md](code-reviewer.md). On other harnesses, use the
+available general-purpose reviewer.
 
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built

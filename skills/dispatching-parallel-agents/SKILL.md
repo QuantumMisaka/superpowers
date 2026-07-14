@@ -67,6 +67,10 @@ Each agent gets:
 
 Issue all three subagent dispatches in the same response — they run in parallel:
 
+On Codex, this is `independent-parallel` mode. Apply the capability-aware
+routing and fallback rules in
+[codex-tools.md](../using-superpowers/references/codex-tools.md).
+
 ```text
 Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"
 Subagent (general-purpose): "Fix batch-completion-behavior.test.ts failures"

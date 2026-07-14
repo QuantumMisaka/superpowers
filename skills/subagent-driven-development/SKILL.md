@@ -102,6 +102,11 @@ conflicts that only emerge from implementation.
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
 
+On Codex, this is a `sequential-gated` workflow. Resolve implementer and
+reviewer roles with the capability-aware rules in
+[codex-tools.md](../using-superpowers/references/codex-tools.md); routing must
+not change the serial implement-review-fix lifecycle.
+
 **Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
 
 **Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
@@ -114,9 +119,9 @@ capable available model, not the session default.
 diff's size, complexity, and risk. A small mechanical diff does not need the
 most capable model; a subtle concurrency change does.
 
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
+Use an explicit named role or model when the active dispatch schema supports
+it. Never invent unsupported fields; a generic subagent is the required
+fallback when the schema exposes no role or model control.
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the
