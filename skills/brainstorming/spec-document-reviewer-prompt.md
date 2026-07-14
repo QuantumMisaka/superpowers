@@ -4,7 +4,7 @@ Use this template when dispatching a spec document reviewer subagent.
 
 **Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
 
-**Dispatch after:** Spec document is written to docs/superpowers/specs/
+**Dispatch after:** An HTML or Markdown spec is written to docs/superpowers/specs/
 
 ```
 Subagent (general-purpose):
@@ -13,6 +13,10 @@ Subagent (general-purpose):
     You are a spec document reviewer. Verify this spec is complete and ready for planning.
 
     **Spec to review:** [SPEC_FILE_PATH]
+
+    Read the supplied `.html` or `.md` file directly. For HTML, review the
+    meaning of its rendered content and section structure; do not grade CSS
+    aesthetics.
 
     ## What to Check
 

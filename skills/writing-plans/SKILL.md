@@ -18,6 +18,11 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 - (User preferences for plan location override this default)
 
+The approved spec may be HTML or Markdown. Read the supplied path directly.
+For HTML, use section IDs when referencing requirements; for Markdown, use
+headings. Do not duplicate the spec into the plan. Plans remain Markdown unless
+the human partner explicitly requests another format.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, it should have been broken into sub-project specs during brainstorming. If it wasn't, suggest breaking this into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -62,16 +67,17 @@ independently testable deliverable.
 
 **Goal:** [One sentence describing what this builds]
 
+**Spec:** `docs/superpowers/specs/<exact-approved-file>`
+
 **Architecture:** [2-3 sentences about approach]
 
 **Tech Stack:** [Key technologies/libraries]
 
 ## Global Constraints
 
-[The spec's project-wide requirements — version floors, dependency limits,
-naming and copy rules, platform requirements — one line each, with exact
-values copied verbatim from the spec. Every task's requirements implicitly
-include this section.]
+[Only the spec's cross-task invariants — version floors, dependency limits,
+naming and copy rules, platform requirements — one line each. Reference spec
+sections for detail instead of reproducing their prose.]
 
 ---
 ```

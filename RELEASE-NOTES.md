@@ -1,5 +1,11 @@
 # Superpowers Release Notes
 
+## Unreleased
+
+- New full brainstorming designs default to standalone HTML for human review.
+- Implementation plans remain Markdown and reference the approved spec.
+- Existing Markdown specs remain valid and do not require migration.
+
 ## v6.1.1 (2026-07-02)
 
 ### Codex
