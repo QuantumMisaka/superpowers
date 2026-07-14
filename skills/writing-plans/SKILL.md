@@ -22,6 +22,8 @@ The approved spec may be HTML or Markdown. Read the supplied path directly.
 For HTML, use section IDs when referencing requirements; for Markdown, use
 headings. Do not duplicate the spec into the plan. Plans remain Markdown unless
 the human partner explicitly requests another format.
+If requirements were supplied directly and no spec exists, record that instead
+of inventing a spec path.
 
 ## Scope Check
 
@@ -67,7 +69,7 @@ independently testable deliverable.
 
 **Goal:** [One sentence describing what this builds]
 
-**Spec:** `docs/superpowers/specs/<exact-approved-file>`
+**Spec:** `docs/superpowers/specs/<exact-approved-file>` or `none - requirements supplied directly`
 
 **Architecture:** [2-3 sentences about approach]
 
@@ -94,7 +96,7 @@ sections for detail instead of reproducing their prose.]
 **Test strategy:**
 - Behavior boundary: [exact public behavior this task changes]
 - Existing suite to extend: `exact/path/to/test-file`
-- New test file justification: none; create one only when no existing suite owns the behavior or the task introduces a new independently runnable boundary
+- New test file justification: [none, or why no existing suite owns the behavior or the task introduces a new independently runnable boundary]
 - Temporary probes: [exact paths and required removal before commit, or none]
 
 **Interfaces:**
@@ -131,7 +133,8 @@ Expected: PASS
 - [ ] **Step 5: Refactor the test portfolio**
 
 Consolidate cases that protect the same behavior through the same setup,
-remove temporary probes, and run the owning suite again.
+remove temporary probes, and run the owning suite again with an exact command
+and expected output.
 
 - [ ] **Step 6: Commit**
 

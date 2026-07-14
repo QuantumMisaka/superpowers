@@ -1,6 +1,6 @@
 ---
 name: brainstorming
-description: Use when a request needs collaborative design: new features, architecture, UX, unclear success criteria, or explicit brainstorm/design/spec requests
+description: Use for explicit design/spec requests or work with unresolved product, UX, architecture, security, or cross-system decisions; not for small changes with clear acceptance criteria
 ---
 
 # Brainstorming Ideas Into Designs

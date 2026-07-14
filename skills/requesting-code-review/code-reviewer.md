@@ -20,6 +20,9 @@ Subagent (general-purpose):
 
     [PLAN_OR_REQUIREMENTS]
 
+    If the plan cites a spec, read the sections its tasks reference before
+    judging requirement coverage.
+
     ## Git Range to Review
 
     **Base:** [BASE_SHA]
