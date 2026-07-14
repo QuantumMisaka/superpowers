@@ -15,9 +15,13 @@ Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigra
 
 ## How it works
 
-It starts from the moment you fire up your coding agent. As soon as it sees that you're building something, it *doesn't* just jump into trying to write code. Instead, it steps back and asks you what you're really trying to do. 
+It starts from the moment you fire up your coding agent. The agent routes each
+request to the lightest safe workflow: direct handling for questions, focused
+delivery for small clear changes, systematic investigation for unexplained
+failures, or collaborative design for work with meaningful open decisions.
 
-Once it's teased a spec out of the conversation, it shows it to you in chunks short enough to actually read and digest. 
+For design work, it develops a spec with you and presents it in reviewable
+sections before implementation.
 
 After you've signed off on the design, your agent puts together an implementation plan that's clear enough for an enthusiastic junior engineer with poor taste, no judgement, no project context, and an aversion to testing to follow. It emphasizes true red/green TDD, YAGNI (You Aren't Gonna Need It), and DRY. 
 
@@ -187,7 +191,11 @@ The Pi package loads the Superpowers skills and a small extension that injects t
 
 ## The Basic Workflow
 
-1. **brainstorming** - Activates before writing code. Refines rough ideas through questions, explores alternatives, presents design in sections for validation. Saves design document.
+Not every request runs the full sequence. Questions and small, clear changes
+take shorter routes; the complete workflow applies when design decisions are
+still open.
+
+1. **brainstorming** - Activates for new or unclear behavior with meaningful design decisions. Refines ideas through questions, explores alternatives, presents design in sections for validation, and saves the approved design.
 
 2. **using-git-worktrees** - Activates after design approval. Creates isolated workspace on new branch, runs project setup, verifies clean test baseline.
 

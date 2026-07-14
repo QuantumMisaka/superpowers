@@ -1,62 +1,46 @@
 ---
 name: using-superpowers
-description: Use when starting any conversation - establishes how to find and use skills, requiring skill invocation before ANY response including clarifying questions
+description: Use at session start to choose the lightest workflow that safely fits the request
 ---
 
 <SUBAGENT-STOP>
 If you were dispatched as a subagent to execute a specific task, ignore this skill.
 </SUBAGENT-STOP>
 
+# Using Superpowers
+
+Classify the request before acting. Do not turn routine work into ceremony.
+
+## Routes
+
+| Request | Route |
+| --- | --- |
+| Question, explanation, lookup, or command output with no change requested | **Direct:** answer or inspect directly. |
+| Small, clear change with known acceptance criteria | **Lightweight delivery:** inspect the relevant code, use `test-driven-development` for behavior changes, then `verification-before-completion`. Do not require brainstorming or a written plan. |
+| Bug, failing test, flaky behavior, or unexplained symptom | **Investigation:** use `systematic-debugging` before choosing a fix, then the lightweight delivery route. |
+| New behavior with meaningful product, UX, architecture, or cross-system decisions; unclear success criteria; or an explicit design request | **Full design:** use `brainstorming`; after design approval, use `writing-plans` for multi-step implementation. |
+
+A clear multi-step task may use `writing-plans` without repeating
+`brainstorming`. For a bounded ambiguity, inspect available facts and ask only
+the blocking question; do not promote it to full design automatically.
+
 <EXTREMELY-IMPORTANT>
-If you think there is even a 1% chance a skill might apply to what you are doing, you ABSOLUTELY MUST invoke the skill.
-
-IF A SKILL APPLIES TO YOUR TASK, YOU DO NOT HAVE A CHOICE. YOU MUST USE IT.
-
-This is not negotiable. You cannot rationalize your way out of this.
+Once a route selects a skill, invoke that skill before taking the action it
+governs. Selected skill instructions are mandatory. Routing itself must remain
+lightweight.
 </EXTREMELY-IMPORTANT>
 
-## The Rule
+An explicitly named skill takes priority unless the user is asking whether it
+applies. User and repository instructions take precedence over skill defaults.
 
-**Invoke relevant or requested skills BEFORE any response or action** — including clarifying questions, exploring the codebase, or checking files. If it turns out wrong for the situation, you don't have to use it.
+## Order
 
-**Before entering plan mode:** if you haven't already brainstormed, invoke the brainstorming skill first.
+When several skills apply:
 
-Then announce "Using [skill] to [purpose]" and follow the skill exactly. If it has a checklist, create a todo per item.
+1. Choose the route.
+2. Apply its process skill (`brainstorming` or `systematic-debugging`).
+3. Apply implementation skills such as `test-driven-development`.
+4. Use `verification-before-completion` before success claims.
 
-## Skill Priority
-
-When multiple skills apply, process skills come first — they set the approach, then implementation skills (frontend-design, etc.) carry it out. Brainstorming and systematic-debugging are Superpowers' most common process skills, but the rule holds for any of them.
-
-- "Let's build X" → superpowers:brainstorming first, then implementation skills.
-- "Fix this bug" → superpowers:systematic-debugging first, then domain skills.
-
-## Red Flags
-
-These thoughts mean STOP—you're rationalizing:
-
-| Thought | Reality |
-|---------|---------|
-| "This is just a simple question" | Questions are tasks. Check for skills. |
-| "I need more context first" | Skill check comes BEFORE clarifying questions. |
-| "Let me explore the codebase first" | Skills tell you HOW to explore. Check first. |
-| "I can check git/files quickly" | Files lack conversation context. Check for skills. |
-| "Let me gather information first" | Skills tell you HOW to gather information. |
-| "This doesn't need a formal skill" | If a skill exists, use it. |
-| "I remember this skill" | Skills evolve. Read current version. |
-| "This doesn't count as a task" | Action = task. Check for skills. |
-| "The skill is overkill" | Simple things become complex. Use it. |
-| "I'll just do this one thing first" | Check BEFORE doing anything. |
-| "This feels productive" | Undisciplined action wastes time. Skills prevent this. |
-| "I know what that means" | Knowing the concept ≠ using the skill. Invoke it. |
-
-## Platform Adaptation
-
-If your harness appears here, read its reference file for special instructions:
-
-- Codex: `references/codex-tools.md`
-- Pi: `references/pi-tools.md`
-- Antigravity: `references/antigravity-tools.md`
-
-## User Instructions
-
-User instructions (CLAUDE.md, AGENTS.md, GEMINI.md, etc, direct requests) take precedence over skills, which in turn override default behavior. Only skip skill workflows or instructions when your human partner has explicitly told you to.
+Read a matching file under `references/` only when tool substitutions for the
+current harness are needed.
