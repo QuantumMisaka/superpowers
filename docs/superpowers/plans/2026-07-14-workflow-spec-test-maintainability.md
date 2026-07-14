@@ -20,7 +20,7 @@
 - Skill behavior is proven with Quorum sessions, not source-text assertions.
 - Keep the combined word count of the four frequently loaded workflow skills at or below baseline; put heavy templates and references in on-demand files.
 - Optimize and live-evaluate Codex behavior; do not add Claude-specific guidance for this change.
-- Do not open an upstream PR until open and closed related PRs are searched, the complete diff and eval evidence are shown to the human partner, and the human partner explicitly approves submission.
+- This repository is a local, self-use Superpowers variant. Do not open an upstream PR; use upstream work only as design evidence.
 
 ## Compatibility Audit of the Current Diff
 
@@ -530,7 +530,7 @@ git commit -m "test: validate standalone design artifact contract"
 **Interfaces:**
 
 - Consumes: the complete core diff and all before/after Quorum results.
-- Produces: a compatibility verdict, explicit residual risks, and a human-approved diff ready for a fork commit or a separately reviewed upstream contribution.
+- Produces: a compatibility verdict, explicit residual risks, and a human-approved local integrated branch.
 
 - [ ] **Step 1: Run static and plugin verification**
 
@@ -586,9 +586,9 @@ Red-green-refactor and verification gates remain intact.
 No unrelated skill voice or architecture was rewritten.
 ```
 
-- [ ] **Step 5: Search related upstream work before any PR decision**
+- [ ] **Step 5: Review related upstream work as prior art**
 
-Search open and closed upstream PRs for routing/over-triggering, HTML specs, and TDD test-quality work. Explicitly inspect the existing positive test-writing experiment associated with commit `0e69a4d32c2db00ebc012310d303907cc5507c6f`; do not submit a duplicate of that work. Record how this change differs: it adds workflow routing, an HTML-spec/Markdown-plan contract, and test-portfolio consolidation driven by a real user session.
+Search open and closed upstream PRs for routing/over-triggering, HTML specs, and TDD test-quality work. Explicitly inspect the positive test-writing experiment associated with commit `0e69a4d32c2db00ebc012310d303907cc5507c6f` and reuse proven wording where applicable. This local variant intentionally integrates workflow routing, an HTML-spec/Markdown-plan contract, and test-portfolio consolidation driven by a real user session.
 
 - [ ] **Step 6: Show the complete diff and eval report to the human partner**
 
@@ -598,7 +598,9 @@ git diff --stat HEAD
 git diff HEAD
 ```
 
-Do not push or open a PR. Wait for explicit human approval of the complete diff and the intended destination: local fork only, a branch for continued testing, or an upstream `dev` PR.
+The human partner approved the complete diff for local self-use on 2026-07-14.
+Do not push or open an upstream PR. Keep the verified branch and worktree intact
+while the original main checkout still contains its pre-existing drafts.
 
 ## Self-Review
 
