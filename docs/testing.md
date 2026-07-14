@@ -13,6 +13,7 @@ Live in `tests/`. Currently:
 - `tests/opencode/` — bash tests for OpenCode plugin loading, bootstrap caching, and tool registration.
 - `tests/codex-plugin-sync/` — bash sync verification.
 - `tests/kimi/` — bash/Python checks for Kimi plugin manifest wiring.
+- `tests/skill-content/` — deterministic contracts for shipped skill artifacts; it does not test agent compliance or skill prose.
 - `tests/claude-code/test-helpers.sh`, `analyze-token-usage.py` — utilities used by remaining bash tests.
 - `tests/claude-code/test-subagent-driven-development.sh` — agent-can-describe-SDD test (no drill counterpart; tests description-recall, not behavior).
 - `tests/claude-code/test-subagent-driven-development-integration.sh` — extended SDD integration with token analysis (drill covers the YAGNI subset; bash adds commit-count, Claude Code task-tracking, and token telemetry assertions).
@@ -23,13 +24,17 @@ Run plugin tests via the relevant directory's `run-*.sh` or `npm test`.
 
 ## Skill behavior evals
 
-Live in `evals/`. Drill is the harness; scenarios live at `evals/scenarios/*.yaml`. See `evals/README.md` for setup. Quick start:
+Live in the separately cloned `evals/` repository. Quorum drives real coding
+agents and owns routing, compliance, and pressure testing. Core tests must not
+replace those evals with assertions that particular skill prose exists. See
+`evals/README.md` for setup. Quick start for Codex:
 
 ```bash
 cd evals
-uv sync --extra dev
-export ANTHROPIC_API_KEY=sk-...
-uv run drill run triggering-test-driven-development -b claude
+bun install
+bun run quorum check
+bun run quorum run scenarios/triggering-writing-plans --coding-agent codex
 ```
 
-Drill scenarios are slow (3-30+ minutes each) and run real LLM sessions. They are not part of CI today; the natural follow-up is a tiered model (fast subset on PR, full sweep nightly + on-demand).
+Live Quorum scenarios are slow, trusted-environment operations and are not part
+of public CI. Static `quorum check` remains safe for local and CI use.
