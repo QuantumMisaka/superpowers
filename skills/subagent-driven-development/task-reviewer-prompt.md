@@ -22,6 +22,10 @@ Subagent (general-purpose):
 
     Read the task brief: [BRIEF_FILE]
 
+    **Spec:** [SPEC_FILE]
+    Read the HTML section IDs or Markdown headings cited by this task. If the
+    plan declares no spec, rely on the task brief.
+
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
 
@@ -174,6 +178,7 @@ Subagent (general-purpose):
 - `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
 - `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
   prints the path; same file the implementer worked from)
+- `[SPEC_FILE]` — the exact plan-header spec path, or `none`
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the plan's Global Constraints section or the spec: exact values, formats,
   and stated relationships between components (not process rules — those

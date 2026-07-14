@@ -15,6 +15,10 @@ Subagent (general-purpose):
     Read your task brief first: [BRIEF_FILE]
     It contains the full task text from the plan.
 
+    **Spec:** [SPEC_FILE]
+    Read only the HTML section IDs or Markdown headings cited by the task. If
+    the plan declares no spec, rely on the task brief.
+
     ## Context
 
     [Scene-setting: where this fits, dependencies, architectural context]
