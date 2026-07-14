@@ -58,6 +58,10 @@ Subagent (general-purpose):
     - Tests verify real behavior, not mocks?
     - Edge cases covered?
     - Integration tests where they matter?
+    - Does each new test catch a named production regression?
+    - Was the nearest existing suite extended where practical?
+    - Any duplicate cases, exact-source-text checks, test-only scripts, or test-only production APIs?
+    - Would removing a proposed redundant test leave the same behavior protected?
     - All tests passing?
 
     **Production readiness:**

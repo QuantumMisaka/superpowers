@@ -106,7 +106,7 @@ Vague name, tests mock not code
 </Bad>
 
 **Requirements:**
-- One behavior
+- One behavior: one reason for failure, not one file, function, assertion, or test
 - Clear name
 - Real code (no mocks unless unavoidable)
 
@@ -188,8 +188,14 @@ After green only:
 - Remove duplication
 - Improve names
 - Extract helpers
+- Extend an existing table or nearby suite before creating a test file
+- Merge cases that exercise the same behavior through the same setup
+- Delete tautologies, exact-source-text checks, and coverage-only assertions
+- Keep characterization tests only for behavior the project relies on
+- Move reusable setup into test utilities, never test-only production APIs
 
-Keep tests green. Don't add behavior.
+Keep tests green. Don't add behavior. Remove a redundant test only when the
+remaining suite catches the same realistic production mutations.
 
 ### Repeat
 
@@ -199,7 +205,7 @@ Next failing test for next feature.
 
 | Quality | Good | Bad |
 |---------|------|-----|
-| **Minimal** | One thing. "and" in name? Split it. | `test('validates email and domain and whitespace')` |
+| **Minimal** | One reason to fail | Unrelated behaviors in one test |
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
 
@@ -328,7 +334,9 @@ Extract validation for multiple fields if needed.
 
 Before marking work complete:
 
-- [ ] Every new function/method has a test
+- [ ] Every changed observable behavior is protected by a test that failed first
+- [ ] Each test names the production break it catches
+- [ ] New helpers are covered through the nearest stable public boundary unless they independently validate, normalize, default, derive, or cause side effects
 - [ ] Watched each test fail before implementing
 - [ ] Each test failed for expected reason (feature missing, not typo)
 - [ ] Wrote minimal code to pass each test
@@ -354,12 +362,11 @@ Bug found? Write failing test reproducing it. Follow TDD cycle. Test proves fix 
 
 Never fix bugs without a test.
 
-## Testing Anti-Patterns
+## Writing Good Tests
 
-When adding mocks or test utilities, read [testing-anti-patterns.md](testing-anti-patterns.md) to avoid common pitfalls:
-- Testing mock behavior instead of real behavior
-- Adding test-only methods to production classes
-- Mocking without understanding dependencies
+When writing or reorganizing tests, read
+[writing-good-tests.md](writing-good-tests.md). Every test should name the
+break it catches and exercise real behavior at the narrowest stable boundary.
 
 ## Final Rule
 

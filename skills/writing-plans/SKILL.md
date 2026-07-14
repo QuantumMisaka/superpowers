@@ -90,7 +90,12 @@ sections for detail instead of reproducing their prose.]
 **Files:**
 - Create: `exact/path/to/file.py`
 - Modify: `exact/path/to/existing.py:123-145`
-- Test: `tests/exact/path/to/test.py`
+
+**Test strategy:**
+- Behavior boundary: [exact public behavior this task changes]
+- Existing suite to extend: `exact/path/to/test-file`
+- New test file justification: none; create one only when no existing suite owns the behavior or the task introduces a new independently runnable boundary
+- Temporary probes: [exact paths and required removal before commit, or none]
 
 **Interfaces:**
 - Consumes: [what this task uses from earlier tasks — exact signatures]
@@ -123,13 +128,21 @@ def function(input):
 Run: `pytest tests/path/test.py::test_name -v`
 Expected: PASS
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 5: Refactor the test portfolio**
+
+Consolidate cases that protect the same behavior through the same setup,
+remove temporary probes, and run the owning suite again.
+
+- [ ] **Step 6: Commit**
 
 ```bash
 git add tests/path/test.py src/path/file.py
 git commit -m "feat: add specific feature"
 ```
 ````
+
+Replace every bracketed test-strategy field with concrete repository facts in
+the generated plan; the brackets are template guidance, not valid plan output.
 
 ## No Placeholders
 

@@ -99,7 +99,8 @@ Subagent (general-purpose):
     **Testing:**
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
-    - Are tests comprehensive?
+    - Did I extend the nearest existing suite where practical?
+    - Did I remove temporary probes and consolidate redundant cases?
     - Is the test output pristine (no stray warnings or noise)?
 
     If you find issues during self-review, fix them now before reporting.
@@ -118,6 +119,9 @@ Subagent (general-purpose):
     - **TDD Evidence** (if TDD was required for this task):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
+    - Durable test disposition: existing suite extended, or why a new suite was required
+    - Temporary artifacts removed: exact paths, or `none`
+    - Redundant tests removed or consolidated: exact cases, or `none`
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns

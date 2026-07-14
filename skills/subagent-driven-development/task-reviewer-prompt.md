@@ -101,6 +101,11 @@ Subagent (general-purpose):
     **Tests:**
     - Do the new and changed tests verify real behavior, not mocks?
     - Are the task's edge cases covered?
+    - Does each new test catch a named production regression?
+    - Was the nearest existing suite extended where practical?
+    - Are there duplicate cases, exact-source-text checks, test-only scripts,
+      or test-only production APIs that should not ship?
+    - Would removing a proposed redundant test leave the same behavior protected?
 
     **Structure:**
     - Does each file have one clear responsibility with a well-defined interface?
