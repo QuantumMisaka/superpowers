@@ -102,20 +102,22 @@ conflicts that only emerge from implementation.
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
 
-On Codex, this is a `sequential-gated` workflow. Resolve implementer and
-reviewer roles with the capability-aware rules in
+On Codex, this is a `sequential-gated` workflow. Resolve roles with the
+capability-aware rules in
 [codex-tools.md](../using-superpowers/references/codex-tools.md); routing must
-not change the serial implement-review-fix lifecycle.
+not change the serial implement-review-fix lifecycle:
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+- Mechanical implementation (clear spec, isolated work, 1-2 files) uses the
+  routine implementer role.
+- Multi-file integration, pattern matching, and bounded debugging use the
+  standard implementer role.
+- Each per-task gate uses the task reviewer role.
+- The whole-branch gate uses the final reviewer role: the most capable available reviewer role when selectable, with generic fallback otherwise.
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
+Keep unresolved architecture decisions and escalation in the parent. Planned
+implementation of an approved design still follows the task complexity rules.
 
-**Architecture and design tasks**: use the most capable available model.
-The final whole-branch review uses the most capable available reviewer role when selectable,
-with the generic fallback otherwise.
-
-**Review tasks**: choose the model with the same judgment, scaled to the
+**Review tasks**: choose the role with judgment scaled to the
 diff's size, complexity, and risk. A small mechanical diff does not need the
 most capable model; a subtle concurrency change does.
 
@@ -132,9 +134,9 @@ implementation is transcription plus testing: use the cheapest tier for
 that implementer. Single-file mechanical fixes also take the cheapest tier.
 
 **Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+- Touches 1-2 files with a complete spec → routine implementer
+- Touches multiple files with integration concerns → standard implementer
+- Requires unplanned design judgment or broad ownership changes → keep in parent
 
 ## Handling Implementer Status
 
@@ -147,10 +149,10 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 **NEEDS_CONTEXT:** The implementer needs information that wasn't provided. Provide the missing context and re-dispatch.
 
 **BLOCKED:** The implementer cannot complete the task. Assess the blocker:
-1. If it's a context problem, provide more context and re-dispatch with the same model
-2. If the task requires more reasoning, re-dispatch with a more capable model
+1. If it's a context problem, provide more context and re-dispatch with the same implementer role
+2. If routine work was under-classified but remains bounded, re-dispatch with the standard implementer role
 3. If the task is too large, break it into smaller pieces
-4. If the plan itself is wrong, escalate to the human
+4. If architecture is unresolved or the plan is wrong, keep the decision in the parent and escalate to the human when required
 
 **Never** ignore an escalation or force the same model to retry without changes. If the implementer said it's stuck, something needs to change.
 

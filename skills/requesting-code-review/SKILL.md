@@ -31,10 +31,12 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **2. Dispatch code reviewer subagent:**
 
-Dispatch the abstract reviewer role using the capability-aware Codex rules in
-[codex-tools.md](../using-superpowers/references/codex-tools.md), then fill the
-template at [code-reviewer.md](code-reviewer.md). On other harnesses, use the
-available general-purpose reviewer.
+Resolve the reviewer with the capability-aware Codex rules in
+[codex-tools.md](../using-superpowers/references/codex-tools.md), then fill
+[code-reviewer.md](code-reviewer.md). Use the task reviewer role for one bounded
+task. Use the final reviewer role for a whole branch, major feature, high-risk
+change, or pre-merge review. If no matching role is exposed, use the generic
+fallback without skipping the review.
 
 **Placeholders:**
 - `{DESCRIPTION}` - Brief summary of what you built

@@ -69,12 +69,13 @@ Issue all three subagent dispatches in the same response — they run in paralle
 
 On Codex, this is `independent-parallel` mode. Apply the capability-aware
 routing and fallback rules in
-[codex-tools.md](../using-superpowers/references/codex-tools.md).
+[codex-tools.md](../using-superpowers/references/codex-tools.md), classifying
+each domain independently as routine or standard.
 
 ```text
-Subagent (general-purpose): "Fix agent-tool-abort.test.ts failures"
-Subagent (general-purpose): "Fix batch-completion-behavior.test.ts failures"
-Subagent (general-purpose): "Fix tool-approval-race-conditions.test.ts failures"
+Subagent (matching implementer capability): "Fix agent-tool-abort.test.ts failures"
+Subagent (matching implementer capability): "Fix batch-completion-behavior.test.ts failures"
+Subagent (matching implementer capability): "Fix tool-approval-race-conditions.test.ts failures"
 # All three run concurrently.
 ```
 

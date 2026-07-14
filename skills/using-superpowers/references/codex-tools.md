@@ -18,20 +18,24 @@ owns role identifiers, models, reasoning effort, sandboxing, and limits.
 | Abstract role | Select an advertised role described for |
 | --- | --- |
 | Routine implementer | Bounded, mechanical implementation |
-| Difficult implementer | Bounded cross-file reasoning or debugging |
-| Reviewer | High-judgment, read-only review |
+| Standard implementer | Bounded multi-file integration or debugging |
+| Task reviewer | Task-scoped, read-only requirement and quality review |
+| Final reviewer | Whole-change, high-judgment read-only review |
 | Monitor | Read-only external-job waiting |
 
-Keep controller, architecture, and escalation work in the parent. Treat
-subagent-driven development as `sequential-gated`; its implement-review-fix
-cycle stays serial. Treat parallel dispatch as `independent-parallel`, only
-after the calling skill establishes independent domains and disjoint writes.
+Keep controller work, unresolved architecture decisions, and escalation in the
+parent. Planned implementation of an approved design may still use an
+implementer role. Treat subagent-driven development as `sequential-gated`; its
+implement-review-fix cycle stays serial. Treat parallel dispatch as
+`independent-parallel`, only after the calling skill establishes independent
+domains and disjoint writes.
 
 When `agent_type` is visible, prefer the matching configured role and let its
 configuration select model and effort. If `agent_type` is absent or no
 advertised role matches, omit routing fields and dispatch a generic subagent;
-mandatory reviews still proceed. Always pass `fork_turns: "none"` and put the
-complete task contract in `message`.
+mandatory reviews still proceed. When `fork_turns` is available, pass
+`fork_turns: "none"`; otherwise omit it. Always put the complete task contract
+in `message`.
 
 ## Environment Detection
 

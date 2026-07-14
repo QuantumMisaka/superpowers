@@ -19,7 +19,15 @@ printf 'Codex subagent routing contract\n'
 assert_literal "$REFERENCE" 'sequential-gated' 'sequential workflow mode'
 assert_literal "$REFERENCE" 'independent-parallel' 'parallel workflow mode'
 assert_literal "$REFERENCE" 'generic subagent' 'capability fallback'
-assert_literal "$REFERENCE" 'fork_turns: "none"' 'isolated child context'
+assert_literal "$REFERENCE" 'Routine implementer' 'routine implementer capability'
+assert_literal "$REFERENCE" 'Standard implementer' 'standard implementer capability'
+assert_literal "$REFERENCE" 'Task reviewer' 'task reviewer capability'
+assert_literal "$REFERENCE" 'Final reviewer' 'final reviewer capability'
+assert_literal "$REFERENCE" 'Monitor' 'monitor capability'
+assert_literal \
+  "$REFERENCE" \
+  'When `fork_turns` is available' \
+  'schema-aware isolated child context'
 assert_literal \
   "$REFERENCE" \
   'If `agent_type` is absent or no' \
@@ -39,7 +47,7 @@ for skill in \
     "$skill uses shared Codex routing"
 done
 
-if rg -ni 'codex-routing-kit|\b(luna|sol)([_ -]|\b)|gpt-5\.6' \
+if rg -ni 'codex-routing-kit|\b(luna|terra|sol)([_ -]|\b)|gpt-5\.6' \
   "$REPO_ROOT/skills"; then
   printf '  [FAIL] skills must not depend on one routing kit or model family\n'
   exit 1
@@ -58,6 +66,23 @@ assert_literal \
   'most capable available reviewer role when selectable' \
   'final review uses capability role when selectable'
 
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  'routine implementer role' \
+  'mechanical work selects routine capability'
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  'standard implementer role' \
+  'integration work selects standard capability'
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  'task reviewer role' \
+  'task review selects task capability'
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  'final reviewer role' \
+  'whole-branch review selects final capability'
+
 if rg -ni 'explicit model|model controls|named role or model' \
   "$REFERENCE" \
   "$REPO_ROOT/skills/subagent-driven-development/SKILL.md"; then
@@ -73,5 +98,27 @@ if rg -n '\[MODEL|^[[:space:]]*model:' \
   exit 1
 fi
 printf '  [PASS] SDD prompts contain no routing-field placeholders\n'
+
+if rg -n 'Subagent \(general-purpose\)' \
+  "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
+  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
+  "$REPO_ROOT/skills/requesting-code-review/code-reviewer.md"; then
+  printf '  [FAIL] prompt headings must not force the generic fallback role\n'
+  exit 1
+fi
+printf '  [PASS] prompt headings remain abstract-role neutral\n'
+
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
+  'Implementer subagent:' \
+  'implementer prompt uses capability heading'
+assert_literal \
+  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
+  'Task reviewer subagent:' \
+  'task reviewer prompt uses task-scoped heading'
+assert_literal \
+  "$REPO_ROOT/skills/requesting-code-review/code-reviewer.md" \
+  'Reviewer subagent:' \
+  'shared reviewer prompt does not force task or final scope'
 
 printf 'All Codex subagent routing contract checks passed\n'
