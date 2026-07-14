@@ -20,6 +20,9 @@ Classify the request before acting. Do not turn routine work into ceremony.
 | Bug, failing test, flaky behavior, or unexplained symptom | **Investigation:** use `systematic-debugging` before choosing a fix, then the lightweight delivery route. |
 | New behavior with meaningful product, UX, architecture, or cross-system decisions; unclear success criteria; or an explicit design request | **Full design:** use `brainstorming`; after design approval, use `writing-plans` for multi-step implementation. |
 
+Security posture, public API/schema/persisted-data, dependency, and destructive
+changes are never lightweight unless an approved spec already fixes the decision.
+
 A clear multi-step task may use `writing-plans` without repeating
 `brainstorming`. For a bounded ambiguity, inspect available facts and ask only
 the blocking question; do not promote it to full design automatically.

@@ -22,6 +22,7 @@ Use full brainstorming when the request involves:
 - Multiple reasonable approaches with real tradeoffs
 - Ambiguous success criteria or business rules
 - Multiple subsystems that may need decomposition
+- Security, public API/schema/persisted-data, dependency, or destructive decisions
 - Explicit "brainstorm", "design", "spec", or "help me think this through"
 
 Do not use full brainstorming for:
@@ -120,7 +121,7 @@ invoke implementation skills directly from brainstorming.
 
 ## HTML Design Artifact
 
-For an approved full design, copy `skills/brainstorming/design-template.html` to
+For an approved full design, copy [design-template.html](design-template.html) to
 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.html` and fill every section.
 The HTML file is the source of truth for new designs. Existing `.md` specs stay
 valid; do not convert them. A project convention or explicit human preference
