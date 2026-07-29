@@ -1,169 +1,94 @@
 ---
 name: brainstorming
-description: Use for explicit design/spec requests or work with unresolved product, UX, architecture, security, or cross-system decisions; not for small changes with clear acceptance criteria
+description: 设计澄清与 spec 产出。用于有未解决的产品/UX/架构/安全/跨系统决策，或显式设计请求时。小变更和验收标准已知的任务不走此流程。
 ---
 
-# Brainstorming Ideas Into Designs
+# 设计澄清（Brainstorming）
 
-Use this skill to turn a rough idea into an approved design before
-implementation. It is for meaningful design uncertainty, not every small edit.
+把粗略想法变成已确认的设计决策。默认走 Grill 快路径（1-3 个阻塞问题），仅大项目升级为完整 spec 产出。
 
-<DESIGN-GATE>
-For full brainstorming, do not invoke implementation skills, write code,
-scaffold a project, or take implementation action until you have presented the
-design and the human partner has approved it.
-</DESIGN-GATE>
+**设计确认后再执行实现。** 未确认前不写代码、不 scaffold、不调用实现 skill。
 
-## When To Use
+## 触发条件
 
-Use full brainstorming when the request involves:
+走设计澄清：
 
-- New product behavior, user experience, workflow, or architecture
-- Multiple reasonable approaches with real tradeoffs
-- Ambiguous success criteria or business rules
-- Multiple subsystems that may need decomposition
-- Security, public API/schema/persisted-data, dependency, or destructive decisions
-- Explicit "brainstorm", "design", "spec", or "help me think this through"
+- 新行为 + 架构/跨系统决策，验收标准不清
+- 多个合理方案存在真实 tradeoff
+- 多子系统需要分解
+- 安全、公共 API/schema/持久化数据、依赖或破坏性变更
+- 用户显式说"brainstorm"/"设计"/"spec"/"帮我想清楚"
 
-Do not use full brainstorming for:
+不走设计澄清：
 
-- Simple questions, command output, file lookup, or code explanation
-- Small well-scoped edits with clear acceptance criteria
-- Existing approved specs that only need a plan
-- Bug symptoms that need root-cause investigation first
+- 提问、查询、命令输出（无变更）
+- 小而明确的变更，验收标准已知
+- 已有批准的 spec，只需 plan
+- Bug 症状需要先调查根因
 
-## Lightweight Alignment
+## §1 Grill（默认路径）
 
-If the work is bounded but a little under-specified, do lightweight alignment
-instead of the full process:
+1. **静默探索项目上下文**（代码/文档/commits/现有模式），不占问题配额。
+2. **提出 1-3 个阻塞问题**，每个附带推荐答案：
+   - Q1 通常覆盖：目的 + 推荐方案 + "还是你有不同约束？"
+   - Q2 通常覆盖：设计边界 + 成功标准 + "覆盖 A/B/C，不做 D，对吗？"
+   - Q3 仅在存在真正歧义时：分解/依赖/开放决策。
+   - 一次一个问题。优先选择题 + 推荐项。YAGNI 压力：删除不支持目标的可选项。
+3. **用户确认后，判断是否需要设计文档：**
+   - 相对大的项目 → 推荐产出 HTML spec，与用户确认："这个项目建议产出 HTML spec 以固化设计决策，需要吗？"
+   - 有界任务 → 直接执行或进入 `writing-plans`，无文件产物。
+4. 若产出 spec → §2 完整设计流程。否则直接过渡到实现。
 
-1. Inspect available project context before asking.
-2. State the change, constraints, and success check in a few lines.
-3. Ask at most one blocking question if a wrong assumption would be expensive.
-4. Include your recommended answer when asking.
-5. Proceed when the path is clear.
+### 推荐 HTML spec 的信号
 
-No design artifact is required for lightweight alignment unless the human
-partner asks for one or the discussion uncovers larger design uncertainty.
+- 涉及 3+ 文件/模块的协调变更
+- 多子系统需要分解
+- 公共 API / schema / 持久化数据变更
+- 跨团队协作
+- 用户显式要求 spec
 
-## Checklist
+### 不推荐 HTML spec 的信号
 
-For full brainstorming, track and complete these items in order:
+- 单文件/单模块变更
+- 决策已在对话中内化（用户自己说出了答案）
+- 用户说"确认后执行"/"聊天框确认即可"
 
-1. **Explore project context** - check files, docs, recent commits, and existing patterns
-2. **Assess scope** - decompose first if the idea spans independent subsystems
-3. **Ask clarifying questions** - one at a time, preferring options plus a recommendation
-4. **Propose 2-3 approaches** - explain tradeoffs and your recommended path
-5. **Present design** - validate sections scaled to their complexity
-6. **Write design artifact** - save primary human-readable design as HTML
-7. **Self-review** - fix placeholders, contradictions, ambiguity, and scope creep
-8. **User review** - ask the human partner to review the written artifact
-9. **Transition** - invoke writing-plans after approval
+## §2 完整设计流程（升级路径）
 
-## Process Flow
+仅当 §1 步骤 3 确认需要 spec 时执行。
 
-```dot
-digraph brainstorming {
-    "Explore context" [shape=box];
-    "Scope needs full design?" [shape=diamond];
-    "Lightweight alignment" [shape=box];
-    "Ask one-at-a-time questions" [shape=box];
-    "Propose approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "Approved?" [shape=diamond];
-    "Write HTML design artifact" [shape=box];
-    "Self-review" [shape=box];
-    "User reviews artifact" [shape=diamond];
-    "Invoke writing-plans" [shape=doublecircle];
+### 流程
 
-    "Explore context" -> "Scope needs full design?";
-    "Scope needs full design?" -> "Lightweight alignment" [label="no"];
-    "Scope needs full design?" -> "Ask one-at-a-time questions" [label="yes"];
-    "Ask one-at-a-time questions" -> "Propose approaches";
-    "Propose approaches" -> "Present design sections";
-    "Present design sections" -> "Approved?";
-    "Approved?" -> "Present design sections" [label="revise"];
-    "Approved?" -> "Write HTML design artifact" [label="yes"];
-    "Write HTML design artifact" -> "Self-review";
-    "Self-review" -> "User reviews artifact";
-    "User reviews artifact" -> "Write HTML design artifact" [label="changes"];
-    "User reviews artifact" -> "Invoke writing-plans" [label="approved"];
-}
-```
+1. **探索与分解** — 若想法跨多个独立子系统，先分解为可独立交付的子项目，对第一个子项目走设计流程。
+2. **提出 2-3 方案** — 带 tradeoff 和推荐项。YAGNI：每个方案只保留支持目标的范围。
+3. **分段呈现设计** — 按复杂度缩放每段长度。每段后确认"到这里对吗？"。覆盖：目标、非目标、架构、组件、数据流、错误处理、测试、rollout、开放决策。
+4. **写 HTML spec** — 复制 [design-template.html](design-template.html) 到 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.html`，填写所有段落。
+5. **自审** — 占位符扫描、内部一致性、范围检查（单个 plan 能否覆盖）、歧义检查。发现问题直接修。
+6. **用户审阅** — "设计文档已写入 `<路径>`，请审阅并告诉我需要改什么。"
+7. **过渡** — 用户批准后调用 `writing-plans`。
 
-The terminal state for full brainstorming is invoking writing-plans. Do not
-invoke implementation skills directly from brainstorming.
+### 设计原则
 
-## The Process
+- 拆分为单一职责的小单元，通过明确接口通信，可独立理解和测试。
+- 在现有代码库中遵循已有模式；影响当前工作的已有问题可作为设计的一部分改进，但不做无关重构。
+- 每个单元能回答：做什么、怎么用、依赖什么。
 
-**Understand the idea**
+## §3 轻量对齐（有界但略欠规格）
 
-- Read the current project structure before proposing changes.
-- If the idea is too broad for one spec, decompose it into independently
-  shippable sub-projects and brainstorm the first one.
-- Ask one question per message. If you need more, continue the loop.
-- Focus on purpose, constraints, success criteria, and decisions that cannot be
-  inferred from the repo.
+比 Grill 更轻：变更有界但有一处不确定。
 
-**Explore approaches**
+1. 先查项目上下文。
+2. 用几行说明变更、约束和成功检查。
+3. 最多问一个阻塞问题（附推荐答案）。
+4. 路径明确时直接执行。
 
-- Offer 2-3 approaches.
-- Lead with your recommended approach and explain why.
-- Keep YAGNI pressure active: remove optional scope that does not support the
-  stated goal.
+无需设计产物，除非用户要求或讨论中发现更大设计不确定性。
 
-**Present the design**
+## 顺序
 
-- Present design in readable sections: goal, non-goals, architecture,
-  components, data flow, errors, testing, rollout, and open decisions.
-- Keep each section as short as the decision allows. If a section is nuanced,
-  stop after it and ask whether it looks right so far.
+设计澄清在 `using-superpowers` 路由中的位置：
 
-## HTML Design Artifact
-
-For an approved full design, copy [design-template.html](design-template.html) to
-`docs/superpowers/specs/YYYY-MM-DD-<topic>-design.html` and fill every section.
-The HTML file is the source of truth for new designs. Existing `.md` specs stay
-valid; do not convert them. A project convention or explicit human preference
-may select Markdown instead.
-
-## Self-Review
-
-After writing the artifact, review it yourself:
-
-1. **Placeholder scan:** no TBD, TODO, incomplete sections, or vague
-   requirements
-2. **Internal consistency:** architecture, requirements, and testing agree
-3. **Scope check:** one implementation plan can cover it; otherwise decompose
-4. **Ambiguity check:** any requirement with two plausible interpretations is
-   made explicit
-
-Fix issues inline before asking for review.
-
-## User Review Gate
-
-After the self-review passes, ask:
-
-> Design artifact written to `<exact path>`. Please review it and tell me what
-> to change before I write the implementation plan.
-
-Wait for approval or requested changes. After approval, invoke writing-plans.
-
-## Visual Companion
-
-A browser-based companion can show mockups, diagrams, and visual options during
-brainstorming. It is available as a tool, not a mode.
-
-Offer it just-in-time only when a question would genuinely be clearer shown
-than told. The offer must be its own message:
-
-> This next part might be easier if I show you -- I can put together mockups,
-> diagrams, and comparisons in a browser tab as we go. It's still new and can
-> be token-intensive. Want me to? I'll open it for you.
-
-Use the browser for visual questions: mockups, wireframes, layout comparisons,
-architecture diagrams, and side-by-side visual designs. Use the terminal for
-textual questions: requirements, tradeoffs, scope, and conceptual decisions.
-
-If the human partner accepts, read `skills/brainstorming/visual-companion.md`
-before proceeding.
+1. 路由选定"设计澄清"
+2. 执行 §1 Grill（或 §3 轻量对齐）
+3. 需要 spec 时执行 §2
+4. 过渡到 `writing-plans` 或直接实现

@@ -16,9 +16,9 @@ description: 会话开始时选择最轻的工作流路由。子代理执行特�
 | 提问、解释、查询、查看命令输出（无变更） | **直接回答** |
 | 小而明确的变更，验收标准已知 | **轻量交付：** 检查相关代码，行为变更用 `test-driven-development`，完成前用 `verification-before-completion`。无需 brainstorming 或 plan 文件。 |
 | Bug、测试失败、flaky、未解释症状 | **调查：** 先 `systematic-debugging`，再走轻量交付。 |
-| 新行为 + 产品/UX/架构/跨系统决策；验收标准不清；或显式设计请求 | **完整设计：** `brainstorming` → 设计确认后 `writing-plans`。 |
+| 新行为 + 架构/跨系统决策；验收标准不清 | **设计澄清：** `brainstorming` §1 Grill（1-3 阻塞问题 + 推荐答案）→ 确认后执行或 `writing-plans`。仅多子系统分解或显式 spec 请求时走完整设计（§2）。 |
 
-安全姿态、公共 API/schema/持久化数据、依赖变更和破坏性操作，除非已有批准的 spec 固定了决策，否则走完整设计。
+安全姿态、公共 API/schema/持久化数据、依赖变更和破坏性操作，除非已有批准的 spec 固定了决策，否则走设计澄清。
 
 明确的多步任务可直接用 `writing-plans`（无需重复 brainstorming）。有界歧义先查事实再问阻塞问题，不自动升级为完整设计。
 
@@ -31,7 +31,7 @@ description: 会话开始时选择最轻的工作流路由。子代理执行特�
 多个 skill 适用时：
 
 1. 选路由
-2. 执行流程 skill（`brainstorming` 或 `systematic-debugging`）
+2. 执行流程 skill（`brainstorming` Grill 或 `systematic-debugging`）
 3. 执行实现 skill（如 `test-driven-development`）
 4. 成功声明前用 `verification-before-completion`
 
