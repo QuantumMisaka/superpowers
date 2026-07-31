@@ -5,3 +5,4 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 bash "$SCRIPT_DIR/test-design-artifact-contract.sh"
 bash "$SCRIPT_DIR/test-codex-subagent-routing-contract.sh"
+bash "$SCRIPT_DIR/test-adaptive-workflow-routing-contract.sh"

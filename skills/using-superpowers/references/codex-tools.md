@@ -37,6 +37,25 @@ mandatory reviews still proceed. When `fork_turns` is available, pass
 `fork_turns: "none"`; otherwise omit it. Always put the complete task contract
 in `message`.
 
+Treat provider specialization as a local routing hypothesis, not a universal
+model claim. Prefer the GPT engineering group for complex implementation,
+debugging, code-detail review, and final architecture review. Prefer the Qwen
+information group for large-context synthesis, progress review, document
+review, and approved HTML/Markdown drafting. Ordinary bounded implementation
+may use either engineering group. The parent owns unresolved decisions,
+dependency ordering, and final synthesis.
+
+Give the Qwen information group a bounded handoff that uses its large context
+window while keeping exploration tied to the task:
+
+- Inputs: named source paths or artifacts, the exact question or decision
+  boundary, and the acceptance evidence.
+- Output contract: source-backed findings or an approved HTML/Markdown draft,
+  explicit gaps, and a recommended next action.
+- Stop condition: the named inputs have been reviewed and the output contract
+  is satisfied. A missing decision or source is returned to the parent as a
+  gap; further material starts with a new parent handoff.
+
 ## Environment Detection
 
 Skills that create worktrees or finish branches should detect their
