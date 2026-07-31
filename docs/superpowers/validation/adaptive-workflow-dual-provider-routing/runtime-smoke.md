@@ -6,7 +6,7 @@ Runtime: `codex-cli 0.146.0`
 
 Corrected probe root: `/tmp/codex-task6-corrected-20260731T094657Z`
 
-Decision: `provider-per-session`
+Decision: `provider-per-session-main-only`
 
 ## Corrected method
 
@@ -117,7 +117,7 @@ Parent event hashes are:
 
 ## Decision
 
-Mode: provider-per-session
+Mode: provider-per-session-main-only
 
 Correct invocation proves that Codex creates the requested child roles on the
 configured backends, including both cross-provider directions. It also proves
@@ -125,55 +125,110 @@ that the installed runtime cannot reliably carry delegated messages across
 the Qwen/GPT boundary: GPT→Qwen instructions remain encrypted, while
 Qwen→GPT output cannot be decrypted. The Qwen same-provider probe additionally
 shows that an `encrypted_content` NEW_TASK is not surfaced to that child model.
-The native gate therefore fails.
+The native gate therefore fails, including for Qwen same-provider delegation.
 
-The default profile exposes five GPT engineering/review roles. The Bailian
-profile replaces every generic slot with Qwen and adds context analyst plus
-document writer, exposing seven Qwen roles without retaining active GPT
-children. Cross-model review uses a file-based review package opened in a
-separate profile session. Nested `codex exec` orchestration is not enabled.
+The default profile keeps five active GPT generic roles. The Bailian profile
+keeps its Qwen main model, `xhigh` effort, and local catalog, but explicitly
+sets `features.multi_agent=false` and
+`features.multi_agent_v2.enabled=false`. It has no active Agent registration
+overrides. Qwen work runs in an independent Bailian main session and consumes
+a file-based review package; it never starts nested `codex exec` orchestration.
 
-The active registration mapping remains:
+All twelve provider-specific role TOMLs remain installed, validated, and
+inactive as capability templates and future retry evidence. Active routing is:
 
-| Slot | Default profile | Bailian overlay |
+| Slot | Default profile | Bailian profile |
 |---|---|---|
-| `routine_worker` | `agents/gpt/routine-worker.toml` | `agents/qwen/routine-worker.toml` |
-| `standard_worker` | `agents/gpt/standard-worker.toml` | `agents/qwen/standard-worker.toml` |
-| `task_reviewer` | `agents/gpt/task-reviewer.toml` | `agents/qwen/progress-reviewer.toml` |
-| `final_reviewer` | `agents/gpt/final-reviewer.toml` | `agents/qwen/document-reviewer.toml` |
-| `monitor` | `agents/gpt/monitor.toml` | `agents/qwen/monitor.toml` |
-| `context_analyst` | not registered | `agents/qwen/context-analyst.toml` |
-| `document_writer` | not registered | `agents/qwen/document-writer.toml` |
+| `routine_worker` | `agents/gpt/routine-worker.toml` | not registered; main session only |
+| `standard_worker` | `agents/gpt/standard-worker.toml` | not registered; main session only |
+| `task_reviewer` | `agents/gpt/task-reviewer.toml` | not registered; main session only |
+| `final_reviewer` | `agents/gpt/final-reviewer.toml` | not registered; main session only |
+| `monitor` | `agents/gpt/monitor.toml` | not registered; main session only |
+
+## Bailian main-only smoke
+
+Fresh smoke root:
+
+```text
+/tmp/codex-task6-main-only-20260731T100741Z
+```
+
+The real installed Bailian profile ran this bounded probe without shell use or
+nested Codex orchestration:
+
+```text
+timeout --signal=TERM --kill-after=5s 300s codex exec --profile bailian
+  --json --skip-git-repo-check
+  -C /tmp/codex-task6-main-only-20260731T100741Z/work
+  --output-last-message /tmp/codex-task6-main-only-20260731T100741Z/final.txt
+  <capability-probe prompt>
+```
+
+It exited 0 and completed in 11.334 seconds with
+`BAILIAN_MAIN_ONLY_OK AGENT_TOOL_UNAVAILABLE`. Persisted rollout evidence is:
+
+| Field | Evidence |
+|---|---|
+| Session | `019fb7a5-065a-7db3-8ba7-34df55978b44` |
+| `session_meta.model_provider` | `bailian` |
+| `turn_context.model` / effort | `qwen3.8-max-preview` / `xhigh` |
+| `turn_context.multi_agent_version` | `disabled` |
+| Tool behavior | zero `function_call` or `custom_tool_call` response items |
+| Rollout SHA-256 | `6d460ce70c0c3f4ec30a5bf2fbb5a089a366da09911452f4899794f28fac4fad` |
+| Final-message SHA-256 | `a45b271220224a9f6ac2ce6baf49a500c39116c2a0cb91b25fd8f66f3667d6cb` |
+
+The rollout is
+`/home/james/.codex/sessions/2026/07/31/rollout-2026-07-31T18-07-53-019fb7a5-065a-7db3-8ba7-34df55978b44.jsonl`.
+The CLI also repeatedly warned that five inherited base role definitions were
+malformed. This is retained as runtime noise rather than hidden; the effective
+turn still reports multi-agent disabled and exposes no collaboration call.
+
+## Upstream corroboration
+
+The decision rests on the local rollouts above. Three open upstream reports
+independently describe adjacent failures: [`codex exec` multi-agent output
+decryption](https://github.com/openai/codex/issues/33267), [native subagents
+with non-OpenAI custom providers](https://github.com/openai/codex/issues/17598),
+and [provider-specific encrypted content surviving a model/provider
+switch](https://github.com/openai/codex/issues/17541). They corroborate the
+failure class but are not substitutes for the local gate.
 
 ## Snapshot and fallback verification
 
-The fresh pre-fallback snapshot remains:
+The fresh snapshot taken before the main-only correction is:
 
 ```text
-/home/james/.codex/backups/pre-provider-per-session-fallback-20260731T093359Z.tar.gz
-SHA-256 4c5a318ed038333228af4d7351b295768200b3deefe8c80b22ba13c4f97f94d9
+/home/james/.codex/backups/pre-bailian-main-only-fallback-20260731T100525Z.tar.gz
+SHA-256 86a860e72f47b3f17e224b1834b00076202488b91793ff397e5906975c2878b1
 ```
 
 The archive contains both profiles, the matrix test and validator, and all
-twelve provider-specific role files. The current fallback validator and test
-continue to preserve all twelve role-file checks.
+twelve provider-specific role files, plus the Task 6 runtime record/report and
+untracked plan/spec. The current fallback validator and test continue to
+preserve all twelve role-file checks.
 
 Final local verification:
 
 ```text
-python -m unittest -v test_agent_matrix.py
-Ran 13 tests
+python -m unittest -v tests.test_agent_matrix
+Ran 15 tests
 OK
 ```
 
 ```text
 python /home/james/.codex/scripts/validate_agent_matrix.py
-Agent matrix valid: 12 roles, 3 shared contracts, 4 information roles; active mode provider-per-session
+Agent matrix valid: 12 roles, 3 shared contracts, 4 information roles; active mode provider-per-session-main-only
 ```
 
 `tomllib` also parses both active profiles and all twelve provider-specific
-role files. The production fallback configuration was not changed while
-running corrected probes.
+role files, 14 TOML files total. Current global artifact hashes are:
+
+```text
+d4d25a037c53969c50b49816c61122b09eefd1568692b63059e28d085754deaf  config.toml
+cdc1851e0565bf10dc24123bde3a9cbdec276911f8ef93bd069e581e7d3badd1  bailian.config.toml
+c24f6be54a363453399eb9b15bf6a8b780b8118cbcbd66ca1c12e59c68600519  tests/test_agent_matrix.py
+3794160d4833b595790eb1160bb6db67568521abbe5091b0123499b70d44e8db  scripts/validate_agent_matrix.py
+```
 
 ## Remaining concerns
 
@@ -183,7 +238,8 @@ running corrected probes.
   `/tmp`. The probes still launch through the existing `codex` executable and
   record complete parent and child rollouts.
 - Native mode should be reconsidered only after a Codex runtime change and a
-  new four-probe record that proves both readable task delivery and readable
-  child output, not merely correct backend selection.
+  new gate that proves readable task delivery and readable child output for
+  Qwen same-provider and both cross-provider directions, not merely correct
+  backend selection. The twelve inactive TOMLs preserve the retry inputs.
 - Both corrected and superseded raw probe trees remain preserved through final
   review.
