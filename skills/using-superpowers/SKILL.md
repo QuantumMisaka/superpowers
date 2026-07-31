@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: 所有行动型请求开始时使用：先读取本 Skill 当前完整版本并明确记录 L1/L2/L3，再进行受管辖行动；任务意图变化时重做。子代理执行被分派的特定任务时忽略本 Skill。
+description: 所有行动型请求开始时使用，包括功能开发、bug 修复，以及要求遵循 repository/Skill instructions 的任务：先读取本 Skill 当前完整版本并明确记录 L1/L2/L3，再进行受管辖行动；任务意图变化时重做。子代理执行被分派的特定任务时忽略本 Skill。
 ---
 
 # Using Superpowers

@@ -5,6 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TDD="$REPO_ROOT/skills/test-driven-development/SKILL.md"
 VERIFY="$REPO_ROOT/skills/verification-before-completion/SKILL.md"
+BRAINSTORM="$REPO_ROOT/skills/brainstorming/SKILL.md"
 BANNED_PATTERN="\\b(dishonest|dishonesty|lying|rationalizations?)\\b|you['’]ll be replaced|\\bno exceptions\\b|\\bnon-negotiable\\b"
 
 fail() {
@@ -139,6 +140,19 @@ check_verification_contract() {
   fi
 }
 
+check_brainstorming_evidence_contract() {
+  local file="$1"
+
+  require_literal "$file" \
+    '精确可执行验收信号（具体命令或可观察检查及期望结果）' \
+    'design recommendation must include an executable acceptance signal' ||
+    return 1
+  require_literal "$file" \
+    '测试尚未存在时也要给出计划的测试命令和判定标准' \
+    'design recommendation must retain a future-test acceptance signal' ||
+    return 1
+}
+
 expect_rejected() {
   local label="$1"
   local checker="$2"
@@ -153,6 +167,7 @@ expect_rejected() {
 
 check_tdd_contract "$TDD"
 check_verification_contract "$VERIFY"
+check_brainstorming_evidence_contract "$BRAINSTORM"
 
 if rg -ni "$BANNED_PATTERN" \
   "$TDD" "$VERIFY"; then
@@ -178,6 +193,9 @@ expect_rejected 'claim/evidence mapping row' check_verification_contract <(
 )
 expect_rejected 'regression RED/GREEN example' check_verification_contract <(
   sed '/Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)/d' "$VERIFY"
+)
+expect_rejected 'design-stage executable acceptance signal' check_brainstorming_evidence_contract <(
+  sed '/精确可执行验收信号/d' "$BRAINSTORM"
 )
 
 printf 'All positive evidence language checks passed\n'

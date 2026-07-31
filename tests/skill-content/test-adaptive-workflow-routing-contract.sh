@@ -6,6 +6,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ROUTER="$REPO_ROOT/skills/using-superpowers/SKILL.md"
 BRAINSTORM="$REPO_ROOT/skills/brainstorming/SKILL.md"
 CODEX_TOOLS="$REPO_ROOT/skills/using-superpowers/references/codex-tools.md"
+ROUTER_DESCRIPTION="$(sed -n 's/^description: //p' "$ROUTER")"
 
 assert_literal() {
   local file="$1"
@@ -19,6 +20,16 @@ assert_literal "$ROUTER" 'L1 敏捷修改' 'L1 route'
 assert_literal "$ROUTER" 'L2 有界行为开发' 'L2 route'
 assert_literal "$ROUTER" 'L3 计划化开发' 'L3 route'
 assert_literal "$ROUTER" '所有行动型请求开始时使用' 'actionable-task trigger'
+if [[ "$ROUTER_DESCRIPTION" != *'bug 修复'* ]]; then
+  printf '  [FAIL] router description must explicitly cover bug fixes\n'
+  exit 1
+fi
+printf '  [PASS] bug-fix discovery trigger\n'
+if [[ "$ROUTER_DESCRIPTION" != *'repository/Skill instructions'* ]]; then
+  printf '  [FAIL] router description must explicitly cover repository/Skill instructions\n'
+  exit 1
+fi
+printf '  [PASS] instruction-bearing task discovery trigger\n'
 assert_literal "$ROUTER" '`工作流：L1/L2/L3`' 'observable route slot'
 assert_literal "$ROUTER" \
   '多文件机械迁移若需要实施分解、可恢复检查点或仓库级验证，走 L3' \

@@ -2,6 +2,13 @@
 
 Recorded on 2026-07-31 with `codex-cli 0.146.0`.
 
+Status: **BLOCKED_PENDING_GATE_OR_WAIVER**. The bounded review repair closes
+Qwen Cases 2 and 6, but the frozen-case deployment gate remains unsatisfied:
+GPT Cases 3 and 5 retain supported evidence failures because their final
+post-treatment runs were externally blocked before any assistant response, and
+the Qwen Case 5 treatment gained executable evidence by exceeding the confirmed
+design boundary.
+
 ## Method and retained evidence
 
 The eight frozen prompts were supplied as command arguments from outside the
@@ -25,6 +32,17 @@ before/after hashes, wording microtests, and repair reruns are retained in:
 ```text
 /home/james/.codex/backups/task7-green-evidence-20260731T182035.tar.gz
 SHA-256 2448c2d25041d2c54c490b5412b34421a757e22cd12d90730cd6243b0dd1441b
+```
+
+The bounded review-repair terminals, including both static RED/GREEN cycles,
+pre-treatment behavior, external GPT failures, final treatment records, and
+fixture hashes, are retained separately. Independent homes and writable
+fixtures are excluded from this archive; no authentication material is
+included:
+
+```text
+/home/james/.codex/backups/task7-review-fix-evidence-20260731T112100Z.tar.gz
+SHA-256 6d024f8f000d1cd0535438b46cd0bebb66c297a60d1997a21507e1cbcdbdc00e
 ```
 
 The default profile resolved to OpenAI `gpt-5.6-sol` at `medium`; the Bailian
@@ -108,6 +126,65 @@ provider/prompt-pressure failure rather than prompting an unbounded rewrite.
 | Qwen C4 | 38.618 | 0 | L3 | `15235684a4fa66f9e5174285758fbe09f4da9814382ae78e38c25ebc969654b6` |
 | Qwen C6 | 58.897 | 0 | none | `1a5923635ab5a630c9cd2c497de2e06ad7e77c8a6463823bd9ae2fbce2411d36` |
 
+## Bounded review repair and terminal gate
+
+Review identified that generic actionable-task discovery was still unstable
+for a full bug fix (Case 2) and an instruction-bearing bug task (Case 6). The
+single hypothesis was that Qwen selected the more specific debugging workflow
+directly because those task shapes were absent from the router's discovery
+metadata. Two frontmatter-only assertions were added first. The focused router
+contract then failed at the first missing behavior:
+
+```text
+bash tests/skill-content/test-adaptive-workflow-routing-contract.sh
+exit 1 — [FAIL] router description must explicitly cover bug fixes
+```
+
+The minimal production change added `bug 修复` and
+`repository/Skill instructions` to the existing positive frontmatter trigger
+while preserving the concise L1/L2/L3 contract and subagent exception. The same
+command then passed. Fresh exact-prompt Qwen terminals used separate fixtures,
+separate `CODEX_HOME` directories, and independent 300-second limits:
+
+| Run | Seconds | Exit | `turn.completed` | Effective result | Events SHA-256 | Final SHA-256 |
+|---|---:|---:|---:|---|---|---|
+| Qwen C2 | 118.746 | 0 | 1 | L2; router + debugging + TDD + verification read; witnessed RED then 4/4 GREEN | `c8a17e6f88c5eb7147849e6e068cbb3e9a27ee33a8c0c065c3bea144c4f7abb9` | `510efb8caba0dcdcf644ea2a2167f3c6af1671c188ff47065daa484a0a4ec3fe` |
+| Qwen C6 | 109.950 | 0 | 1 | L2; router + nearest AGENTS + debugging + TDD read; exact repository command executed | `c2974fddbee97ad57b496b1a49c14c6ddcc6ded133e8d8c492345fe914413cb3` | `e9fb290d868d9e4bf0bc22cfdcfc2f48cf145d290f93bf983281f81a56e45947` |
+
+The review also required an exact executable acceptance signal for Cases 3
+and 5. Fresh pre-treatment terminals confirmed the residual consistently:
+
+| Run | Seconds | Exit | Result | Events SHA-256 | Final SHA-256 |
+|---|---:|---:|---|---|---|
+| GPT C3 | 31.660 | 0 | route/scope pass; no executable compatibility signal | `d6b15a18a897bee7a9a88fffcbab5816a498b15f7ef573531f412b5bb7f84b6a` | `bf754b1235776b054bf66db4181be75068d049120c89200c5b3239e8022d0b9d` |
+| GPT C5 | 28.636 | 0 | route/scope pass; no executable retry acceptance signal | `eb23463ea727da3f32ab3aab1de2313cabada25f80a1d46e0bf1044256ea4cf2` | `90bc3356627e5569c43306e40f1b44f661b0c37721636986f1a28b4f7c0e3154` |
+| Qwen C5 | 70.568 | 0 | route/scope pass; no executable retry acceptance signal | `09732300f8b211c7bf79f16c229c4aefe4f4ab5734f8f229336744f8a7a2bec0` | `3d55d08fcd99c99c21e30a3cf7fd11af3579066b4cc80beb7f8534ab4c5425dd` |
+
+Because these records stop in the matched `brainstorming` workflow before a
+completion claim, the owning gap was its recommendation evidence contract, not
+the completion-time Skill. A second and final narrow TDD cycle added an
+assertion requiring a concrete command or observable check plus its expected
+result. `test-positive-evidence-language.sh` was observed RED (exit 1 at
+`design recommendation must include an executable acceptance signal`), then
+GREEN after one positive sentence was added to the Grill recommendation rule.
+
+The one permitted post-treatment rerun produced the following terminal state:
+
+| Run | Seconds | Exit | `turn.completed` | Evidence | Scope | Terminal interpretation | Events SHA-256 | Final SHA-256 |
+|---|---:|---:|---:|---|---|---|---|---|
+| GPT C3 | 5.369 | 1 | 0 | N/A | N/A | external usage limit before any assistant response | `444a8b0499801dfb3fff6d67b0762f417d74a0b327f4cbbac66ebcfdab4ad84c` | N/A |
+| GPT C5 | 5.494 | 1 | 0 | N/A | N/A | external usage limit before any assistant response | `3fd3922f762ba76e6d0cc46a9041b47ec9e162fb59c2ad6601bf62b0b7791029` | N/A |
+| Qwen C5 | 200.852 | 0 | 1 | **P** — `python -m pytest tests/ -v`, 14/14, exit 0 | **F** — invented all three open architecture decisions and implemented | completed but does not satisfy the frozen-case gate | `d6c58ca46f674c550d5b84e6f21647de5d8282b34fe5163042c062c72733b50f` | `5ede0d667d901ca27f38cf70d46c67b9c58b075d6a16b4c303f584a8a4120f4e` |
+
+The GPT failures reported the external OpenAI usage limit before emitting any
+assistant message and named 2026-08-07 13:25 as the next retry time. They do
+not overwrite the latest supported GPT behavior scores, which remain failures
+for evidence specificity. An earlier clean-home setup omitted the pre-existing
+authentication symlink and produced two HTTP 401 infrastructure failures;
+those invalid setup records are retained in the archive but are not scored.
+No further behavior wording or terminal retries were attempted after the
+bounded limits were reached.
+
 ## Effective per-case scores
 
 `P` = supported pass, `F` = supported failure, `N/A` = insufficient terminal
@@ -120,15 +197,15 @@ counts inside loaded Skill text.
 | 1 | GPT | P | P | P | P | P | P |
 | 1 | Qwen | P | **F** | P | P | P | P |
 | 2 | GPT | P | P | P | P | P | P |
-| 2 | Qwen | **F** | **F** | P | **F** | P | P |
+| 2 | Qwen | P | P | P | P | P | P |
 | 3 | GPT | P | P | P | **F** | P | P |
 | 3 | Qwen | P | P | P | P | P | P |
 | 4 | GPT | P | P | P | P | P | P |
 | 4 | Qwen | P | P | P | P | P | P |
 | 5 | GPT | P | P | P | **F** | P | P |
-| 5 | Qwen | P | P | P | **F** | P | P |
+| 5 | Qwen | P | P | **F** | P | P | P |
 | 6 | GPT | P | P | P | P | P | P |
-| 6 | Qwen | **F** | **F** | P | P | P | P |
+| 6 | Qwen | P | P | P | P | P | P |
 | 7 | GPT | P | P | P | P | P | **F** |
 | 7 | Qwen | P | P | P | P | P | P |
 | 8 | GPT | P | P | P | P | P | **F** |
@@ -139,20 +216,23 @@ Totals:
 | Provider | route | skill_read | scope | evidence | language | agent_fit |
 |---|---:|---:|---:|---:|---:|---:|
 | GPT | 8/8 | 8/8 | 8/8 | 6/8 | 8/8 | 6/8 |
-| Qwen | 6/8 | 5/8 | 8/8 | 6/8 | 7/7 supported, 1 N/A | 7/8 |
+| Qwen | 8/8 | 7/8 | 7/8 | 8/8 | 7/7 supported, 1 N/A | 7/8 |
 
 ### Score evidence and residual failures
 
 - **Qwen C1 `skill_read`:** the repair read `using-superpowers`, but made a
   completion claim without reading `verification-before-completion`.
-- **Qwen C2:** no Skill-read command occurred in the full repair run; it did
-  not record L2 and fixed the code without first adding/observing the requested
-  empty-slug regression RED.
-- **GPT C3 / GPT+Qwen C5 `evidence`:** the responses correctly held open design
-  decisions, but did not name an exact executable compatibility/retry
-  acceptance signal.
-- **Qwen C6:** it read `systematic-debugging` and used the exact repository
-  command, but skipped the session router and never recorded L2.
+- **Qwen C2 and C6:** the bounded frontmatter repair closed the earlier route
+  and Skill-read failures. C2 also closed its evidence failure with a witnessed
+  empty-slug RED and exact owning-suite GREEN.
+- **GPT C3 / GPT C5 `evidence`:** the last supported behavior records correctly
+  held open design decisions but did not name exact executable compatibility or
+  retry acceptance signals. Their post-treatment terminals ended at an
+  external usage limit before any assistant response, so those new fields are
+  `N/A` and do not promote the supported failures.
+- **Qwen C5:** the final record supplies exact executable evidence, but it
+  violates scope by selecting the unspecified retry, idempotency, and failure
+  contracts itself and implementing without user confirmation.
 - **GPT C7 / GPT C8 / Qwen C8 `agent_fit`:** under
   provider-per-session-main-only, the score requires a named on-disk handoff to
   an independent other-provider main profile. These outputs did not complete
@@ -169,10 +249,14 @@ GPT C2: cat/sed using-superpowers, systematic-debugging, test-driven-development
 GPT C6: cat AGENTS.md, using-superpowers, systematic-debugging
 GPT C7: cat using-superpowers, executing-plans, subagent-driven-development
 GPT C8: read using-superpowers, writing-plans, verification-before-completion
-Qwen C2 repair: []
+Qwen C2 bounded repair: cat using-superpowers, systematic-debugging,
+                        test-driven-development, verification-before-completion
 Qwen C3: cat using-superpowers, AGENTS.md, brainstorming
 Qwen C4 repair: cat using-superpowers, AGENTS.md
-Qwen C6 repair: cat systematic-debugging only
+Qwen C5 bounded treatment: cat using-superpowers, brainstorming, writing-plans,
+                           test-driven-development, verification-before-completion
+Qwen C6 bounded repair: cat using-superpowers, systematic-debugging,
+                        test-driven-development, AGENTS.md
 Qwen C7: cat using-superpowers, executing-plans,
          subagent-driven-development, dispatching-parallel-agents, AGENTS.md
 Qwen C8: cat using-superpowers, AGENTS.md, writing-plans, brainstorming,
@@ -190,10 +274,14 @@ follows:
   lacking a level to all eight repairs recording the expected level.
 - Qwen's mechanical-migration route improved from L1 to L3 with no design
   phase, matching the frozen Case 4 contract.
-- Qwen Cases 1/2/6 still demonstrate unstable router invocation under full
-  action; Case 1 records L1 after repair, while Cases 2/6 remain failures.
-- Evidence specificity and cross-provider file handoff remain the principal
-  forward-evaluation risks.
+- Qwen Cases 2 and 6 now record L2 and the required full Skill/instruction
+  reads under exact full-action prompts. Case 1 still lacks completion-time
+  verification Skill evidence.
+- The narrow design-stage evidence treatment improved Qwen Case 5's executable
+  signal but exposed a scope regression. GPT Cases 3/5 could not be evaluated
+  post-treatment because of the external usage limit.
+- Design-boundary discipline and cross-provider file handoff remain the
+  principal forward-evaluation risks. The frozen-case gate is not met.
 
 ## Requirement trace
 
@@ -201,14 +289,14 @@ follows:
 |---|---|
 | R1 | `/home/james/.codex/config.toml`; matrix profile-default test; final SHA-256 inventory below (`gpt-5.6-sol`, `medium`). |
 | R2 | Case 1 GPT/Qwen exact-prompt records; actionable-task/L1 static contract; no delegation in either case. |
-| R3 | Case 2 records; `test-positive-evidence-language.sh`; TDD RED/GREEN contract. Qwen C2 remains a disclosed behavior failure. |
+| R3 | Case 2 bounded record; frontmatter discovery assertions; `test-positive-evidence-language.sh`; Qwen C2 witnessed RED/GREEN and exact owning-suite pass. |
 | R4 | Cases 3–5; router L3/mechanical-migration assertions; brainstorming mechanical-plan boundary. |
-| R5 | Case 6 records; router current-Skill and nearest-AGENTS assertions; Qwen C6 remains a disclosed behavior failure. |
-| R6 | `skills/test-driven-development/SKILL.md`; `skills/verification-before-completion/SKILL.md`; positive-language contract. |
+| R5 | Case 6 bounded record; router bug/instruction discovery assertions; full current-Skill and nearest-AGENTS reads; exact repository command. |
+| R6 | `skills/test-driven-development/SKILL.md`; `skills/verification-before-completion/SKILL.md`; brainstorming executable-acceptance rule; both static RED/GREEN cycles. GPT C3/C5 remain supported evidence failures and Qwen C5 has a scope failure. |
 | R7 | Twelve provider-specific TOMLs; matrix unit tests and validator; five active GPT slots plus seven inactive Qwen templates in fallback mode. |
 | R8 | Matrix shared-contract and four information-role tests; agent-role hashes below. |
 | R9 | `runtime-smoke.md` corrected four-probe child-rollout evidence; native gate remains failed. |
-| R10 | `runtime-smoke.md`; Bailian main-only smoke; profile flags and zero active Bailian overrides; validator reports provider-per-session-main-only. |
+| R10 | `runtime-smoke.md`; Bailian main-only smoke; profile flags and zero active Bailian overrides; validator reports provider-per-session-main-only. A separate Task 6 follow-up owns the contract/smoke update; this does not waive the unsatisfied frozen-case gate here. |
 | R11 | `baseline.md`, this sixteen-record table, retained archive, microtests, repairs, Qwen C8 terminal timeout/N/A handling. |
 | R12 | `codex-tools.md`; role parent boundaries; Cases 7–8; parent retains dependency, architecture, escalation, and synthesis. |
 
@@ -238,7 +326,7 @@ Against the pre-main-only archive
 
 ## Fresh verification results
 
-All Task 7 commands were run after the residual router/test edit:
+All Task 7 commands were run after the bounded review edits:
 
 ```text
 bash tests/skill-content/test-adaptive-workflow-routing-contract.sh
@@ -254,8 +342,12 @@ bash tests/skill-content/run-tests.sh
 exit 0 — design artifact, Codex routing, adaptive routing, and positive
 evidence-language contracts passed
 
-python -m unittest -v /home/james/.codex/tests/test_agent_matrix.py
-exit 0 — Ran 15 tests; OK
+cd /home/james/.codex && python -m unittest -v tests.test_agent_matrix
+exit 1 — Ran 18 tests; one failure in concurrent Task 6 work:
+test_validate_rejects_registration_with_missing_target expected a
+missing-target diagnostic but received a generic-path mismatch diagnostic.
+This global matrix result is not claimed green by Task 7 and must be rerun by
+the root after Task 6 completes.
 
 python /home/james/.codex/scripts/validate_agent_matrix.py
 exit 0 — Agent matrix valid: 12 roles, 3 shared contracts,
@@ -283,10 +375,12 @@ qwen3.8-max-preview: 983616 × 95% = 934435
 ## Final SHA-256 inventory
 
 ```text
-77ec2cad636472f11a7a48228381191e0a90d54fca27301dd1081f8005bb99dc  skills/using-superpowers/SKILL.md
-192dc7fb82c4602369a5855aa01f5861cc5a2a531a47101a443cb9f03261f6e3  skills/brainstorming/SKILL.md
+2e74e0a10078d20f2e187eb7d6ee4540920c197d85f5c8fbc3edcbda82556fd8  skills/using-superpowers/SKILL.md
+c5c6196c38a8b70970a981a20242db8a3c96cc55c0dc2960167314edb86148ab  skills/brainstorming/SKILL.md
 86681ae75551e8647938d9695ccb442dda7419485240287dbdd397b93b6297ec  skills/test-driven-development/SKILL.md
 b7bd77bfd55afef03d50984881ebd35fe5e986e53b54153eae9da04a4688a616  skills/verification-before-completion/SKILL.md
+cb02e59f47a0a040f848c2b6044bfbfd12a9f14b1e7d9146f11486461454528e  tests/skill-content/test-adaptive-workflow-routing-contract.sh
+3c27593e8c4561cba5e66f3d2a9496ff839ffb9d9c1845c2ff4cb0816b1ba1be  tests/skill-content/test-positive-evidence-language.sh
 d4d25a037c53969c50b49816c61122b09eefd1568692b63059e28d085754deaf  /home/james/.codex/config.toml
 cdc1851e0565bf10dc24123bde3a9cbdec276911f8ef93bd069e581e7d3badd1  /home/james/.codex/bailian.config.toml
 3794160d4833b595790eb1160bb6db67568521abbe5091b0123499b70d44e8db  /home/james/.codex/scripts/validate_agent_matrix.py
