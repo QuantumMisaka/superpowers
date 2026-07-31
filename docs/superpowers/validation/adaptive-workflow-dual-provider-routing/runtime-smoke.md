@@ -8,6 +8,9 @@ Corrected probe root: `/tmp/codex-task6-corrected-20260731T094657Z`
 
 Decision: `provider-per-session-main-only`
 
+Final-review follow-up: R10 file handoff `PASS`; installed-default generic
+monitor re-probe `BLOCKED` by an OpenAI usage limit after the structural fix.
+
 ## Corrected method
 
 The original probe set used an underspecified spawn instruction. GPT main
@@ -139,11 +142,11 @@ inactive as capability templates and future retry evidence. Active routing is:
 
 | Slot | Default profile | Bailian profile |
 |---|---|---|
-| `routine_worker` | `agents/gpt/routine-worker.toml` | not registered; main session only |
-| `standard_worker` | `agents/gpt/standard-worker.toml` | not registered; main session only |
-| `task_reviewer` | `agents/gpt/task-reviewer.toml` | not registered; main session only |
-| `final_reviewer` | `agents/gpt/final-reviewer.toml` | not registered; main session only |
-| `monitor` | `agents/gpt/monitor.toml` | not registered; main session only |
+| `routine_worker` | `agents/routine-worker.toml` | not registered; main session only |
+| `standard_worker` | `agents/standard-worker.toml` | not registered; main session only |
+| `task_reviewer` | `agents/task-reviewer.toml` | not registered; main session only |
+| `final_reviewer` | `agents/final-reviewer.toml` | not registered; main session only |
+| `monitor` | `agents/monitor.toml` | not registered; main session only |
 
 ## Bailian main-only smoke
 
@@ -179,9 +182,106 @@ It exited 0 and completed in 11.334 seconds with
 
 The rollout is
 `/home/james/.codex/sessions/2026/07/31/rollout-2026-07-31T18-07-53-019fb7a5-065a-7db3-8ba7-34df55978b44.jsonl`.
-The CLI also repeatedly warned that five inherited base role definitions were
-malformed. This is retained as runtime noise rather than hidden; the effective
-turn still reports multi-agent disabled and exposes no collaboration call.
+At that time the CLI repeatedly warned that five inherited base role
+definitions were malformed. The final-review investigation below resolves the
+missing-description source, but a post-structural-fix OpenAI probe is blocked
+by the account usage gate. The Bailian turn itself still reports multi-agent
+disabled and exposes no collaboration call.
+
+## Final-review generic-slot investigation
+
+Artifact root:
+
+```text
+/tmp/codex-task6-final-review-20260731T111140Z
+```
+
+The initial installed-default probe called the advertised collaboration tool
+with `agent_type="monitor"` and `fork_turns="none"`. Its parent rollout is
+`019fb7df-b45b-7841-a3f4-156ba15fd084`, uses OpenAI
+`gpt-5.6-sol`/`medium`, and records an `agents.spawn_agent` function call.
+The router returned `unknown agent_type 'monitor'`; no child was created. The
+parent events also contain ten malformed-role errors: each of the five legacy
+generic TOMLs was rejected twice because it lacked `description`.
+
+```text
+b57d84081e2f996c6a8be4f86edf7a560f40488dc806935cc1564cf7d2e9955d  default-monitor/events.jsonl
+c40e4692e0b8307dee676e7beb310e06d55331c884db498d3f7a78e7860ede3b  default-monitor/final.txt
+bef0979e285e28ef52bd9b53654c38adf4b0c831b0f8295af52af56f29c7ab86  initial parent rollout
+```
+
+A description-only TDD fix made the generic role callable and removed all ten
+warnings, proving that root-level auto-discovery owns the active generic name.
+It also proved that the original `config_file = "agents/gpt/monitor.toml"`
+mapping was not selecting the intended template: child
+`019fb7e2-a95c-7f11-bc9b-63da214d2641` ran `gpt-5.6-sol`/`low`, not
+Luna/medium, although its task/result channel was readable. This intermediate
+result was rejected.
+
+```text
+696a1d53a1f35b7687ba977a3a8ea4408297a245fa05a5a5df90045b223329ab  default-monitor-after-fix/events.jsonl
+532af9d6066dcf6973c3d5182413710ec0a99b4a1553d20f737eea457e639f15  default-monitor-after-fix/final.txt
+5ad8bbe78f4450cbb0d3fb1ee6ba0b9333989c63f903867cd87bd5cf96e4321b  intermediate parent rollout
+f736c7773964314c3126956e6cf6814818c713a6db58599698fd48246d0aa4ca  intermediate child rollout
+```
+
+The structural candidate now points all five base slots at their active
+`agents/<generic>.toml` files. Those files retain generic names while matching
+their GPT templates on Provider, model, effort, sandbox, and normalized
+developer contract. Matrix RED failed on all three previous mismatches and the
+same focused set then passed 4/4.
+
+The required final installed-default monitor re-probe did not reach the tool
+router. Root thread `019fb7e6-4238-71d1-9c18-568ffc0ba719` failed before any
+function call with the OpenAI usage-limit response and produced no final file
+or child rollout. Therefore the structural candidate is statically validated,
+but its required Luna/medium runtime proof remains `BLOCKED`, not passed.
+
+```text
+8d7cff4e4d17442c785125f410a934c3f6e3d319d66ecc9cadc08e9ad6edafb1  default-monitor-structural-fix/events.jsonl
+```
+
+## R10 file-handoff smoke
+
+Verdict: `PASS` for the provider-per-session main-only file protocol.
+
+The stable package is:
+
+```text
+/tmp/codex-task6-final-review-20260731T111140Z/review-handoff/repo/.superpowers/review-packages/20260731T111140Z-runtime-contract/
+```
+
+It contains a request with bounded Inputs, Output, Stop condition, and parent
+decision ownership; an independent Bailian main-session result; and a final
+decision written by the already-running independent GPT parent session. The
+production contract uses the same stable repository-local paths but never
+launches one main session from the other with nested `codex exec`; the CLI was
+used here only as a bounded Qwen runtime probe.
+
+| Artifact | SHA-256 |
+|---|---|
+| Repo-root `review-input.md` | `bd3a8708b19cc004e722204884ebcab102d0c548683658ce560fb3e8271d60db` |
+| `request.md` | `67e0053a77188813278706b70ca71f1ac1e45c94615028588a2ba2b352f19110` |
+| Qwen `result.md` | `8201a58310d2a14852e0a0f1f3b25d951e73eba4c6ab72efaae21c036e584717` |
+| GPT parent `decision.md` | `68cb41bc569e722ab63c25bb6377b3f6a7801b72ef0982240426cc132b16215e` |
+
+Qwen session `019fb7e7-7477-7613-9a32-08df360bfa37` records Provider
+`bailian`, model `qwen3.8-max-preview`, effort `xhigh`, and
+`multi_agent_version="disabled"`. It read the request and named input, wrote
+the required result sections, recommended `REJECT` because `beta` was
+`pending`, returned `QWEN_HANDOFF_COMPLETE`, and never created `decision.md`.
+Its rollout SHA-256 is
+`86f762d72f68d7c7831e9404b68205b18e059f1f103f13075f71987f68d4f0f6`.
+The first input read incorrectly treated a repository-relative path as
+package-relative; a bounded filename lookup recovered it. The durable contract
+now explicitly resolves every Input path from repository root.
+
+A new default-profile CLI turn was unavailable because of the same usage
+limit. Instead, the already-running GPT parent main session independently read
+the request, repo-root source, and Qwen result, accepted the advisory analysis,
+and wrote `decision.md` with the final `REJECT` judgment. This is transparent
+runtime evidence for two independent main sessions, not a claim that the
+blocked new GPT CLI session succeeded.
 
 ## Upstream corroboration
 
@@ -207,11 +307,26 @@ twelve provider-specific role files, plus the Task 6 runtime record/report and
 untracked plan/spec. The current fallback validator and test continue to
 preserve all twelve role-file checks.
 
+Before repairing the legacy generic registry, a second fresh snapshot captured
+the five active generic TOMLs plus config, validator, and test:
+
+```text
+/home/james/.codex/backups/pre-legacy-generic-description-fix-20260731T111307Z.tar.gz
+SHA-256 e2d743b64a09511920d0f49e57a8302e2b6bb81df37098b70c7ed7587da6d0d1
+```
+
+Task 1 baseline trust onboarding had also written twelve exact temporary
+`[projects]` blocks into the global config. The Task 5 archive
+`pre-dual-provider-routing-20260731.tar.gz` therefore contains that pollution.
+The live config now removes only those exact baseline paths; real-project and
+general `/tmp` trust remain. No exact block for the final-review smoke root was
+present. `baseline.md` now states this global side effect explicitly.
+
 Final local verification:
 
 ```text
 python -m unittest -v tests.test_agent_matrix
-Ran 15 tests
+Ran 18 tests
 OK
 ```
 
@@ -220,14 +335,20 @@ python /home/james/.codex/scripts/validate_agent_matrix.py
 Agent matrix valid: 12 roles, 3 shared contracts, 4 information roles; active mode provider-per-session-main-only
 ```
 
-`tomllib` also parses both active profiles and all twelve provider-specific
-role files, 14 TOML files total. Current global artifact hashes are:
+`tomllib` also parses both active profiles, five active generic roles, and all
+twelve provider-specific role templates, 19 TOML files total. Current global
+artifact hashes are:
 
 ```text
-d4d25a037c53969c50b49816c61122b09eefd1568692b63059e28d085754deaf  config.toml
+8375c92d63649be07c37fb5656617a9e406932cc80f0b6293b3f9532e9278811  config.toml
 cdc1851e0565bf10dc24123bde3a9cbdec276911f8ef93bd069e581e7d3badd1  bailian.config.toml
-c24f6be54a363453399eb9b15bf6a8b780b8118cbcbd66ca1c12e59c68600519  tests/test_agent_matrix.py
-3794160d4833b595790eb1160bb6db67568521abbe5091b0123499b70d44e8db  scripts/validate_agent_matrix.py
+1022622afb34bc68b5ecfaa82621a1c980c3a0d9380caabc210606f4f34d7f4d  tests/test_agent_matrix.py
+b51c7a41f5e75dd07964902190f221fb49da61cc803c1f3093931c5338e799e5  scripts/validate_agent_matrix.py
+ad7245c9d468f321cce677ea5ffcc158bb282d98fb439bc118a8cb71333000c2  agents/routine-worker.toml
+a0d58b6a94180f34e4c6c5ba48ca3e17dca118e2110c61daf7a77fdfa32f80b9  agents/standard-worker.toml
+eb9587b4a57d5f62b85ec674101c0b23baf8a8cae15aa6d095afd42b01b9a0bb  agents/task-reviewer.toml
+8871153d88b60acf42e89a7129798c770bc85f4742050b363708d7b1be5d3b55  agents/final-reviewer.toml
+cb2da386578bc01e681346e98c5c5ffb2a5707be0cf3e118edbea110f9c812f0  agents/monitor.toml
 ```
 
 ## Remaining concerns
@@ -241,5 +362,8 @@ c24f6be54a363453399eb9b15bf6a8b780b8118cbcbd66ca1c12e59c68600519  tests/test_age
   new gate that proves readable task delivery and readable child output for
   Qwen same-provider and both cross-provider directions, not merely correct
   backend selection. The twelve inactive TOMLs preserve the retry inputs.
+- The installed-default generic monitor structural candidate still requires a
+  fresh post-limit rollout proving `gpt-5.6-luna`/`medium`; static alignment
+  and an earlier wrong-backend child do not substitute for that proof.
 - Both corrected and superseded raw probe trees remain preserved through final
   review.

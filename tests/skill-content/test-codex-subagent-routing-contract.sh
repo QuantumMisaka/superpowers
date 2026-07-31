@@ -37,6 +37,43 @@ assert_literal \
   'advertised role matches, omit routing fields and dispatch a generic subagent' \
   'named-role to generic fallback order'
 
+assert_literal \
+  "$REFERENCE" \
+  '.superpowers/review-packages/<handoff-id>/request.md' \
+  'main-only review request has stable path'
+assert_literal \
+  "$REFERENCE" \
+  '.superpowers/review-packages/<handoff-id>/result.md' \
+  'main-only review result has stable path'
+assert_literal \
+  "$REFERENCE" \
+  '.superpowers/review-packages/<handoff-id>/decision.md' \
+  'main-only parent decision has stable path'
+assert_literal "$REFERENCE" '### Inputs' 'review package inputs contract'
+assert_literal \
+  "$REFERENCE" \
+  'Resolve every Input path from the repository root' \
+  'review inputs have an unambiguous path base'
+assert_literal "$REFERENCE" '### Output' 'review package output contract'
+assert_literal "$REFERENCE" '### Stop condition' 'review package stop contract'
+assert_literal "$REFERENCE" '### Parent decision' 'review package parent-decision contract'
+assert_literal \
+  "$REFERENCE" \
+  'independent Bailian main session' \
+  'Qwen consumes package in independent main session'
+assert_literal \
+  "$REFERENCE" \
+  'writes the result file' \
+  'Qwen writes the stable result artifact'
+assert_literal \
+  "$REFERENCE" \
+  'default GPT main session reads the result file' \
+  'GPT parent consumes the review result'
+assert_literal \
+  "$REFERENCE" \
+  'never launch one main session from the other with nested `codex exec`' \
+  'production handoff excludes nested Codex execution'
+
 for skill in \
   subagent-driven-development \
   dispatching-parallel-agents \

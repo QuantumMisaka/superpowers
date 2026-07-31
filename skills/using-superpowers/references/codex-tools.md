@@ -57,6 +57,59 @@ window while keeping exploration tied to the task:
   is satisfied. A missing decision or source is returned to the parent as a
   gap; further material starts with a new parent handoff.
 
+## Provider-per-session main-only file handoff
+
+Use this contract when the target Provider runs as a main session and its
+multi-agent tool surface is disabled or unavailable. Create one stable,
+repository-local package directory per handoff:
+
+```text
+.superpowers/review-packages/<handoff-id>/
+├── request.md
+├── result.md
+└── decision.md
+```
+
+Use a collision-resistant `<handoff-id>` such as
+`YYYYMMDDTHHMMSSZ-short-topic`. The default GPT parent creates
+`.superpowers/review-packages/<handoff-id>/request.md` with this contract:
+
+```markdown
+# Review Request
+
+### Inputs
+- Exact repository-relative source and artifact paths.
+- Resolve every Input path from the repository root, not the package directory.
+- The question or decision boundary.
+- Acceptance evidence the review must evaluate.
+
+### Output
+- Required findings, source references, explicit gaps, and recommended action.
+- Write the completed review to `result.md` in this package.
+
+### Stop condition
+- Stop after every named input is reviewed and the output contract is met.
+- Report a missing source or unresolved decision as a gap; do not expand scope.
+
+### Parent decision
+- Reserved for the default GPT parent after it reads `result.md`.
+- The Qwen reviewer recommends; it does not make or record the final decision.
+```
+
+A user or controller opens an independent Bailian main session at the same
+repository root. That session reads only the request and named inputs, writes the result file at
+`.superpowers/review-packages/<handoff-id>/result.md`, and returns the result
+path plus a concise completion status. It stops at the request boundary.
+
+The default GPT main session reads the result file, checks its cited evidence,
+and owns the accept, reject, follow-up, architecture, and final-synthesis
+decision. It records that bounded outcome and rationale in
+`.superpowers/review-packages/<handoff-id>/decision.md`.
+
+Production handoff uses independently opened top-level sessions: never launch one main session from the other with nested `codex exec`. A bounded CLI probe
+may exercise this file protocol as validation evidence, but it is not the
+production orchestration path.
+
 ## Environment Detection
 
 Skills that create worktrees or finish branches should detect their

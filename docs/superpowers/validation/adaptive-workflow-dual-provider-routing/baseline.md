@@ -4,10 +4,23 @@ Recorded on 2026-07-31 with Codex CLI 0.146.0. Each invocation used a fresh
 ephemeral session and a separate writable copy of the repository. The added
 `--sandbox workspace-write -C <isolated-copy>` arguments are the safe isolation
 equivalent of the plan commands: they preserved the current installed Skills
-and repository instructions while ensuring probes could not modify the source
-checkout or `/home/james/.codex`. Complete assistant messages are reproduced
-below in emitted order. JSONL, stderr, exit codes, and timestamps were also
-retained under `/tmp/superpowers-task1-baseline.BsRKNp/` during evaluation.
+and repository instructions while preventing model tool calls from modifying
+the source checkout. Codex trust onboarding nevertheless wrote one
+`[projects]` block per temporary working directory to the global
+`/home/james/.codex/config.toml` before sandboxed model work began. That
+global-config side effect was originally overlooked. Complete assistant
+messages are reproduced below in emitted order. JSONL, stderr, exit codes, and
+timestamps were also retained under
+`/tmp/superpowers-task1-baseline.BsRKNp/` during evaluation.
+
+The Task 5 recovery archive
+`/home/james/.codex/backups/pre-dual-provider-routing-20260731.tar.gz` was
+created after onboarding and therefore contains those temporary trust blocks.
+The live config has since been cleaned by exact baseline path; the unrelated
+real-project entries and the general `/tmp` trust entry were retained. The
+later Task 6 smoke root did not add an exact project block because the general
+`/tmp` entry already covered it. This correction narrows the isolation claim;
+it does not change the recorded model outputs.
 
 The OpenAI default resolved to model `gpt-5.6-sol`, profile `default`, provider
 `openai`. The Bailian profile resolved to model `qwen3.8-max-preview`, profile
