@@ -1,12 +1,24 @@
 # Adaptive Workflow and Dual-Provider Agent Routing Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+**Status:** IMPLEMENTED_AND_VERIFIED on 2026-07-31.
+
+**Current source of truth:** the linked SPEC, installed Codex profiles, Agent
+matrix tests, and
+`docs/superpowers/validation/adaptive-workflow-dual-provider-routing/README.md`.
+The task steps below are retained as implementation history. Superseded
+branches describe the investigation and are not current operating
+instructions.
+
+> **Historical execution note:** This plan originally used
+> superpowers:subagent-driven-development or superpowers:executing-plans and
+> checkbox steps. Implementation is complete; do not resume unchecked boxes as
+> outstanding work without a new scoped plan.
 
 **Goal:** Deliver a three-level Codex development workflow and a verified GPT/Qwen subagent matrix that supports native cross-provider dispatch when the installed Codex runtime can prove it works.
 
 **Spec:** `docs/superpowers/specs/2026-07-31-adaptive-workflow-dual-provider-routing-design.html`
 
-**Architecture:** Superpowers owns provider-neutral workflow and capability selection. Global Codex configuration activates a GPT engineering group and preserves a Qwen engineering/information template catalog; short role files own concrete model/provider settings, and a standard-library validator protects shared engineering contracts plus Qwen-specific information-role boundaries. Skill behavior changes are gated by GPT/Qwen RED-GREEN evaluations; native Qwen subagent routing is gated by readable same-provider and bidirectional cross-provider runtime probes and otherwise degrades to provider-per-session-main-only plus file-based review handoff.
+**Architecture:** Superpowers owns provider-neutral workflow and capability selection. Global Codex configuration activates a GPT engineering group and a Qwen engineering/information group; short role files own concrete model/provider settings, and a standard-library validator protects shared engineering contracts plus Qwen-specific information-role boundaries. Runtime routing is Provider-aware: OpenAI parents use V2 for GPT→GPT, Bailian parents use V1 for Qwen→Qwen and Qwen→GPT with four concurrent children, and GPT→Qwen uses the file-based review handoff until V2 task delivery becomes compatible.
 
 **Tech Stack:** Markdown skills, HTML design artifact, Bash contract tests, Python 3.11+ `tomllib` and `unittest`, Codex TOML profiles, Codex JSONL execution output
 
@@ -21,7 +33,7 @@
 - Keep architecture decisions, escalation, user gates, and final synthesis in the parent Agent.
 - Route complex engineering implementation and code-detail review to GPT by default; route large-context synthesis, progress/document review, and HTML/Markdown drafting to Qwen by default.
 - Treat this model split as a versioned local hypothesis measured by behavior, elapsed time, rework, and review yield rather than a universal model claim.
-- Deploy native Qwen subagent routing only if Qwen same-provider and both cross-provider directions pass with readable task/output evidence; one failed Qwen channel selects the provider-per-session-main-only fallback.
+- Deploy each native route only with readable task/output evidence for its actual Provider and protocol version; retain the file handoff specifically for GPT→Qwen while Bailian V1 serves Qwen→Qwen and Qwen→GPT.
 - Do not add nested `codex exec` orchestration.
 - Do not sync or rebase the Superpowers fork against upstream v6.2 in this plan.
 - Do not modify unrelated dirty files in `/home/james/.codex` or other repositories.
@@ -38,10 +50,34 @@
 | R6 | Task 3 positive evidence-language contract and Task 7 behavior evaluation |
 | R7 | Tasks 1–2 Cases 7–8 plus Tasks 4–5 matrix tests and twelve role files |
 | R8 | Tasks 1–2 Agent-fit behavior plus Task 4 shared-contract and information-role boundary tests |
-| R9 | Task 6 bidirectional runtime probes |
-| R10 | Task 6 provider-per-session-main-only fallback |
+| R9 | Task 6 protocol-isolated evidence: OpenAI V2 GPT→GPT and Bailian V1 Qwen→Qwen / Qwen→GPT |
+| R10 | Task 6 GPT→Qwen repository-local file-handoff fallback |
 | R11 | Tasks 1 and 7 preserve auditable GPT/Qwen RED-GREEN terminal records |
 | R12 | Task 2 parent-ownership wording, Task 5 role scopes, and Task 7 review |
+
+---
+
+## 2026-07-31 Runtime Compatibility Amendment
+
+This amendment supersedes Task 6's original all-or-nothing gate. The first
+probe set tested Multi-Agent V2 and correctly rejected its Qwen task channel.
+A follow-up protocol-isolation probe found that Bailian Multi-Agent V1 delivers
+plain task payloads and readable results.
+
+- Default OpenAI profile: `multi_agent_v2 = true`, five GPT roles, concurrency 4.
+- Bailian profile: `multi_agent_v2 = false`, seven Qwen roles plus inherited
+  GPT roles, concurrency 4.
+- Provider role storage: only `agents/gpt/*.toml` and `agents/qwen/*.toml`;
+  base registrations use `gpt_*`, Bailian overlays use `qwen_*`, and no
+  duplicate `agents/*.toml` aliases remain.
+- Proven native routes: GPT→GPT (V2), Qwen→Qwen (V1), Qwen→GPT (V1).
+- Compatibility fallback: GPT→Qwen uses the repository-local review package.
+- Deployment evidence: one permanent-profile four-Qwen concurrent smoke and
+  one permanent-profile Qwen→GPT smoke, both with persisted parent/child
+  rollouts and exact-token results.
+
+The remaining Task 6 text is retained as the historical execution record; this
+amendment defines the installed target and final verification criteria.
 
 ---
 
@@ -815,6 +851,13 @@ Expected: all seven unit tests pass and the validator prints `Agent matrix valid
 
 ### Task 6: Prove native cross-provider dispatch or activate the fallback
 
+> **Superseded execution branch:** Steps 1–6B below preserve the original V2
+> investigation and are no longer the installed target. Do not execute the
+> all-or-nothing Step 6A/6B decision. The
+> [2026-07-31 Runtime Compatibility Amendment](#2026-07-31-runtime-compatibility-amendment)
+> controls deployment: OpenAI V2 serves GPT→GPT; Bailian V1 serves Qwen→Qwen
+> and Qwen→GPT with concurrency 4; only GPT→Qwen uses the file handoff.
+
 **Files:**
 - Create: `docs/superpowers/validation/adaptive-workflow-dual-provider-routing/runtime-smoke.md`
 - Conditional modify on fallback: `/home/james/.codex/config.toml`
@@ -894,7 +937,7 @@ Use a short Python JSONL reader to list event types and every field whose key co
 
 Expected: both cross-provider probes contain runtime evidence for the configured child backend. Record exact evidence and commands in `runtime-smoke.md`.
 
-- [ ] **Step 6A: Select native cross-provider mode when all probes pass**
+- [ ] **Step 6A (historical, superseded): Select native cross-provider mode when all probes pass**
 
 Record:
 
@@ -910,7 +953,7 @@ HTML/Markdown drafting prefer the Qwen information group. Ordinary
 implementation may use either engineering group.
 ```
 
-- [ ] **Step 6B: Select provider-per-session-main-only when a Qwen child channel fails**
+- [ ] **Step 6B (historical, superseded): Select provider-per-session-main-only when a Qwen child channel fails**
 
 Execute this branch when Step 2, Step 3, or Step 4 cannot prove readable native
 task delivery and readable child output, even if the requested child backend is

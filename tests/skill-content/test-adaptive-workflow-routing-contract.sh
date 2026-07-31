@@ -46,6 +46,37 @@ assert_literal "$ROUTER" '读取当前完整版本' 'fresh skill read'
 assert_literal "$ROUTER" '用户直接要求' 'user priority'
 assert_literal "$ROUTER" '最近层级' 'nearest repository instructions'
 assert_literal "$ROUTER" '说明证据并升级' 'evidence-backed escalation'
+assert_literal "$ROUTER" \
+  '子代理直接执行父 Agent 给定的任务契约，无需重新做 L1/L2/L3 路由' \
+  'child agent inherits the parent task contract'
+assert_literal "$ROUTER" \
+  '仍读取并遵循任务明确要求或匹配的 Skills、最近层级 `AGENTS.md` 和适用项目约定' \
+  'child agent still follows scoped instructions'
+assert_literal "$ROUTER" \
+  '用户点名 Skill 时，先读取其当前完整版本再回答' \
+  'named Skill is read for read-only requests'
+assert_literal "$ROUTER" \
+  '由主 Agent 直接完成，不生成 spec/plan' \
+  'L1 direct parent-agent route'
+assert_literal "$ROUTER" '运行最小充分验证' 'L1 sufficient verification'
+assert_literal "$ROUTER" \
+  '行为变化先建立能暴露缺失行为的回归或验收证据' \
+  'L2 failing evidence before implementation'
+assert_literal "$ROUTER" \
+  '测试基础设施适用时用 TDD 完成 RED-GREEN' \
+  'L2 TDD RED-GREEN route'
+assert_literal "$ROUTER" \
+  '存在未决产品、架构、安全或兼容决策时先用 `brainstorming`' \
+  'L3 unresolved-decision design route'
+assert_literal "$ROUTER" \
+  '决策已确定但跨模块、需要检查点或高返工成本时用 `writing-plans`' \
+  'L3 settled complex-work planning route'
+assert_literal "$ROUTER" \
+  '已有批准计划时进入执行流程' \
+  'L3 approved-plan execution route'
+assert_literal "$ROUTER" \
+  '当前任务涉及子 Agent、并行工作、worktree/分支收尾或模型/Provider 路由时' \
+  'load harness reference for orchestration and provider routing'
 assert_literal "$BRAINSTORM" '仅处理 L3' 'brainstorming scope'
 assert_literal "$BRAINSTORM" '多文件机械迁移' 'mechanical-plan distinction'
 assert_literal "$CODEX_TOOLS" 'GPT engineering group' 'GPT engineering default'

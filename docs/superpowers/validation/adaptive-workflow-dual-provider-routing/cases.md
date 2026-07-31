@@ -1,5 +1,9 @@
 # Adaptive workflow routing cases
 
+**Artifact status:** REUSABLE_EVALUATION_INPUT. These prompts are retained for
+future model/version comparisons; current deployment status lives in
+`README.md` and runtime evidence lives in `runtime-smoke.md`.
+
 Each case runs in a fresh session. Do not reveal the expected level or preferred
 model group in the prompt. Score the complete response on the six shared fields
 below.

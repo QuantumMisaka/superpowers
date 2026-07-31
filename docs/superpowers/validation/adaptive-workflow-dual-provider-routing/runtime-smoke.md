@@ -1,12 +1,22 @@
 # Dual-provider Codex runtime smoke
 
+**Current verdict:** IMPLEMENTED_AND_VERIFIED. OpenAI uses V2 for GPT→GPT;
+Bailian uses V1 for Qwen→Qwen and Qwen→GPT with up to four concurrent child
+Agents; GPT→Qwen uses the file handoff. Only provider-scoped `gpt_*` and
+`qwen_*` role TOMLs remain.
+
+The initial decision and probe sections below are retained in chronological
+order. Their `provider-per-session-main-only` conclusion is superseded by the
+later V1 compatibility re-probe and provider-scoped layout refinement. See
+`README.md` for the reading order.
+
 Date: 2026-07-31
 
 Runtime: `codex-cli 0.146.0`
 
 Corrected probe root: `/tmp/codex-task6-corrected-20260731T094657Z`
 
-Decision: `provider-per-session-main-only`
+Historical initial decision: `provider-per-session-main-only`
 
 Final-review follow-up: R10 file handoff `PASS`; installed-default generic
 monitor re-probe `BLOCKED` by an OpenAI usage limit after the structural fix.
@@ -351,6 +361,76 @@ eb9587b4a57d5f62b85ec674101c0b23baf8a8cae15aa6d095afd42b01b9a0bb  agents/task-re
 cb2da386578bc01e681346e98c5c5ffb2a5707be0cf3e118edbea110f9c812f0  agents/monitor.toml
 ```
 
+## 2026-07-31 V1 compatibility re-probe
+
+The earlier decision above was correct for Multi-Agent V2 but too broad for
+the runtime as a whole. Protocol-isolation probes established this deployed
+matrix:
+
+| Parent route | Protocol | Result |
+|---|---:|---|
+| GPT → GPT | V2 | Supported by the default profile. |
+| Qwen → Qwen | V1 | Pass, including four children spawned before the first wait. |
+| Qwen → GPT | V1 | Pass; `monitor` resolved to OpenAI `gpt-5.6-luna`, medium. |
+| GPT → Qwen | V2 | Fail; the Qwen child receives the task as unreadable `encrypted_content`. |
+
+The final installed-config Bailian four-child parent session is
+`019fb862-5635-7433-bc50-e5c3c55731d8`. It spawned `qwen_monitor`,
+`qwen_progress_reviewer`, `qwen_document_reviewer`, and
+`qwen_context_analyst` before waiting. Their persisted V1 child rollouts
+returned `FINAL_QWEN_MONITOR_OK`, `FINAL_QWEN_PROGRESS_OK`,
+`FINAL_QWEN_DOC_OK`, and `FINAL_QWEN_CONTEXT_OK`; all four passed and the
+parent completed with exit 0.
+
+The final installed-config Qwen→GPT parent session is
+`019fb863-0e93-76e0-b013-64b056820672`. Child
+`019fb863-28b3-75f3-9149-b7084b4d57c5` records Provider `openai`, model
+`gpt-5.6-luna`, effort `medium`, `multi_agent_version="v1"`, a plaintext
+`FINAL_QWEN_TO_GPT_OK` task, and the exact result.
+
+| Runtime artifact | SHA-256 |
+|---|---|
+| Four-Qwen parent rollout | `2ba1b2c4bc66cada9e45256f1b16e04775023127474197e9004b0125215e4ebc` |
+| Qwen monitor child | `06641871a186df202e527a464d59145acf3696516a0c2f56dd72b927eb550c77` |
+| Qwen progress child | `16f97dac1c5ae7e6cc595d4360263b0bec1f2b94256d3a39a2b57b8847de61ca` |
+| Qwen document child | `2c3f364d8296b2c6e5e9f5bc1aac17e989d5ef84a0af6c5826c6e2b14be027d3` |
+| Qwen context child | `fdefdc5f99d237027eb5377c97612d66678c82854bf92ef4f112ed6431c405ed` |
+| Qwen→GPT parent rollout | `bcfa6129c811d312660e68a3666bb3da32349d404d8ed6312e3962f434c6a1c3` |
+| GPT Luna child rollout | `64ea562c1ddf92fd4552e35d16d57a235f2e04fe9c20e5240c9b826180e494dd` |
+
+The installed compatibility policy therefore keeps OpenAI V2 and its five
+`gpt_*` roles in the default profile, enables Bailian V1 with seven `qwen_*`
+roles and four concurrent children, permits Qwen→GPT through inherited
+`gpt_*` roles, and retains the file review package only for GPT→Qwen.
+
+### Provider-scoped role-layout refinement
+
+The final role layout removes the five duplicated `agents/*.toml` aliases.
+Only `agents/gpt/*.toml` and `agents/qwen/*.toml` remain. Base `config.toml`
+registers `gpt_routine_worker`, `gpt_standard_worker`, `gpt_task_reviewer`,
+`gpt_final_reviewer`, and `gpt_monitor`; the Bailian overlay registers the
+seven `qwen_*` roles and inherits the five GPT registrations.
+
+Fresh Bailian parent `019fb891-bce9-7372-aa07-82743d79258b` spawned both
+provider-specific role families before waiting. Child
+`019fb891-e7f0-7b21-9c90-14f5039e2d4b` ran Bailian
+`qwen3.8-max-preview`/medium/V1 as `qwen_routine_worker` and returned
+`PROVIDER_QWEN_OK`. Child `019fb891-eaaa-7aa0-986f-3909048e4503` ran OpenAI
+`gpt-5.6-luna`/medium/V1 as `gpt_routine_worker` and returned
+`PROVIDER_GPT_OK`.
+
+Fresh default-profile parent `019fb894-2620-78d3-9b42-cd89e5bc12cf`
+also spawned `gpt_monitor`; child `019fb894-4caa-74a1-a1d4-1fa9aafbd672`
+records OpenAI `gpt-5.6-luna`/medium/V2 and returned
+`GPT_PROFILE_SCOPED_OK`. This confirms the provider-scoped GPT names work from
+both the OpenAI parent and the inherited Bailian configuration.
+
+| Provider-scoped smoke artifact | SHA-256 |
+|---|---|
+| Qwen parent | `30d58f2c6d1a6699ee3f0bf7100755d88598765cbcb64e82d21afc92823fd465` |
+| Qwen routine child | `4304c476ce90f2d91d63093bcb2adda407442c307a755c74a82ea89affc3eda2` |
+| GPT routine child | `962e87279e7a5feb321ce161ba6f1f62a155feb86cf0baa4fda37c084b7cdd09` |
+
 ## Remaining concerns
 
 - Parent `--json` does not expose successful spawn receiver IDs in this CLI
@@ -358,10 +438,10 @@ cb2da386578bc01e681346e98c5c5ffb2a5707be0cf3e118edbea110f9c812f0  agents/monitor
 - The temporary-home runs warn that PATH helper aliases are not created under
   `/tmp`. The probes still launch through the existing `codex` executable and
   record complete parent and child rollouts.
-- Native mode should be reconsidered only after a Codex runtime change and a
-  new gate that proves readable task delivery and readable child output for
-  Qwen same-provider and both cross-provider directions, not merely correct
-  backend selection. The twelve inactive TOMLs preserve the retry inputs.
+- GPT→Qwen should be reconsidered after a Codex runtime change and a new V2
+  gate that proves readable task delivery and child output, not merely correct
+  backend selection. The Qwen TOMLs remain active in the Bailian profile and
+  available as retry inputs.
 - The installed-default generic monitor structural candidate still requires a
   fresh post-limit rollout proving `gpt-5.6-luna`/`medium`; static alignment
   and an earlier wrong-backend child do not substitute for that proof.

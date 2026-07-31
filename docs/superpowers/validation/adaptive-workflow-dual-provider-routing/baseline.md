@@ -1,5 +1,9 @@
 # Adaptive workflow dual-provider RED baseline
 
+**Artifact status:** HISTORICAL_RED_EVIDENCE. This file records pre-change
+behavior and is not a description of the installed Agent configuration. Start
+with `README.md` for current state and reading order.
+
 Recorded on 2026-07-31 with Codex CLI 0.146.0. Each invocation used a fresh
 ephemeral session and a separate writable copy of the repository. The added
 `--sandbox workspace-write -C <isolated-copy>` arguments are the safe isolation

@@ -57,6 +57,42 @@ window while keeping exploration tied to the task:
   is satisfied. A missing decision or source is returned to the parent as a
   gap; further material starts with a new parent handoff.
 
+## Bailian Multi-Agent V1 Compatibility
+
+Codex 0.146.0 uses different working transport paths for these Providers. Keep
+the default OpenAI profile on V2 and select V1 in the Bailian profile:
+
+```toml
+# config.toml
+[features]
+multi_agent = true
+multi_agent_v2 = true
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+
+# bailian.config.toml overlay
+[features]
+multi_agent = true
+multi_agent_v2 = false
+
+[agents]
+enabled = true
+max_concurrent_threads_per_session = 4
+```
+
+The proven native matrix is GPT → GPT on V2, plus Qwen → Qwen and Qwen → GPT
+on V1. A Bailian parent may start four Qwen children concurrently. For a
+cross-model child, use an advertised role and an isolated child context
+(`fork_turns: "none"` when the schema offers it), then send the complete task
+contract in `message`.
+
+GPT → Qwen task delivery is not compatible with the current V2 transport.
+The file package is the compatibility fallback for that direction. Keep the Qwen
+templates installed for Bailian routing, while the default GPT profile
+advertises only routes that can receive their task payload.
+
 ## Provider-per-session main-only file handoff
 
 Use this contract when the target Provider runs as a main session and its

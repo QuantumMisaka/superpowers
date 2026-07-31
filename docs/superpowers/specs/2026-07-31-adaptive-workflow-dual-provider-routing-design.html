@@ -65,7 +65,7 @@
   <header>
     <h1>Codex 自适应工作流与双 Provider Agent 路由设计</h1>
     <div class="meta">
-      <p><strong>状态：</strong>设计已批准，待实施计划批准</p>
+      <p><strong>状态：</strong>已实施并完成运行时验证</p>
       <p><strong>范围：</strong>James 的 Codex 自用配置与 Superpowers fork</p>
       <p><strong>更新日期：</strong>2026-07-31</p>
     </div>
@@ -101,8 +101,9 @@
         本设计建立一套与模型无关的三级 Superpowers 工作流，并将 Agent
         的任务职责与模型选择分离。小而明确的改动敏捷完成；有界行为变化使用相称的调查、
         测试和复核；存在架构歧义、高风险边界或多任务协调时进入计划化开发。
-        GPT 与 Qwen 的角色在同一 Codex 配置中同时注册，任一 Provider
-        的主进程均可选择另一 Provider 的子 Agent。角色编组按已观察到的优势非对称设计：
+        GPT 与 Qwen 的角色通过 Provider profile 分层注册：OpenAI 主进程原生选择 GPT
+        子 Agent，Bailian 主进程可原生选择 Qwen 或 GPT 子 Agent；GPT→Qwen 通过稳定文件交接完成。
+        角色编组按已观察到的优势非对称设计：
         GPT 侧偏工程实现与代码审查，Qwen 侧偏大上下文归纳、进度与文档工作，同时保留两侧的日常实现能力。
       </p>
       <div class="decision">
@@ -120,8 +121,8 @@
         <li>让架构、公共接口、持久化数据、安全姿态和多任务开发进入明确的设计与计划门禁。</li>
         <li>恢复 Skill 行动前路由、读取当前版本、用户与仓库指令优先、工作流升级和交接等遵循契约。</li>
         <li>以目标、输入、输出和验收证据描述流程，减少道德化、对抗式和泛化禁止语言。</li>
-        <li>在 GPT 主进程和 Qwen 主进程中同时暴露 GPT/Qwen 两个互补能力组。</li>
-        <li>以真实双向 smoke test 决定是否启用原生跨 Provider 派生，并提供可靠降级路径。</li>
+        <li>在 Bailian 主进程暴露 GPT/Qwen 两个互补能力组，在 OpenAI 主进程只广告已验证的 GPT 原生路由。</li>
+        <li>以真实分方向 smoke test 启用 Qwen→Qwen、Qwen→GPT，并为 GPT→Qwen 提供可靠文件交接。</li>
       </ul>
       <h3>非目标</h3>
       <ul>
@@ -147,8 +148,8 @@
             <tr><td>R6</td><td>TDD 与验证 Skill 使用目标和证据契约表达。</td><td>保留 red-green、fresh verification 和失败如实报告；删除道德化判断和与目标无关的普遍禁止。</td></tr>
             <tr><td>R7</td><td>保留五个 GPT 工程角色和七个 Qwen 工程/信息角色的能力模板。</td><td>配置解析得到十二个唯一角色，名称、职责、sandbox 和模型矩阵符合设计；降级时只激活运行时已证明可用的注册。</td></tr>
             <tr><td>R8</td><td>共享工程角色保持职责一致，Qwen 专属信息角色保持单一职责。</td><td>自动校验两侧 routine/standard/monitor 的核心契约；另行验证 progress/document/context 角色的输入输出边界。</td></tr>
-            <tr><td>R9</td><td>原生跨 Provider 仅在双向任务与结果通道都通过后启用。</td><td>隔离 smoke test 同时提供实际模型/Provider、可读任务和可读结果证据；只选对后端不算通过。</td></tr>
-            <tr><td>R10</td><td>Qwen 子 Agent 通道不可用时安全降级。</td><td>配置退回 provider-per-session-main-only；Bailian 仅运行独立 Qwen 主会话，异构复核通过落盘 review package 交接，不启动嵌套 Codex。</td></tr>
+            <tr><td>R9</td><td>原生路由按 Provider 与协议版本分别启用。</td><td>OpenAI 父会话以 V2 运行 GPT→GPT；Bailian 父会话以 V1 运行 Qwen→Qwen 与 Qwen→GPT，每个方向同时提供实际模型/Provider、可读任务和可读结果证据。</td></tr>
+            <tr><td>R10</td><td>GPT→Qwen 不可用时采用定向兼容降级。</td><td>GPT profile 不广告 Qwen 子角色；该方向通过落盘 review package 交接。Bailian 保留四并发 Qwen 子 Agent，并继承五个 <code>gpt_*</code> 角色，不启动嵌套 Codex。</td></tr>
             <tr><td>R11</td><td>Skill 行为改动必须有 RED/GREEN 行为评估。</td><td>GPT 与 Qwen 的基线、修改后终态记录和逐项评分完整落盘；有界超时保留事件、时长和退出状态，证据不足的字段记为 N/A，不伪造完整响应。</td></tr>
             <tr><td>R12</td><td>主 Agent 保留设计、架构、升级和最终决策。</td><td>Agent 路由文档明确子 Agent 只承担有界执行、复核或监控。</td></tr>
           </tbody>
@@ -291,7 +292,7 @@ using-superpowers：L1 / L2 / L3 路由
         GPT 工程组与 Qwen 信息组偏好，但仍只按能力选择，不写具体模型 slug。它使用 routine implementer、standard implementer、
         code reviewer、context analyst、progress reviewer、document writer 和 monitor 等能力需求。
         Codex 全局配置保留十二个 provider-specific 能力模板；角色文件持有实际 Provider、模型和 reasoning。
-        在 provider-per-session-main-only 降级模式中，默认 profile 只激活五个 GPT 通用角色，Bailian profile 不激活子 Agent。
+        默认 profile 激活五个 provider-specific <code>gpt_*</code> 角色并使用 V2；Bailian profile 激活七个 <code>qwen_*</code> 角色、继承五个 <code>gpt_*</code> 角色并使用 V1，最多并发四个子 Agent。角色 TOML 只存放在 <code>agents/gpt/</code> 与 <code>agents/qwen/</code>，根目录不保留重复别名文件。
       </p>
       <p>
         由于 Codex agent TOML 没有通用 include 机制，本设计接受十二个短配置文件的有限重复，
@@ -308,8 +309,8 @@ using-superpowers：L1 / L2 / L3 路由
             <tr><td>任务在执行中暴露更高风险或未决架构</td><td>停止当前级别的实现，说明证据并升级到 L2/L3。</td><td>升级原因、剩余决策和推荐方案。</td></tr>
             <tr><td>Skill 行为评估没有稳定改善</td><td>保留基线，继续最小措辞迭代；不部署未通过版本。</td><td>逐用例输出和评分差异。</td></tr>
             <tr><td>GPT 主进程无法派生 Qwen Agent</td><td>禁用跨 Provider 原生路由，保留 GPT 同 Provider 角色。</td><td>smoke test 命令、退出状态和首个可操作错误。</td></tr>
-            <tr><td>Qwen 同 Provider 或跨 Provider 子 Agent 通道不可读</td><td>Bailian profile 显式设置 <code>features.multi_agent=false</code> 与 <code>features.multi_agent_v2.enabled=false</code>，删除全部 Qwen active overlay，只保留 Qwen 主会话。</td><td>持久化 rollout 的 Provider/model、<code>multi_agent_version=disabled</code> 和零协作工具调用。</td></tr>
-            <tr><td>任一 Qwen 子 Agent 方向不可靠</td><td>整体采用 provider-per-session-main-only；异构复核通过落盘 review package 在独立 Qwen 主会话交接。</td><td>降级配置、交接文件路径和十二个 inactive template 的校验结果。</td></tr>
+            <tr><td>Bailian V2 任务载荷不可读</td><td>Bailian profile 设置 <code>features.multi_agent_v2=false</code>，使用已验证的 V1 通道，并把并发上限设为四。</td><td>四个并发 Qwen 子 rollout 的 Provider/model、<code>multi_agent_version=v1</code>、明文任务和精确结果。</td></tr>
+            <tr><td>GPT→Qwen 在 OpenAI V2 中不可读</td><td>默认 GPT profile 只广告 GPT 子角色；异构 Qwen 复核通过落盘 review package 在独立 Bailian 会话交接。</td><td>失败 rollout、交接文件路径和父会话最终决策。</td></tr>
             <tr><td>两套角色提示发生漂移</td><td>配置校验失败，阻止部署。</td><td>角色名和不一致字段。</td></tr>
             <tr><td>模型 slug、认证或模型目录不可用</td><td>保持现有可工作的 profile，修复配置后重新 smoke test。</td><td>Provider、模型和认证层面的精确错误。</td></tr>
           </tbody>
@@ -342,8 +343,8 @@ using-superpowers：L1 / L2 / L3 路由
       <ul>
         <li>门禁阶段运行 GPT→GPT、Qwen→Qwen、GPT→Qwen、Qwen→GPT 四个持久化 probe。</li>
         <li>每个 probe 都必须确认实际 Provider/模型、可读任务交付和可读结果，而不只相信 Agent 自报身份。</li>
-        <li>降级后复用已通过的 GPT→GPT 证据，并新建 Bailian 主会话 probe。</li>
-        <li>Bailian probe 必须确认 Qwen 主模型/effort、<code>multi_agent_version=disabled</code>、无 Agent 工具调用和 main-session 成功响应。</li>
+        <li>协议门禁分别验证 OpenAI V2 与 Bailian V1，避免把某一协议的失败外推到全部 Provider。</li>
+        <li>Bailian probe 必须确认 Qwen 主模型/effort、<code>multi_agent_version=v1</code>、四并发 Qwen→Qwen，以及 Qwen→GPT 的可读任务和结果。</li>
       </ul>
       <h3>回归</h3>
       <ul>
@@ -361,7 +362,7 @@ using-superpowers：L1 / L2 / L3 路由
         <li>运行修改后行为评估；只有两个模型都达到验收才继续安装。</li>
         <li>在隔离配置中建立十二角色 matrix 并运行解析测试。</li>
         <li>运行同 Provider 和跨 Provider smoke test。</li>
-        <li>双向跨 Provider 及 Qwen 同 Provider 通道都通过时更新真实 <code>~/.codex</code>；任一 Qwen 通道失败则部署 provider-per-session-main-only 降级配置。</li>
+        <li>按 Provider/协议矩阵部署：OpenAI V2 负责 GPT→GPT；Bailian V1 负责 Qwen→Qwen 与 Qwen→GPT；GPT→Qwen 保留文件交接。</li>
         <li>保留修改前文件快照和完整 diff，验证失败时按文件恢复，不使用破坏性 Git 命令。</li>
       </ol>
       <p>
@@ -373,7 +374,7 @@ using-superpowers：L1 / L2 / L3 路由
     <section id="risks">
       <h2>风险与已决问题</h2>
       <div class="decision">
-        <p><strong>风险：</strong>Codex 文档确认 custom agent 是会话配置层，但没有给出跨自定义 Provider 子 Agent 的完整官方示例。双向 smoke test 是启用门禁。</p>
+        <p><strong>风险：</strong>Codex 文档确认 custom agent 是会话配置层，但没有给出跨自定义 Provider 子 Agent 的完整官方示例。每个 Provider/协议方向的独立 smoke test 是启用门禁。</p>
         <p><strong>风险：</strong>十二个角色会增加主 Agent 的选择空间。通过工程组/信息组、明确阶段和单一职责描述降低误选。</p>
         <p><strong>风险：</strong>当前模型分工来自个人使用感受，可能随模型版本变化。行为评估记录模型版本、耗时、返工和审查命中，允许后续调整默认路由。</p>
         <p><strong>风险：</strong>Skill 措辞变化可能提高敏捷性却降低纪律遵循。通过 GPT/Qwen 基线、修改后评估和静态契约共同控制。</p>
@@ -381,13 +382,13 @@ using-superpowers：L1 / L2 / L3 路由
       </div>
       <div class="decision open">
         <p><strong>已决：</strong>采用三级工作流、一套模型无关 Skill、十二个非对称 Provider-specific Agent，以及 GPT 工程组与 Qwen 信息组的阶段化协作。</p>
-        <p><strong>已决：</strong>本机实测 Qwen 同 Provider 与跨 Provider 通道均不能可靠交付可读消息；整体降级为 provider-per-session-main-only，而不是暴露半工作的 Qwen 子 Agent。</p>
-        <p><strong>已决：</strong>十二个 Provider-specific TOML 保留为 inactive capability template 和未来重试证据；Qwen 工作使用独立 Bailian 主会话与落盘 review package，绝不嵌套执行 <code>codex exec</code>。</p>
-        <p><strong>开放问题：</strong>只有 Codex runtime 更新并重新通过完整门禁后，才重新考虑激活 Qwen 子 Agent。</p>
+        <p><strong>已决：</strong>本机实测 Bailian V1 能可靠完成 Qwen→Qwen、四并发 Qwen 子 Agent 和 Qwen→GPT；Bailian profile 正式启用七个 Qwen 角色，并发上限为四。</p>
+        <p><strong>已决：</strong>OpenAI 父会话继续使用 V2 和五个 <code>gpt_*</code> 角色。GPT→Qwen 仍受 V2 加密载荷兼容问题影响，该方向采用落盘 review package。</p>
+        <p><strong>开放问题：</strong>Codex runtime 更新后重新验证 GPT→Qwen；通过前不在默认 GPT profile 广告 Qwen 子角色。</p>
       </div>
     </section>
   </main>
 
-  <footer>本设计已于 2026-07-31 获得用户批准；实施须按独立实施计划执行。</footer>
+  <footer>本设计已于 2026-07-31 获得用户批准并实施；运行时证据与历史记录见 validation 索引。</footer>
 </body>
 </html>

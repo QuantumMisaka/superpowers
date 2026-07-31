@@ -39,6 +39,27 @@ assert_literal \
 
 assert_literal \
   "$REFERENCE" \
+  '## Bailian Multi-Agent V1 Compatibility' \
+  'Bailian compatibility mode is documented'
+assert_literal \
+  "$REFERENCE" \
+  'multi_agent_v2 = false' \
+  'Bailian compatibility selects V1'
+assert_literal \
+  "$REFERENCE" \
+  'max_concurrent_threads_per_session = 4' \
+  'Bailian compatibility permits four concurrent children'
+assert_literal \
+  "$REFERENCE" \
+  'Qwen → Qwen and Qwen → GPT' \
+  'Bailian native routes are explicit'
+assert_literal \
+  "$REFERENCE" \
+  'The file package is the compatibility fallback' \
+  'file handoff is retained as fallback'
+
+assert_literal \
+  "$REFERENCE" \
   '.superpowers/review-packages/<handoff-id>/request.md' \
   'main-only review request has stable path'
 assert_literal \

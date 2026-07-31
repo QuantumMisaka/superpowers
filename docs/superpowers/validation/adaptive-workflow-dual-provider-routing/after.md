@@ -1,8 +1,13 @@
 # Adaptive workflow dual-provider GREEN evaluation
 
+**Artifact status:** HISTORICAL_BEHAVIOR_EVALUATION. The gate status below
+applies to the frozen eight-case behavior study, not to the installed Agent
+matrix. The provider/profile deployment is implemented and verified; start
+with `README.md` for its current state.
+
 Recorded on 2026-07-31 with `codex-cli 0.146.0`.
 
-Status: **BLOCKED_PENDING_GATE_OR_WAIVER**. The bounded review repair closes
+Historical frozen-case gate status: **BLOCKED_PENDING_GATE_OR_WAIVER**. The bounded review repair closes
 Qwen Cases 2 and 6, but the frozen-case deployment gate remains unsatisfied:
 GPT Cases 3 and 5 retain supported evidence failures because their final
 post-treatment runs were externally blocked before any assistant response, and
@@ -384,6 +389,25 @@ gpt-5.6-sol: 272000 × 95% = 258400
 qwen3.8-max-preview: 983616 × 95% = 934435
 ```
 
+## Post-review runtime compatibility amendment
+
+The main-only snapshot above is retained as the audit record of the first V2
+probe. A later protocol-isolation investigation proved Bailian V1 support and
+supersedes the installed-state conclusions, without rewriting the historical
+test record:
+
+- default OpenAI profile: GPT V2 roles, concurrency 4;
+- Bailian profile: seven Qwen V1 roles, concurrency 4, with inherited GPT
+  `gpt_*` roles available to the Qwen parent;
+- role storage is provider-scoped: five files under `agents/gpt/`, seven under
+  `agents/qwen/`, and no root-level `agents/*.toml` aliases;
+- native pass: Qwen→Qwen, four concurrent Qwen children, and Qwen→GPT;
+- compatibility fallback: GPT→Qwen only, via the existing review package.
+
+The current matrix suite contains 19 tests. `runtime-smoke.md` records the
+persisted parent/child rollout IDs, exact-token outcomes, hashes, and the V2
+encrypted-payload failure that justifies the remaining one-way fallback.
+
 ## Final SHA-256 inventory
 
 ```text
@@ -393,14 +417,12 @@ c5c6196c38a8b70970a981a20242db8a3c96cc55c0dc2960167314edb86148ab  skills/brainst
 b7bd77bfd55afef03d50984881ebd35fe5e986e53b54153eae9da04a4688a616  skills/verification-before-completion/SKILL.md
 cb02e59f47a0a040f848c2b6044bfbfd12a9f14b1e7d9146f11486461454528e  tests/skill-content/test-adaptive-workflow-routing-contract.sh
 3c27593e8c4561cba5e66f3d2a9496ff839ffb9d9c1845c2ff4cb0816b1ba1be  tests/skill-content/test-positive-evidence-language.sh
-8375c92d63649be07c37fb5656617a9e406932cc80f0b6293b3f9532e9278811  /home/james/.codex/config.toml
-cdc1851e0565bf10dc24123bde3a9cbdec276911f8ef93bd069e581e7d3badd1  /home/james/.codex/bailian.config.toml
-b51c7a41f5e75dd07964902190f221fb49da61cc803c1f3093931c5338e799e5  /home/james/.codex/scripts/validate_agent_matrix.py
-ad7245c9d468f321cce677ea5ffcc158bb282d98fb439bc118a8cb71333000c2  /home/james/.codex/agents/routine-worker.toml
-a0d58b6a94180f34e4c6c5ba48ca3e17dca118e2110c61daf7a77fdfa32f80b9  /home/james/.codex/agents/standard-worker.toml
-eb9587b4a57d5f62b85ec674101c0b23baf8a8cae15aa6d095afd42b01b9a0bb  /home/james/.codex/agents/task-reviewer.toml
-8871153d88b60acf42e89a7129798c770bc85f4742050b363708d7b1be5d3b55  /home/james/.codex/agents/final-reviewer.toml
-cb2da386578bc01e681346e98c5c5ffb2a5707be0cf3e118edbea110f9c812f0  /home/james/.codex/agents/monitor.toml
+e96e1828a8f90ee359be2c601c5919babdfb0daf8395cb4c608e37a022d3ac09  /home/james/.codex/config.toml
+751e93ccf7ce90b0f882a3571dca35c24439ccd1094bdf3d87c2ff6660e6239f  /home/james/.codex/bailian.config.toml
+ff01e25d6562966d77a82461fee1f9dc625fb52b1a24b4fdb159d079d60d11c0  /home/james/.codex/tests/test_agent_matrix.py
+2113418490affe7a3123784dca7b35f8f8cbd23c4551edbaad5a9585a779e143  /home/james/.codex/scripts/validate_agent_matrix.py
+f70c9284540b65eefbe5d7320cb6770023c2e67ac16f77396fb45b25483d8d5a  skills/using-superpowers/references/codex-tools.md
+95e4e04e4078e440f1578dd76cd36a8cc79510877e17be34eeee1189018b9146  tests/skill-content/test-codex-subagent-routing-contract.sh
 94f0d3d1e991a5a10de0954094c71efed7682206436b4a9ef9e2ccdfbe3fc69c  /home/james/.codex/agents/gpt/final-reviewer.toml
 6a7178049d0617e11bb6c8db26eb07b9c5815cd292e7d9846b6cddbe0fe3476b  /home/james/.codex/agents/gpt/monitor.toml
 ac107305e40aa5bfc0dce00e368cf1de0b651ced9d21e38c6aa0b2b03c906e8c  /home/james/.codex/agents/gpt/routine-worker.toml
