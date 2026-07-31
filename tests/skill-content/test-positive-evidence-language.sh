@@ -5,10 +5,30 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 TDD="$REPO_ROOT/skills/test-driven-development/SKILL.md"
 VERIFY="$REPO_ROOT/skills/verification-before-completion/SKILL.md"
+BANNED_PATTERN="\\b(dishonest|dishonesty|lying|rationalizations?)\\b|you['’]ll be replaced|\\bno exceptions\\b|\\bnon-negotiable\\b"
 
 fail() {
   printf '  [FAIL] %s\n' "$1" >&2
 }
+
+ALLOWED_MATCHER_FIXTURE=$'Relying on complete output is evidence.\nWording implying success is a claim.'
+if printf '%s\n' "$ALLOWED_MATCHER_FIXTURE" |
+  rg -qi "$BANNED_PATTERN"; then
+  fail 'banned-language matcher rejects allowed suffix words'
+  exit 1
+fi
+printf '  [PASS] matcher accepts allowed suffix words\n'
+
+for banned_fixture in \
+  'lying about verification' \
+  "you'll be replaced" \
+  'you’ll be replaced'; do
+  if ! printf '%s\n' "$banned_fixture" | rg -qi "$BANNED_PATTERN"; then
+    fail "banned-language matcher accepts explicit wording: $banned_fixture"
+    exit 1
+  fi
+done
+printf '  [PASS] matcher rejects explicit banned wording\n'
 
 require_literal() {
   local file="$1"
@@ -134,7 +154,7 @@ expect_rejected() {
 check_tdd_contract "$TDD"
 check_verification_contract "$VERIFY"
 
-if rg -ni 'dishonest|dishonesty|lying|rationalization|you.ll be replaced|no exceptions|non-negotiable' \
+if rg -ni "$BANNED_PATTERN" \
   "$TDD" "$VERIFY"; then
   fail 'evidence skills contain moralized or generalized coercive language'
   exit 1
