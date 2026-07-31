@@ -87,7 +87,7 @@ Apply the claim contract before:
 - reporting success, completion, correctness, or passing checks;
 - committing, creating a PR, or moving to the next task;
 - accepting delegated work as complete;
-- reporting satisfaction with a work state.
+- reporting a positive factual claim about work state.
 
 ## Completion Record
 
