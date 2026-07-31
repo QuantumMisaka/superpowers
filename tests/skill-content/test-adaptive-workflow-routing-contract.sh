@@ -18,6 +18,12 @@ assert_literal() {
 assert_literal "$ROUTER" 'L1 敏捷修改' 'L1 route'
 assert_literal "$ROUTER" 'L2 有界行为开发' 'L2 route'
 assert_literal "$ROUTER" 'L3 计划化开发' 'L3 route'
+assert_literal "$ROUTER" \
+  '不改变公共接口、数据或架构；无高风险外部副作用' \
+  'L1 architecture and external-side-effect boundary'
+assert_literal "$ROUTER" \
+  '公共 API/schema/持久化数据/架构/安全姿态变化或高风险外部副作用' \
+  'L3 architecture and external-side-effect escalation'
 assert_literal "$ROUTER" '歧义、行为风险、跨模块协调和返工成本' 'risk-based escalation'
 assert_literal "$ROUTER" '读取当前完整版本' 'fresh skill read'
 assert_literal "$ROUTER" '用户直接要求' 'user priority'
@@ -30,6 +36,9 @@ assert_literal "$CODEX_TOOLS" 'Qwen information group' 'Qwen information default
 assert_literal "$CODEX_TOOLS" 'local routing hypothesis' 'versioned empirical routing'
 assert_literal "$CODEX_TOOLS" 'Inputs:' 'Qwen bounded input list'
 assert_literal "$CODEX_TOOLS" 'Output contract:' 'Qwen output contract'
+assert_literal "$CODEX_TOOLS" \
+  'an HTML/Markdown draft grounded in approved decisions' \
+  'Qwen approved-decision drafting boundary'
 assert_literal "$CODEX_TOOLS" 'Stop condition:' 'Qwen stop condition'
 
 if rg -n '1% chance|没有选择|不能通过.*绕开|rationaliz' "$ROUTER" "$BRAINSTORM"; then

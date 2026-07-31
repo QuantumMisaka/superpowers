@@ -50,8 +50,9 @@ window while keeping exploration tied to the task:
 
 - Inputs: named source paths or artifacts, the exact question or decision
   boundary, and the acceptance evidence.
-- Output contract: source-backed findings or an approved HTML/Markdown draft,
-  explicit gaps, and a recommended next action.
+- Output contract: source-backed findings or
+  an HTML/Markdown draft grounded in approved decisions, explicit gaps, and a
+  recommended next action.
 - Stop condition: the named inputs have been reviewed and the output contract
   is satisfied. A missing decision or source is returned to the parent as a
   gap; further material starts with a new parent handoff.
