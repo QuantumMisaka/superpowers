@@ -293,10 +293,10 @@ follows:
 | R4 | Cases 3–5; router L3/mechanical-migration assertions; brainstorming mechanical-plan boundary. |
 | R5 | Case 6 bounded record; router bug/instruction discovery assertions; full current-Skill and nearest-AGENTS reads; exact repository command. |
 | R6 | `skills/test-driven-development/SKILL.md`; `skills/verification-before-completion/SKILL.md`; brainstorming executable-acceptance rule; both static RED/GREEN cycles. GPT C3/C5 remain supported evidence failures and Qwen C5 has a scope failure. |
-| R7 | Twelve provider-specific TOMLs; matrix unit tests and validator; five active GPT slots plus seven inactive Qwen templates in fallback mode. |
+| R7 | Five active generic GPT-aligned slots; twelve inactive provider-specific capability templates; matrix unit tests and validator. |
 | R8 | Matrix shared-contract and four information-role tests; agent-role hashes below. |
 | R9 | `runtime-smoke.md` corrected four-probe child-rollout evidence; native gate remains failed. |
-| R10 | `runtime-smoke.md`; Bailian main-only smoke; profile flags and zero active Bailian overrides; validator reports provider-per-session-main-only. A separate Task 6 follow-up owns the contract/smoke update; this does not waive the unsatisfied frozen-case gate here. |
+| R10 | `runtime-smoke.md`; Bailian main-only smoke; R10 independent-main file handoff pass; profile flags and zero active Bailian overrides. The installed-default generic monitor re-probe is usage-limit `BLOCKED`, not a runtime pass. |
 | R11 | `baseline.md`, this sixteen-record table, retained archive, microtests, repairs, Qwen C8 terminal timeout/N/A handling. |
 | R12 | `codex-tools.md`; role parent boundaries; Cases 7–8; parent retains dependency, architecture, escalation, and synthesis. |
 
@@ -305,24 +305,36 @@ follows:
 Against the Task 5 recovery archive
 `pre-dual-provider-routing-20260731.tar.gz`, the exact intended state change is:
 
-- base `config.toml` still has five active slots, retargeted from the five
-  unchanged generic TOMLs to `agents/gpt/*.toml`, with GPT-specific
-  descriptions and no nickname arrays;
-- the five legacy generic TOMLs are byte-preserved;
+- base `config.toml` keeps five active slots on `agents/<generic>.toml`, with
+  GPT-specific slot descriptions and no nickname arrays;
+- the five generic TOMLs are no longer byte-preserved: each now has a
+  `description` and matches its corresponding GPT template on provider, model,
+  reasoning effort, sandbox, and normalized developer contract;
 - `agents/gpt/` adds five provider-specific GPT files and `agents/qwen/` adds
-  seven provider-specific Qwen capability templates.
+  seven provider-specific Qwen capability templates. All twelve are inactive
+  capability templates in the provider-per-session fallback.
 
 Against the pre-main-only archive
 `pre-bailian-main-only-fallback-20260731T100525Z.tar.gz`:
 
-- base `config.toml` and all twelve provider-specific TOMLs are identical;
+- all twelve provider-specific TOMLs remain identical, while base
+  `config.toml` now resolves its five active registrations through the generic
+  paths required by root-level auto-discovery;
 - `bailian.config.toml` removes seven active Qwen overlays and adds
   `features.multi_agent=false` plus
   `features.multi_agent_v2.enabled=false`;
-- the matrix test/validator expect zero Bailian registrations, enforce both
-  false feature flags, and report `provider-per-session-main-only`;
-- the archive omitted the five legacy generic TOMLs; comparison with the Task
-  5 archive proves they are preserved pre-existing files, not Task 6 additions.
+- the matrix test/validator expect the five exact generic default paths, verify
+  semantic parity with the GPT templates, expect zero Bailian registrations,
+  enforce both false feature flags, and report
+  `provider-per-session-main-only`;
+- the archive omitted the five generic TOMLs; they remain pre-existing files,
+  now completed with runtime descriptions and the aligned GPT contracts above.
+
+`runtime-smoke.md` records static matrix validation and a passing R10
+independent-main file handoff. Its required final installed-default generic
+monitor probe was stopped by the OpenAI usage limit before any tool call and
+created no child rollout. Therefore the generic slot repair is not claimed as
+a runtime pass; the Luna/medium monitor runtime proof remains `BLOCKED`.
 
 ## Fresh verification results
 
@@ -381,9 +393,14 @@ c5c6196c38a8b70970a981a20242db8a3c96cc55c0dc2960167314edb86148ab  skills/brainst
 b7bd77bfd55afef03d50984881ebd35fe5e986e53b54153eae9da04a4688a616  skills/verification-before-completion/SKILL.md
 cb02e59f47a0a040f848c2b6044bfbfd12a9f14b1e7d9146f11486461454528e  tests/skill-content/test-adaptive-workflow-routing-contract.sh
 3c27593e8c4561cba5e66f3d2a9496ff839ffb9d9c1845c2ff4cb0816b1ba1be  tests/skill-content/test-positive-evidence-language.sh
-d4d25a037c53969c50b49816c61122b09eefd1568692b63059e28d085754deaf  /home/james/.codex/config.toml
+8375c92d63649be07c37fb5656617a9e406932cc80f0b6293b3f9532e9278811  /home/james/.codex/config.toml
 cdc1851e0565bf10dc24123bde3a9cbdec276911f8ef93bd069e581e7d3badd1  /home/james/.codex/bailian.config.toml
-3794160d4833b595790eb1160bb6db67568521abbe5091b0123499b70d44e8db  /home/james/.codex/scripts/validate_agent_matrix.py
+b51c7a41f5e75dd07964902190f221fb49da61cc803c1f3093931c5338e799e5  /home/james/.codex/scripts/validate_agent_matrix.py
+ad7245c9d468f321cce677ea5ffcc158bb282d98fb439bc118a8cb71333000c2  /home/james/.codex/agents/routine-worker.toml
+a0d58b6a94180f34e4c6c5ba48ca3e17dca118e2110c61daf7a77fdfa32f80b9  /home/james/.codex/agents/standard-worker.toml
+eb9587b4a57d5f62b85ec674101c0b23baf8a8cae15aa6d095afd42b01b9a0bb  /home/james/.codex/agents/task-reviewer.toml
+8871153d88b60acf42e89a7129798c770bc85f4742050b363708d7b1be5d3b55  /home/james/.codex/agents/final-reviewer.toml
+cb2da386578bc01e681346e98c5c5ffb2a5707be0cf3e118edbea110f9c812f0  /home/james/.codex/agents/monitor.toml
 94f0d3d1e991a5a10de0954094c71efed7682206436b4a9ef9e2ccdfbe3fc69c  /home/james/.codex/agents/gpt/final-reviewer.toml
 6a7178049d0617e11bb6c8db26eb07b9c5815cd292e7d9846b6cddbe0fe3476b  /home/james/.codex/agents/gpt/monitor.toml
 ac107305e40aa5bfc0dce00e368cf1de0b651ced9d21e38c6aa0b2b03c906e8c  /home/james/.codex/agents/gpt/routine-worker.toml
