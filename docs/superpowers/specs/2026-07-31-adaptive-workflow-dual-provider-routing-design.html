@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Codex 自适应工作流与双 Provider Agent 路由设计</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #52606d;
+      --line: #cbd2d9;
+      --paper: #ffffff;
+      --wash: #f5f7f8;
+      --accent: #146c5b;
+      --note: #8a5a00;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--wash);
+      color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    header, nav, main, footer { width: min(100% - 2rem, 1040px); margin-inline: auto; }
+    header { padding: 3rem 0 1.5rem; border-bottom: 3px solid var(--accent); }
+    h1 { margin: 0 0 .75rem; font-size: 2.5rem; line-height: 1.15; }
+    h2 { margin: 0 0 .75rem; font-size: 1.35rem; }
+    h3 { font-size: 1rem; }
+    p, ul, ol { margin: .5rem 0 1rem; }
+    a { color: var(--accent); }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .75rem; }
+    .meta p { margin: 0; }
+    nav { padding: 1.25rem 0; }
+    nav ol { columns: 2; padding-left: 1.25rem; }
+    main { background: var(--paper); border: 1px solid var(--line); }
+    section { padding: 1.5rem; border-top: 1px solid var(--line); }
+    section:first-child { border-top: 0; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+    th, td { padding: .65rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--wash); }
+    code { padding: .1rem .3rem; background: var(--wash); }
+    pre { overflow-x: auto; padding: 1rem; background: var(--wash); border: 1px solid var(--line); }
+    .decision { border-left: 4px solid var(--accent); padding-left: 1rem; }
+    .open { border-left-color: var(--note); }
+    footer { padding: 1.5rem 0 3rem; color: var(--muted); }
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      nav ol { columns: 1; }
+      section { padding: 1rem; }
+      .table-wrap { overflow-x: auto; }
+    }
+    @media print {
+      body { background: #fff; font-size: 11pt; }
+      header, nav, main, footer { width: 100%; }
+      nav { display: none; }
+      main { border: 0; }
+      section { break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Codex 自适应工作流与双 Provider Agent 路由设计</h1>
+    <div class="meta">
+      <p><strong>状态：</strong>设计已批准，待实施计划批准</p>
+      <p><strong>范围：</strong>James 的 Codex 自用配置与 Superpowers fork</p>
+      <p><strong>更新日期：</strong>2026-07-31</p>
+    </div>
+  </header>
+
+  <nav aria-label="文档目录">
+    <h2>目录</h2>
+    <ol>
+      <li><a href="#summary">摘要</a></li>
+      <li><a href="#goals">目标与非目标</a></li>
+      <li><a href="#requirements">需求</a></li>
+      <li><a href="#workflow">三级工作流</a></li>
+      <li><a href="#instruction-design">指令设计</a></li>
+      <li><a href="#agent-routing">双 Provider Agent 路由</a></li>
+      <li><a href="#architecture">架构与数据流</a></li>
+      <li><a href="#errors">失败处理与降级</a></li>
+      <li><a href="#testing">测试与验收</a></li>
+      <li><a href="#rollout">实施与回滚</a></li>
+      <li><a href="#risks">风险与已决问题</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <section id="summary">
+      <h2>摘要</h2>
+      <p>
+        当前 Codex 配置同时服务 OpenAI GPT-5.6 系列和阿里云百炼
+        <code>qwen3.8-max-preview</code>。现有 Superpowers fork 已为 Qwen
+        缩短并中文化工作流，但部分面向 GPT 的 Skill 发现、读取和工作流交接契约随之弱化；
+        同时当前五个 Agent 角色只适合“随父进程继承模型”的单 Provider 运行方式。
+      </p>
+      <p>
+        本设计建立一套与模型无关的三级 Superpowers 工作流，并将 Agent
+        的任务职责与模型选择分离。小而明确的改动敏捷完成；有界行为变化使用相称的调查、
+        测试和复核；存在架构歧义、高风险边界或多任务协调时进入计划化开发。
+        GPT 与 Qwen 的角色在同一 Codex 配置中同时注册，任一 Provider
+        的主进程均可选择另一 Provider 的子 Agent。角色编组按已观察到的优势非对称设计：
+        GPT 侧偏工程实现与代码审查，Qwen 侧偏大上下文归纳、进度与文档工作，同时保留两侧的日常实现能力。
+      </p>
+      <div class="decision">
+        <p><strong>核心原则：</strong>选择能够可靠完成目标的最轻工作流；按歧义、行为风险、跨模块协调和返工成本升级。</p>
+        <p><strong>Provider 原则：</strong>按任务能力选择 Provider，而不是跟随主进程；普通实现可互换，复杂工程与代码审查偏 GPT，大上下文、进度和文档工作偏 Qwen。</p>
+      </div>
+    </section>
+
+    <section id="goals">
+      <h2>目标与非目标</h2>
+      <h3>目标</h3>
+      <ul>
+        <li>让局部、明确、可逆的小修改无需设计文档或多 Agent 仪式即可完成。</li>
+        <li>让 bug 和行为变化获得与风险相称的根因调查、回归测试或 TDD 证据。</li>
+        <li>让架构、公共接口、持久化数据、安全姿态和多任务开发进入明确的设计与计划门禁。</li>
+        <li>恢复 Skill 行动前路由、读取当前版本、用户与仓库指令优先、工作流升级和交接等遵循契约。</li>
+        <li>以目标、输入、输出和验收证据描述流程，减少道德化、对抗式和泛化禁止语言。</li>
+        <li>在 GPT 主进程和 Qwen 主进程中同时暴露 GPT/Qwen 两个互补能力组。</li>
+        <li>以真实双向 smoke test 决定是否启用原生跨 Provider 派生，并提供可靠降级路径。</li>
+      </ul>
+      <h3>非目标</h3>
+      <ul>
+        <li>不自动把当前 fork 整体同步到 Superpowers 上游 v6.2。</li>
+        <li>不为模型能力建立未经评估的固定刻板路由，例如“所有中文任务都必须用 Qwen”。</li>
+        <li>不让普通小任务默认同时运行 GPT 和 Qwen 做重复工作。</li>
+        <li>不在本次实现中引入嵌套 <code>codex exec</code> 作为原生子 Agent 的替代品。</li>
+        <li>不改变项目级 <code>AGENTS.md</code>、sandbox、approval 或外部副作用授权边界。</li>
+      </ul>
+    </section>
+
+    <section id="requirements">
+      <h2>需求</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>需求</th><th>验收信号</th></tr></thead>
+          <tbody>
+            <tr><td>R1</td><td>GPT Sol 主进程默认 reasoning 为 <code>medium</code>。</td><td><code>config.toml</code> 解析值为 <code>medium</code>。</td></tr>
+            <tr><td>R2</td><td>只读问答和明确小修改走敏捷路径。</td><td>压力用例中不创建 spec/plan，不派生 Agent，并运行聚焦验证。</td></tr>
+            <tr><td>R3</td><td>有界 bug 或行为变化走调查与相称测试路径。</td><td>用例能够区分纯文本配置、bug 回归和行为变化，不机械要求所有改动完整 TDD。</td></tr>
+            <tr><td>R4</td><td>高歧义、高风险或多任务改动走计划化路径。</td><td>单文件 schema 变化也会升级；多文件机械修改根据返工成本进入计划，但不强制完整产品设计。</td></tr>
+            <tr><td>R5</td><td>命中 Skill 时读取当前版本，并遵守用户与最近层级仓库指令。</td><td>静态契约和行为用例均能观察到路由、读取和优先级。</td></tr>
+            <tr><td>R6</td><td>TDD 与验证 Skill 使用目标和证据契约表达。</td><td>保留 red-green、fresh verification 和失败如实报告；删除道德化判断和与目标无关的普遍禁止。</td></tr>
+            <tr><td>R7</td><td>保留五个 GPT 工程角色和七个 Qwen 工程/信息角色的能力模板。</td><td>配置解析得到十二个唯一角色，名称、职责、sandbox 和模型矩阵符合设计；降级时只激活运行时已证明可用的注册。</td></tr>
+            <tr><td>R8</td><td>共享工程角色保持职责一致，Qwen 专属信息角色保持单一职责。</td><td>自动校验两侧 routine/standard/monitor 的核心契约；另行验证 progress/document/context 角色的输入输出边界。</td></tr>
+            <tr><td>R9</td><td>原生跨 Provider 仅在双向任务与结果通道都通过后启用。</td><td>隔离 smoke test 同时提供实际模型/Provider、可读任务和可读结果证据；只选对后端不算通过。</td></tr>
+            <tr><td>R10</td><td>Qwen 子 Agent 通道不可用时安全降级。</td><td>配置退回 provider-per-session-main-only；Bailian 仅运行独立 Qwen 主会话，异构复核通过落盘 review package 交接，不启动嵌套 Codex。</td></tr>
+            <tr><td>R11</td><td>Skill 行为改动必须有 RED/GREEN 行为评估。</td><td>GPT 与 Qwen 的基线、修改后终态记录和逐项评分完整落盘；有界超时保留事件、时长和退出状态，证据不足的字段记为 N/A，不伪造完整响应。</td></tr>
+            <tr><td>R12</td><td>主 Agent 保留设计、架构、升级和最终决策。</td><td>Agent 路由文档明确子 Agent 只承担有界执行、复核或监控。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="workflow">
+      <h2>三级工作流</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>级别</th><th>可观察条件</th><th>交付流程</th><th>默认不需要</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>L1 敏捷修改</td>
+              <td>目标与验收明确；局部、可逆；不改变公共接口、数据或架构；无高风险外部副作用。</td>
+              <td>查局部规范 → 最小修改 → 聚焦验证 → 汇报证据。</td>
+              <td>Plan mode、设计文档、正式实施计划、多 Agent、全套 TDD。</td>
+            </tr>
+            <tr>
+              <td>L2 有界行为开发</td>
+              <td>功能、bug 或重构边界清楚；协调范围有限；无需重新决定架构。</td>
+              <td>bug 先定位根因 → 对话内短 checklist → 回归测试或 TDD → 受影响范围验证 → 必要时 task review。</td>
+              <td>正式 spec、跨任务计划、final review。</td>
+            </tr>
+            <tr>
+              <td>L3 计划化开发</td>
+              <td>架构或业务决策未解决；公共 API/schema/持久化数据/安全姿态变化；多子系统或多任务；返工代价高；需要中断恢复。</td>
+              <td>Plan mode 与设计澄清 → 必要时 spec → writing-plans → 按任务 TDD/实现/复核 → 跨任务 final review。</td>
+              <td>无条件完整产品 spec；大而机械的迁移可只写实施计划。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        文件数量只作为辅助信号。单文件的公开 schema 变更可直接进入 L3；
+        多文件但完全机械、可自动验证的迁移可以跳过完整设计，直接形成实施计划。
+      </p>
+    </section>
+
+    <section id="instruction-design">
+      <h2>指令设计</h2>
+      <h3>恢复的遵循契约</h3>
+      <ol>
+        <li>会话开始和任务意图变化时，选择与当前任务匹配的最轻工作流。</li>
+        <li>命中或被用户点名的 Skill 在受管辖行动前读取当前完整版本。</li>
+        <li>用户直接要求、最近层级的 <code>AGENTS.md</code> 和项目约定优先于通用 Skill。</li>
+        <li>当调查发现风险或歧义超出当前级别时，说明证据并升级工作流。</li>
+        <li>设计、计划、实施和验证之间使用明确交接，不依靠模型记忆补全规则。</li>
+      </ol>
+      <h3>语言形式</h3>
+      <p>
+        对输出形状和条件路由使用正向契约：“当条件 X 成立，产出 Y，并用 Z 证明”。
+        只有真实安全边界、不可逆外部动作和已由行为评估证明会被模型绕过的纪律问题，
+        才使用窄范围禁止。TDD Skill 保留测试先行的技术顺序，但把“lying”“rationalization”
+        等人格或道德判断替换为可观察的证据缺口。Verification Skill 说明哪些命令能够支持哪些声明，
+        验证失败时报告实际状态。
+      </p>
+      <h3>Skill 边界</h3>
+      <ul>
+        <li><code>using-superpowers</code> 只负责三级路由、Skill 读取契约和升级条件。</li>
+        <li><code>brainstorming</code> 只负责 L3 中真正存在的设计决策，不拦截 L1/L2。</li>
+        <li><code>systematic-debugging</code> 负责未解释症状和根因定位。</li>
+        <li><code>test-driven-development</code> 负责已选定的行为测试循环，不决定任务是否属于 L1/L2/L3。</li>
+        <li><code>verification-before-completion</code> 负责声明与 fresh evidence 的对应关系。</li>
+        <li><code>writing-plans</code> 负责 L3 的多任务实施分解，不重复 spec。</li>
+      </ul>
+    </section>
+
+    <section id="agent-routing">
+      <h2>双 Provider Agent 路由</h2>
+      <p>
+        基础 <code>config.toml</code> 始终定义百炼 Provider，并同时注册十二个 Provider-specific
+        角色。<code>bailian.config.toml</code> 只覆盖主进程默认模型，不再决定可见角色集合。
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>能力组</th><th>角色</th><th>模型配置</th><th>默认任务</th></tr></thead>
+          <tbody>
+            <tr><td>GPT 工程组</td><td><code>gpt_routine_worker</code></td><td>Luna / medium</td><td>边界明确的日常实现。</td></tr>
+            <tr><td>GPT 工程组</td><td><code>gpt_standard_worker</code></td><td>Sol / medium</td><td>复杂工程实现、跨文件集成与调试。</td></tr>
+            <tr><td>GPT 工程组</td><td><code>gpt_task_reviewer</code></td><td>Terra / medium</td><td>任务级代码细节、回归风险和测试审查。</td></tr>
+            <tr><td>GPT 工程组</td><td><code>gpt_final_reviewer</code></td><td>Sol / medium</td><td>跨任务架构、代码一致性和高风险最终审查。</td></tr>
+            <tr><td>GPT 工程组</td><td><code>gpt_monitor</code></td><td>Luna / medium</td><td>外部任务等待与简洁状态提取。</td></tr>
+            <tr><td>Qwen 工程组</td><td><code>qwen_routine_worker</code></td><td>Qwen 3.8 / medium</td><td>边界明确的日常实现和独立并行任务。</td></tr>
+            <tr><td>Qwen 工程组</td><td><code>qwen_standard_worker</code></td><td>Qwen 3.8 / xhigh</td><td>上下文密集的集成、迁移和仓库级信息处理。</td></tr>
+            <tr><td>Qwen 信息组</td><td><code>qwen_context_analyst</code></td><td>Qwen 3.8 / xhigh</td><td>大上下文资料、代码和历史决策的只读归纳。</td></tr>
+            <tr><td>Qwen 信息组</td><td><code>qwen_progress_reviewer</code></td><td>Qwen 3.8 / medium</td><td>对照 spec/plan/status/证据检查进度与遗漏。</td></tr>
+            <tr><td>Qwen 信息组</td><td><code>qwen_document_reviewer</code></td><td>Qwen 3.8 / medium</td><td>文档结构、完整性、可读性和证据边界审查。</td></tr>
+            <tr><td>Qwen 信息组</td><td><code>qwen_document_writer</code></td><td>Qwen 3.8 / xhigh</td><td>在已确认决策下起草 HTML spec、Markdown plan 和交付文档。</td></tr>
+            <tr><td>Qwen 信息组</td><td><code>qwen_monitor</code></td><td>Qwen 3.8 / medium</td><td>长日志、长任务和多阶段进度的等待与压缩。</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        该分工是本地实践假设，而不是模型能力定律。GPT 与 Qwen 的普通实现能力可互换；
+        默认路由只表达当前观察到的优势，并由后续行为评估、耗时和返工率持续校准。
+      </p>
+      <h3>选择规则</h3>
+      <ol>
+        <li>L1 默认由主 Agent 完成。</li>
+        <li>L2/L3 只有在任务可有界委派、并行收益明确或复核价值足够时派生 Agent。</li>
+        <li>复杂工程实现和代码细节审查默认进入 GPT 工程组；普通独立实现可按并发、上下文和成本选择任一工程组。</li>
+        <li>大上下文归纳、进度核对、文档审查和 HTML/Markdown 起草默认进入 Qwen 信息组。</li>
+        <li>设计阶段由 Qwen 汇总上下文和起草产物，GPT 检查技术可实施性，主 Agent 保留决策。</li>
+        <li>实施阶段由 GPT 负责关键路径和代码审查，Qwen 负责上下文密集的独立任务和计划进度核对。</li>
+        <li>异构 reviewer 只读取明确的 diff、spec、plan 或 review package，不重新执行完整任务。</li>
+        <li>主 Agent 汇总证据、处理冲突并作最终决定。</li>
+      </ol>
+      <p>
+        routine、standard 和 monitor 的共享职责使用标准库校验脚本检查核心契约。
+        Qwen 信息组使用角色级输入、输出和写权限断言防止职责漂移；
+        <code>qwen_document_writer</code> 只在设计决策已确认后写文档，context/progress/document reviewer 均为只读。
+      </p>
+    </section>
+
+    <section id="architecture">
+      <h2>架构与数据流</h2>
+      <pre><code>用户请求
+  │
+  ▼
+using-superpowers：L1 / L2 / L3 路由
+  │
+  ├─ L1：主 Agent 最小修改 + 聚焦验证
+  ├─ L2：调查 / 回归测试或 TDD / 可选 task review
+  └─ L3：设计确认 / plan / 按任务实施 / final review
+                    │
+                    ▼
+          Codex 能力与工作阶段选择
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+     GPT 工程组         Qwen 工程/信息组
+  实现与代码审查       上下文、进度与文档
+          └─────────┬─────────┘
+                    ▼
+              主 Agent 汇总</code></pre>
+      <p>
+        Superpowers 入口 Skill 不写具体 Provider 或模型 ID；Codex 专属路由参考表达本地
+        GPT 工程组与 Qwen 信息组偏好，但仍只按能力选择，不写具体模型 slug。它使用 routine implementer、standard implementer、
+        code reviewer、context analyst、progress reviewer、document writer 和 monitor 等能力需求。
+        Codex 全局配置保留十二个 provider-specific 能力模板；角色文件持有实际 Provider、模型和 reasoning。
+        在 provider-per-session-main-only 降级模式中，默认 profile 只激活五个 GPT 通用角色，Bailian profile 不激活子 Agent。
+      </p>
+      <p>
+        由于 Codex agent TOML 没有通用 include 机制，本设计接受十二个短配置文件的有限重复，
+        以自动校验维持共享契约和专属角色边界，而不引入第三方模板依赖。
+      </p>
+    </section>
+
+    <section id="errors">
+      <h2>失败处理与降级</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>失败</th><th>处理</th><th>用户可见证据</th></tr></thead>
+          <tbody>
+            <tr><td>任务在执行中暴露更高风险或未决架构</td><td>停止当前级别的实现，说明证据并升级到 L2/L3。</td><td>升级原因、剩余决策和推荐方案。</td></tr>
+            <tr><td>Skill 行为评估没有稳定改善</td><td>保留基线，继续最小措辞迭代；不部署未通过版本。</td><td>逐用例输出和评分差异。</td></tr>
+            <tr><td>GPT 主进程无法派生 Qwen Agent</td><td>禁用跨 Provider 原生路由，保留 GPT 同 Provider 角色。</td><td>smoke test 命令、退出状态和首个可操作错误。</td></tr>
+            <tr><td>Qwen 同 Provider 或跨 Provider 子 Agent 通道不可读</td><td>Bailian profile 显式设置 <code>features.multi_agent=false</code> 与 <code>features.multi_agent_v2.enabled=false</code>，删除全部 Qwen active overlay，只保留 Qwen 主会话。</td><td>持久化 rollout 的 Provider/model、<code>multi_agent_version=disabled</code> 和零协作工具调用。</td></tr>
+            <tr><td>任一 Qwen 子 Agent 方向不可靠</td><td>整体采用 provider-per-session-main-only；异构复核通过落盘 review package 在独立 Qwen 主会话交接。</td><td>降级配置、交接文件路径和十二个 inactive template 的校验结果。</td></tr>
+            <tr><td>两套角色提示发生漂移</td><td>配置校验失败，阻止部署。</td><td>角色名和不一致字段。</td></tr>
+            <tr><td>模型 slug、认证或模型目录不可用</td><td>保持现有可工作的 profile，修复配置后重新 smoke test。</td><td>Provider、模型和认证层面的精确错误。</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="testing">
+      <h2>测试与验收</h2>
+      <h3>静态契约</h3>
+      <ul>
+        <li>三级路由条件、升级规则和 Skill 优先级可由 shell contract 检查。</li>
+        <li>TDD/verification 保留关键技术证据词，且不含约定删除的道德化措辞。</li>
+        <li>十二个 Agent 文件、角色矩阵、必需字段、Provider、模型和 reasoning 可由 Python 标准库解析。</li>
+        <li>共享工程角色的核心职责保持一致；Qwen 信息角色的输入、输出和写权限满足各自边界。</li>
+      </ul>
+      <h3>行为评估</h3>
+      <p>在修改 Skill 前后分别用新鲜 GPT 和 Qwen 会话运行同一组用例：</p>
+      <ol>
+        <li>明确的单值配置修改：应走 L1。</li>
+        <li>小型 bug 且已有测试基础设施：应走 L2 并产生回归证据。</li>
+        <li>单文件公开 schema 变化：应走 L3。</li>
+        <li>多文件机械迁移：应写实施计划，但无需完整产品设计。</li>
+        <li>跨系统新行为且验收不清：应先设计澄清。</li>
+        <li>存在匹配 Skill 和最近层级 AGENTS.md：应读取并遵循当前版本与优先级。</li>
+        <li>复杂多任务工程实施：GPT 负责关键实现与代码审查，Qwen 负责计划进度和证据核对。</li>
+        <li>大上下文设计产物：Qwen 负责资料归纳和 HTML/Markdown 起草，GPT 负责技术可实施性审查。</li>
+      </ol>
+      <h3>运行时 smoke test</h3>
+      <ul>
+        <li>门禁阶段运行 GPT→GPT、Qwen→Qwen、GPT→Qwen、Qwen→GPT 四个持久化 probe。</li>
+        <li>每个 probe 都必须确认实际 Provider/模型、可读任务交付和可读结果，而不只相信 Agent 自报身份。</li>
+        <li>降级后复用已通过的 GPT→GPT 证据，并新建 Bailian 主会话 probe。</li>
+        <li>Bailian probe 必须确认 Qwen 主模型/effort、<code>multi_agent_version=disabled</code>、无 Agent 工具调用和 main-session 成功响应。</li>
+      </ul>
+      <h3>回归</h3>
+      <ul>
+        <li>运行现有 <code>tests/skill-content/run-tests.sh</code>。</li>
+        <li>运行新增三级路由和 Agent matrix 校验。</li>
+        <li>HTML spec 和 Markdown plan 通过占位符、链接、路径和需求覆盖检查。</li>
+      </ul>
+    </section>
+
+    <section id="rollout">
+      <h2>实施与回滚</h2>
+      <ol>
+        <li>记录当前 GPT/Qwen 行为基线，不改生产 Skill。</li>
+        <li>先实现静态失败测试，再最小改写三级路由和证据型 TDD/verification 文案。</li>
+        <li>运行修改后行为评估；只有两个模型都达到验收才继续安装。</li>
+        <li>在隔离配置中建立十二角色 matrix 并运行解析测试。</li>
+        <li>运行同 Provider 和跨 Provider smoke test。</li>
+        <li>双向跨 Provider 及 Qwen 同 Provider 通道都通过时更新真实 <code>~/.codex</code>；任一 Qwen 通道失败则部署 provider-per-session-main-only 降级配置。</li>
+        <li>保留修改前文件快照和完整 diff，验证失败时按文件恢复，不使用破坏性 Git 命令。</li>
+      </ol>
+      <p>
+        上游 v6.2 的 SDD workspace、resume 和 re-review 改进在本次完成后单独审计。
+        审计必须以本设计的三级路由和双 Provider 契约为前置兼容条件，不直接整体覆盖 fork。
+      </p>
+    </section>
+
+    <section id="risks">
+      <h2>风险与已决问题</h2>
+      <div class="decision">
+        <p><strong>风险：</strong>Codex 文档确认 custom agent 是会话配置层，但没有给出跨自定义 Provider 子 Agent 的完整官方示例。双向 smoke test 是启用门禁。</p>
+        <p><strong>风险：</strong>十二个角色会增加主 Agent 的选择空间。通过工程组/信息组、明确阶段和单一职责描述降低误选。</p>
+        <p><strong>风险：</strong>当前模型分工来自个人使用感受，可能随模型版本变化。行为评估记录模型版本、耗时、返工和审查命中，允许后续调整默认路由。</p>
+        <p><strong>风险：</strong>Skill 措辞变化可能提高敏捷性却降低纪律遵循。通过 GPT/Qwen 基线、修改后评估和静态契约共同控制。</p>
+        <p><strong>风险：</strong>全局 <code>~/.codex</code> 不是 Git 仓库。实施时必须生成显式快照、diff 和可重复解析验证。</p>
+      </div>
+      <div class="decision open">
+        <p><strong>已决：</strong>采用三级工作流、一套模型无关 Skill、十二个非对称 Provider-specific Agent，以及 GPT 工程组与 Qwen 信息组的阶段化协作。</p>
+        <p><strong>已决：</strong>本机实测 Qwen 同 Provider 与跨 Provider 通道均不能可靠交付可读消息；整体降级为 provider-per-session-main-only，而不是暴露半工作的 Qwen 子 Agent。</p>
+        <p><strong>已决：</strong>十二个 Provider-specific TOML 保留为 inactive capability template 和未来重试证据；Qwen 工作使用独立 Bailian 主会话与落盘 review package，绝不嵌套执行 <code>codex exec</code>。</p>
+        <p><strong>开放问题：</strong>只有 Codex runtime 更新并重新通过完整门禁后，才重新考虑激活 Qwen 子 Agent。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>本设计已于 2026-07-31 获得用户批准；实施须按独立实施计划执行。</footer>
+</body>
+</html>

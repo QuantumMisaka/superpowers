@@ -18,6 +18,12 @@ assert_literal() {
 assert_literal "$ROUTER" 'L1 敏捷修改' 'L1 route'
 assert_literal "$ROUTER" 'L2 有界行为开发' 'L2 route'
 assert_literal "$ROUTER" 'L3 计划化开发' 'L3 route'
+assert_literal "$ROUTER" '所有行动型请求开始时使用' 'actionable-task trigger'
+assert_literal "$ROUTER" '`工作流：L1/L2/L3`' 'observable route slot'
+assert_literal "$ROUTER" \
+  '多文件机械迁移若需要实施分解、可恢复检查点或仓库级验证，走 L3' \
+  'mechanical migration planning route'
+assert_literal "$ROUTER" '无需 `brainstorming`' 'mechanical migration design boundary'
 assert_literal "$ROUTER" \
   '不改变公共接口、数据或架构；无高风险外部副作用' \
   'L1 architecture and external-side-effect boundary'
