@@ -174,6 +174,8 @@ After green only:
 - Improve names
 - Extract helpers
 - Extend an existing table or nearby suite before creating a test file
+- Split a suite by contract subdomain when it outgrows a maintainable size,
+  instead of letting one topic owner grow without bound
 - Merge cases that exercise the same behavior through the same setup
 - Delete tautologies, exact-source-text checks, and coverage-only assertions
 - Keep characterization tests only for behavior the project relies on
