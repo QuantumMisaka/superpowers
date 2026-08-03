@@ -5,6 +5,10 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 SCRIPT_UNDER_TEST="$REPO_ROOT/scripts/package-codex-plugin.sh"
 
+# Zip entry timestamps are stored in local time; pin UTC so the epoch-normalization
+# assertions are timezone-independent (fork runs in Asia/Shanghai).
+export TZ=UTC
+
 FAILURES=0
 TEST_ROOT="$(mktemp -d)"
 
