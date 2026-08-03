@@ -79,7 +79,8 @@ independently testable deliverable.
 
 [Only the spec's cross-task invariants — version floors, dependency limits,
 naming and copy rules, platform requirements — one line each. Reference spec
-sections for detail instead of reproducing their prose.]
+sections for detail instead of reproducing their prose. Every task's requirements
+implicitly include this section.]
 
 ---
 ```

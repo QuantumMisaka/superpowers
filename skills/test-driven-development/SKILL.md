@@ -95,6 +95,8 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
+**MANDATORY. Never skip.**
+
 Run the focused test against the baseline behavior:
 
 ```bash
@@ -151,6 +153,8 @@ Keep the implementation surface limited to the behavior demonstrated by the
 test.
 
 ### Verify GREEN - Watch It Pass
+
+**MANDATORY.**
 
 Run the focused test again after the minimal implementation:
 

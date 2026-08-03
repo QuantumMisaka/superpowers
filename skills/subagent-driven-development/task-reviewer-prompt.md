@@ -8,8 +8,10 @@ code quality.
 more, nothing less) and is well-built (clean, tested, maintainable)
 
 ```
-Task reviewer subagent:
+Subagent (general-purpose):
   description: "Review Task N (spec + quality)"
+  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
+         model silently inherits the session's most expensive one]
   prompt: |
     You are reviewing one task's implementation: first whether it matches its
     requirements, then whether it is well-built. This is a task-scoped gate,
@@ -19,10 +21,6 @@ Task reviewer subagent:
     ## What Was Requested
 
     Read the task brief: [BRIEF_FILE]
-
-    **Spec:** [SPEC_FILE]
-    Read the HTML section IDs or Markdown headings cited by this task. If the
-    plan declares no spec, rely on the task brief.
 
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
@@ -103,11 +101,6 @@ Task reviewer subagent:
     **Tests:**
     - Do the new and changed tests verify real behavior, not mocks?
     - Are the task's edge cases covered?
-    - Does each new test catch a named production regression?
-    - Was the nearest existing suite extended where practical?
-    - Are there duplicate cases, exact-source-text checks, test-only scripts,
-      or test-only production APIs that should not ship?
-    - Would removing a proposed redundant test leave the same behavior protected?
 
     **Structure:**
     - Does each file have one clear responsibility with a well-defined interface?
@@ -173,9 +166,9 @@ Task reviewer subagent:
 ```
 
 **Placeholders:**
+- `[MODEL]` — REQUIRED: reviewer model per SKILL.md Model Selection
 - `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
   prints the path; same file the implementer worked from)
-- `[SPEC_FILE]` — the exact plan-header spec path, or `none`
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the plan's Global Constraints section or the spec: exact values, formats,
   and stated relationships between components (not process rules — those
@@ -185,11 +178,8 @@ Task reviewer subagent:
 - `[BASE_SHA]` — commit before this task
 - `[HEAD_SHA]` — current commit
 - `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package BASE HEAD` prints the unique path it
-  wrote; the package never enters the controller's context)
+  package to (`scripts/review-package PLAN_FILE BASE HEAD` prints the unique
+  path it wrote; the package never enters the controller's context)
 
 **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
 (Critical/Important/Minor), Task quality verdict
-
-A fix dispatch can address spec gaps and quality findings together;
-re-review after fixes covers both verdicts.

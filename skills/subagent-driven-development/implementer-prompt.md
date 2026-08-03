@@ -3,8 +3,10 @@
 Use this template when dispatching an implementer subagent.
 
 ```
-Implementer subagent:
+Subagent (general-purpose):
   description: "Implement Task N: [task name]"
+  model: [MODEL — REQUIRED: choose per SKILL.md Model Selection; an omitted
+         model silently inherits the session's most expensive one]
   prompt: |
     You are implementing Task N: [task name]
 
@@ -12,10 +14,6 @@ Implementer subagent:
 
     Read your task brief first: [BRIEF_FILE]
     It contains the full task text from the plan.
-
-    **Spec:** [SPEC_FILE]
-    Read only the HTML section IDs or Markdown headings cited by the task. If
-    the plan declares no spec, rely on the task brief.
 
     ## Context
 
@@ -101,17 +99,19 @@ Implementer subagent:
     **Testing:**
     - Do tests actually verify behavior (not just mock behavior)?
     - Did I follow TDD if required?
-    - Did I extend the nearest existing suite where practical?
-    - Did I remove temporary probes and consolidate redundant cases?
+    - Are tests comprehensive?
     - Is the test output pristine (no stray warnings or noise)?
 
     If you find issues during self-review, fix them now before reporting.
 
     ## After Review Findings
 
-    If a reviewer finds issues and you fix them, re-run the tests that cover
-    the amended code and append the results to your report file. Reviewers
-    will not re-run tests for you — your report is the test evidence.
+    If the task review finds issues, you will be resumed with the findings.
+    Fix them, re-run the tests that cover the amended code, and append a fix
+    report to your report file: what you changed, the covering tests you
+    ran, the command, and the output. Reviewers will not re-run tests for
+    you — your report is the test evidence. Then reply with the same short
+    status contract as your first report.
 
     ## Report Format
 
@@ -121,9 +121,6 @@ Implementer subagent:
     - **TDD Evidence** (if TDD was required for this task):
       - RED: command run, relevant failing output before implementation, and why the failure was expected
       - GREEN: command run and relevant passing output after implementation
-    - Durable test disposition: existing suite extended, or why a new suite was required
-    - Temporary artifacts removed: exact paths, or `none`
-    - Redundant tests removed or consolidated: exact cases, or `none`
     - Files changed
     - Self-review findings (if any)
     - Any issues or concerns
