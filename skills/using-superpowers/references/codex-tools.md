@@ -57,6 +57,15 @@ window while keeping exploration tied to the task:
   is satisfied. A missing decision or source is returned to the parent as a
   gap; further material starts with a new parent handoff.
 
+## Project-Configured Subagent Routing
+
+Prefer subagent routing declared by the current project over generic role
+routing: read the nearest project `AGENTS.md` (and project `.codex`
+configuration) for explicitly configured subagent routes first, then fall
+back to the capability-aware roles above, then to the configured generic
+fallback. Skills never maintain project subagent lists — the project owns its
+routes; this file only declares the priority.
+
 ## Bailian Multi-Agent V1 Compatibility
 
 Codex 0.146.0 uses different working transport paths for these Providers. Keep

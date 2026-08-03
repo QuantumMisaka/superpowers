@@ -302,3 +302,10 @@ REFACTOR: the owning suite remains green after cleanup
 ```
 
 Report the commands and outcomes that establish each phase.
+
+**Test cleanup is part of completion.** Temporary or scaffolding tests created
+during development (probes, throwaway fixtures, debugging-only cases) must be
+removed or folded into the owning regression suite before the change is
+complete. Keep contract tests and genuine regression tests; delete or
+consolidate tests that only served development iteration. A completed change
+does not carry scaffolding tests forward.
