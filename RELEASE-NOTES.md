@@ -38,6 +38,7 @@ A branch-wide compression campaign: recap sections, social proof, and benefits-s
 - New full brainstorming designs default to standalone HTML for human review.
 - Implementation plans remain Markdown and reference the approved spec.
 - Existing Markdown specs remain valid and do not require migration.
+- Fork sync: merged obra/superpowers v6.2.0 (SDD plan-scoped workspace, resume-based fix loop, find-polluter fix, Gemini CLI support) with fork multi-model routing and local test adaptations preserved.
 
 ## v6.1.1 (2026-07-02)
 

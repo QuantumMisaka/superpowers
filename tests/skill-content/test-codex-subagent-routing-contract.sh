@@ -146,7 +146,8 @@ printf '  [PASS] concrete Codex models remain routing-config owned\n'
 
 if rg -n '\[MODEL|^[[:space:]]*model:' \
   "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
-  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md"; then
+  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
+  "$REPO_ROOT/skills/subagent-driven-development/re-review-prompt.md"; then
   printf '  [FAIL] SDD prompts must leave routing fields to the controller\n'
   exit 1
 fi
@@ -155,6 +156,7 @@ printf '  [PASS] SDD prompts contain no routing-field placeholders\n'
 if rg -n 'Subagent \(general-purpose\)' \
   "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
   "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
+  "$REPO_ROOT/skills/subagent-driven-development/re-review-prompt.md" \
   "$REPO_ROOT/skills/requesting-code-review/code-reviewer.md"; then
   printf '  [FAIL] prompt headings must not force the generic fallback role\n'
   exit 1

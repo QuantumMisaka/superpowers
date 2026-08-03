@@ -6,7 +6,7 @@ Superpowers is a complete software development methodology for your coding agent
 
 ## Quickstart
 
-Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi)., [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
+Give your agent Superpowers: [Claude Code](#claude-code), [Antigravity](#antigravity), [Codex App](#codex-app), [Codex CLI](#codex-cli), [Cursor](#cursor), [Factory Droid](#factory-droid), [Gemini CLI](#gemini-cli), [GitHub Copilot CLI](#github-copilot-cli), [Kimi Code](#kimi-code), [OpenCode](#opencode), [Pi](#pi).
 
 ## How it works
 
@@ -119,6 +119,20 @@ Superpowers is available via the [official Codex plugin marketplace](https://git
 
   ```bash
   droid plugin install superpowers@superpowers
+  ```
+
+### Gemini CLI
+
+- Install the extension:
+
+  ```bash
+  gemini extensions install https://github.com/obra/superpowers
+  ```
+
+- Update later:
+
+  ```bash
+  gemini extensions update superpowers
   ```
 
 ### GitHub Copilot CLI
