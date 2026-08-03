@@ -121,25 +121,20 @@ printf '  [PASS] no impossible model-field requirement\n'
 
 assert_literal \
   "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'most capable available reviewer role when selectable' \
-  'final review uses capability role when selectable'
-
+  'most capable available model' \
+  'final review uses most capable tier'
 assert_literal \
   "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'routine implementer role' \
-  'mechanical work selects routine capability'
+  'fast, cheap model' \
+  'mechanical work selects cheap tier'
 assert_literal \
   "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'standard implementer role' \
-  'integration work selects standard capability'
+  'standard model' \
+  'integration work selects standard tier'
 assert_literal \
   "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'task reviewer role' \
-  'task review selects task capability'
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'final reviewer role' \
-  'whole-branch review selects final capability'
+  'capability-aware' \
+  'task/final review route via capability-aware reference'
 
 if rg -ni 'explicit model|model controls|named role or model' \
   "$REFERENCE" \

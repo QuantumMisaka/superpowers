@@ -158,6 +158,8 @@ conflicts that only emerge from implementation.
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
 
+On this fork, resolve abstract roles to concrete model/effort routing via `using-superpowers/references/codex-tools.md` (capability-aware, multi-provider: deepseek/qwen/GPT); routing must not change the serial implement-review-fix lifecycle.
+
 **Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
 
 **Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
@@ -174,9 +176,11 @@ small fix diffs take a cheap-to-mid tier.
 **Fix-loop escalation (rounds 4-5)**: use a model at least one tier above
 the implementer that got stuck.
 
-**Always specify the model explicitly when dispatching a subagent.** An
-omitted model inherits your session's model — often the most capable and
-most expensive — which silently defeats this section.
+**Specify the model explicitly only when your harness's dispatch schema
+exposes a model field.** An omitted model inherits your session's model —
+often the most capable and most expensive — which silently defeats this
+section; but never require a field the active schema lacks (see
+`using-superpowers/references/codex-tools.md` for schema-aware routing).
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the
