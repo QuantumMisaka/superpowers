@@ -69,7 +69,9 @@ independently testable deliverable.
 
 **Goal:** [One sentence describing what this builds]
 
-**Spec:** `docs/superpowers/specs/<exact-approved-file>` or `none - requirements supplied directly`
+**Spec:** [path to the approved spec/design doc — e.g. `docs/superpowers/specs/<exact-approved-file>`,
+or `none - requirements supplied directly`. The plan argues from the spec, so the spec
+travels with it; executors read both]
 
 **Architecture:** [2-3 sentences about approach]
 
