@@ -19,7 +19,8 @@ Load plan, review critically, execute all tasks, report when complete.
 1. Read plan file
 2. If present, read its `**Spec:**` file and the sections cited by tasks
 3. Review critically - identify any questions or concerns about the plan
-4. If concerns: Raise them with your human partner before starting
+4. If concerns: raise them via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking. Concerns answerable by
+   reading the code are resolved by reading, not raised.
 5. If no concerns: Create todos for the plan items and proceed
 
 ### Step 2: Execute Tasks
@@ -32,20 +33,30 @@ For each task:
 
 ### Step 3: Complete Development
 
+Exit condition — all three must hold: every task marked complete; every
+verification the plan names run fresh with passing output (see
+verification-before-completion); and every ruling you made listed in the
+final message under "Rulings I made", each with what it costs if wrong.
+
 After all tasks complete and verified:
 - Announce: "I'm using the finishing-a-development-branch skill to complete this work."
 - **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
 - Follow that skill to verify tests, present options, execute choice
 
-## When to Stop and Ask for Help
+## Rulings, Not Stalls
 
-**STOP executing immediately when:**
-- Hit a blocker (missing dependency, test fails, instruction unclear)
-- Plan has critical gaps preventing starting
-- You don't understand an instruction
-- Verification fails repeatedly
+A running plan does not wait on a human. Blockers, unclear instructions,
+plan gaps, a failed verification you can diagnose — decide them. The spec is
+the binding authority, the plan is its argument, and your judgment settles
+what neither answers. Record every decision as `Ruling: <what you decided>
+— <why> — <what it costs if wrong>` and keep going; the ruling list in your
+final message is where your human partner reviews and reworks them.
 
-**Ask for clarification rather than guessing.**
+Four things stop you, and only these: an irreversible or destructive
+operation; a security-sensitive action; a side effect outside this workspace
+that norms say you ask about first (a merge, a push to a shared branch, a
+publish); and a plan so broken that every path forward is a guess. For those,
+stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking.
 
 ## When to Revisit Earlier Steps
 

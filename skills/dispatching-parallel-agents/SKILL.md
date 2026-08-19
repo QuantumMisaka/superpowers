@@ -61,6 +61,8 @@ Each agent gets:
 - **Specific scope:** One test file or subsystem
 - **Clear goal:** Make these tests pass
 - **Constraints:** Don't change other code
+- **Acceptance evidence:** The exact command(s) that prove the domain done
+  and the expected output — so "fixed" is checkable, not claimed
 - **Expected output:** Summary of what you found and fixed
 
 ### 3. Dispatch in Parallel

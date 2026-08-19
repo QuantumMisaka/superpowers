@@ -28,7 +28,8 @@ Four things stop you, and only these: an irreversible or destructive
 operation; a security-sensitive action; a side effect outside this worktree
 that norms say you ask about first (a merge, a push to a shared branch, a
 publish); and a plan so broken that every path forward is a guess. For those,
-stop and ask.
+stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking. A stop that rambles or interrogates
+buys nothing over a stop that offers answers to confirm.
 
 ## When to Use
 
@@ -261,7 +262,9 @@ and fix-round diffs need it.
   first — it is your requirements, with the exact values to use verbatim";
   (3) interfaces and decisions from earlier tasks that the brief cannot
   know; (4) your resolution of any ambiguity you noticed in the brief;
-  (5) the report-file path and report contract. Exact values (numbers,
+  (5) the report-file path and report contract; (6) the acceptance evidence
+  — the exact command(s) that prove the task done and the expected output,
+  copied from the brief's verification steps, so "done" is never guessed. Exact values (numbers,
   magic strings, signatures, test cases) appear only in the brief. Never
   make a subagent read the whole plan file.
 - **Report file:** name the implementer's report file after the brief

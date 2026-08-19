@@ -1,6 +1,6 @@
 ---
 name: systematic-debugging
-description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: Use when encountering a non-trivial bug, test failure, or unexpected behavior whose cause is not obvious, before proposing fixes; trivial causes (typos, syntax errors, known config) are fixed directly
 ---
 
 # Systematic Debugging

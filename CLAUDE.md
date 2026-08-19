@@ -113,3 +113,13 @@ Before proposing changes to skill design, workflow philosophy, or architecture, 
 - One problem per PR
 - Test on at least one harness and report results in the environment table
 - Describe the problem you solved, not just what you changed
+
+## Fork Maintenance Discipline (QuantumMisaka fork)
+
+This fork is customized for multi-provider Codex use (OpenAI V2 + bailian/deepseek/scnet V1) and is deliberately lighter than upstream. When modifying skills here:
+
+- Every process skill must define three things: a trigger scope (when NOT to load it is as important as when to load it), an explicit exit condition, and the smallest artifact it produces.
+- Every approval/question point uses the brainstorming §1 Grill protocol (≤3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking). Do not invent new interrogation rituals.
+- Subagent dispatches must carry acceptance evidence (exact command + expected output).
+- Before adding any new per-turn or per-session obligation, remove or merge an existing one. Weight budget is zero-sum.
+- Keep V1/V2 multi-agent guidance dual-track in `skills/using-superpowers/references/codex-tools.md`; never write V2-only orchestration advice as if it were universal.

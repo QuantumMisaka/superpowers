@@ -182,7 +182,8 @@ If you find issues, fix them inline. No need to re-review — just fix and move 
 
 After self-review, give the exact plan path and ask the human partner to review
 it. Revise until they explicitly approve it. Do not offer execution or invoke
-an execution skill before approval.
+an execution skill before approval. If the review surfaces ambiguity — theirs
+or yours — resolve it via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking.
 
 After approval, offer execution choice:
 

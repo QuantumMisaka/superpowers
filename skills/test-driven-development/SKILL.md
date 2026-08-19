@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing behavior changes (features, bugfixes, refactors), before writing implementation code; config-only edits, throwaway prototypes, and generated code do not use this skill
 ---
 
 # Test-Driven Development (TDD)
