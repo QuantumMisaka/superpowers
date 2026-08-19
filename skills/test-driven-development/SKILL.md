@@ -24,8 +24,12 @@ temporary revert or an equivalent isolated baseline to establish that evidence.
 Use this cycle for new features, bug fixes, refactoring, and behavior changes
 after the workflow router selects TDD. Route throwaway prototypes, generated
 code, configuration-only edits, and missing test infrastructure before invoking
-this Skill. Once selected, complete the evidence cycle for each changed
-behavior.
+this Skill. Contracts carried in natural language (agent-facing docstrings,
+prompts, system messages) do not run a RED-GREEN cycle per phrase: review their
+scientific and routing semantics first, then test their load-bearing structure
+(schema fields, routing tokens, stable parameters) — one structural assertion
+per contract family, never one containment check per prose fragment. Once
+selected, complete the evidence cycle for each changed behavior.
 
 ## Red-Green-Refactor
 
@@ -180,7 +184,9 @@ After green only:
 - Extend an existing table or nearby suite before creating a test file
 - Split a suite by contract subdomain when it outgrows a maintainable size,
   instead of letting one topic owner grow without bound
-- Merge cases that exercise the same behavior through the same setup
+- Merge cases that exercise the same behavior through the same setup —
+  three or more tests varying one axis (inputs, flags, literals) through
+  the same path become one table-driven test before the next case is added
 - Delete tautologies, exact-source-text checks, and coverage-only assertions
 - Keep characterization tests only for behavior the project relies on
 - Move reusable setup into test utilities, never test-only production APIs
