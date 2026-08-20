@@ -1,3 +1,5 @@
+> **本仓定位（QuantumMisaka fork）**：这是 obra/superpowers 的个人定制 fork，不是上游仓库。修改 skills、流程或文档前先读 `docs/superpowers/fork-design-philosophy.md`。下方为上游贡献者指南原文：其中面向上游 PR 的纪律对本 fork 不直接适用（本 fork 不向上游提 PR，上游同步走 merge），但技能质量与诚实标准仍然适用。
+
 # Superpowers — Contributor Guidelines
 
 ## If You Are an AI Agent

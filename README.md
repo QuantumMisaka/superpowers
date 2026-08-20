@@ -1,3 +1,5 @@
+> **Fork 说明（QuantumMisaka）**：本仓是 obra/superpowers 的个人定制 fork——为多 Provider Codex（OpenAI V2 + bailian/deepseek/scnet V1）按品味定制，刻意比上游轻，按上游版本同步（`sync(upstream-vX)` commits）。fork 的目标、设计思想与维护纪律见 [`docs/superpowers/fork-design-philosophy.md`](docs/superpowers/fork-design-philosophy.md)；以下为上游 README 原文。
+
 # Superpowers
 
 Superpowers is a complete software development methodology for your coding agents, built on top of a set of composable skills and some initial instructions that make sure your agent uses them.
