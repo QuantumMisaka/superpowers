@@ -101,6 +101,22 @@ cd "$path"
 
 ## Step 2: Project Setup
 
+**Submodule initialization:** `git worktree add` does not check out submodule
+contents — a new worktree starts with uninitialized submodules, and the
+in-place sandbox fallback may sit in a fresh clone that never initialized
+them. If the repository declares submodules, initialize them before any
+dependency install or baseline test:
+
+```bash
+if [ -f .gitmodules ]; then
+  git submodule update --init --recursive
+fi
+```
+
+If initialization fails (network, auth, missing submodule commit), report the
+exact failing submodule and stop: dependency installs and baseline tests run
+against a missing submodule tree fail for misleading reasons.
+
 Auto-detect and run appropriate setup:
 
 ```bash
@@ -145,6 +161,7 @@ Ready to implement <feature-name>
 |-----------|--------|
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
+| Repo declares submodules | Initialize in new workspace before setup (Step 2) |
 | Native worktree tool available | Use it (Step 1a) |
 | No native tool | Git worktree fallback (Step 1b) |
 | `.worktrees/` exists | Use it (verify ignored) |
