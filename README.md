@@ -24,7 +24,7 @@
 
 ## 结构与验证
 
-- `skills/`：14 个 skill；`skills/using-superpowers/references/` 为 harness 专属 reference（`codex-tools.md` = 多 Provider 路由权威文本）。
+- `skills/`：14 个 skill；`skills/using-superpowers/references/` 为 harness 专属 reference（`codex-tools.md` = 多 Provider 路由权威文本；`kimi-code-tools.md` = Kimi Code 编排映射，扩展上游 `.kimi-plugin/plugin.json` 的基础映射）。
 - 契约测试：`bash tests/skill-content/run-tests.sh`（路由契约 / 正向证据 mutation / 设计产物 / worktree submodule）+ `tests/codex/*.sh`（打包与 manifest）。
 - `docs/superpowers/`：设计哲学、specs、plans、validation 存档。
 
