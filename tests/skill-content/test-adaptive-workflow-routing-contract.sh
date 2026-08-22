@@ -66,11 +66,26 @@ assert_literal "$ROUTER" \
   '测试基础设施适用时用 TDD 完成 RED-GREEN' \
   'L2 TDD RED-GREEN route'
 assert_literal "$ROUTER" \
-  '存在未决产品、架构、安全或兼容决策时先用 `brainstorming`' \
+  'L3α 设计未定' \
   'L3 unresolved-decision design route'
 assert_literal "$ROUTER" \
-  '决策已确定但跨模块、需要检查点或高返工成本时用 `writing-plans`' \
+  'L3β 决策已定' \
   'L3 settled complex-work planning route'
+assert_literal "$ROUTER" \
+  'Spec: none - requirements supplied directly' \
+  'L3β decision-source annotation requirement'
+assert_literal "$ROUTER" \
+  '回退 L3α 的 Grill' \
+  'L3 ambiguity falls back to Grill'
+assert_literal "$ROUTER" \
+  '完成判据必须是可执行检查' \
+  'goal completion criterion must be executable'
+assert_literal "$ROUTER" \
+  '不得外包给子代理后直接批准' \
+  'decision-phase artifacts stay with main agent'
+assert_literal "$ROUTER" \
+  '判断密度 × 上下文依赖' \
+  'main/subagent division of labor principle'
 assert_literal "$ROUTER" \
   '已有批准计划时进入执行流程' \
   'L3 approved-plan execution route'
@@ -93,5 +108,15 @@ if rg -n '1% chance|没有选择|不能通过.*绕开|rationaliz' "$ROUTER" "$BR
   printf '  [FAIL] router and brainstorming contain generalized coercive language\n'
   exit 1
 fi
+
+# 入口 skill 体积门禁（fork-added 2026-08-22）：路由器只放判据与指针，
+# 细节必须下沉到目标 skill；触顶时一进一出，不堆叠。
+ROUTER_LINES=$(wc -l < "$ROUTER" | tr -d ' ')
+ROUTER_BYTES=$(wc -c < "$ROUTER" | tr -d ' ')
+if [[ "$ROUTER_LINES" -gt 60 || "$ROUTER_BYTES" -gt 6144 ]]; then
+  printf '  [FAIL] router size budget exceeded: %s lines / %s bytes (limit 60 lines / 6144 bytes)\n' "$ROUTER_LINES" "$ROUTER_BYTES"
+  exit 1
+fi
+printf '  [PASS] router size budget (%s lines / %s bytes, limit 60/6144)\n' "$ROUTER_LINES" "$ROUTER_BYTES"
 
 printf 'All adaptive workflow routing checks passed\n'

@@ -58,6 +58,16 @@ that norms say you ask about first (a merge, a push to a shared branch, a
 publish); and a plan so broken that every path forward is a guess. For those,
 stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking.
 
+<!-- fork-added begin · 元认知条款（2026-08-22 QuantumMisaka fork；依据 AutoResearchEval/arXiv:2608.14905 ARFT） -->
+## 元认知条款（fork）
+
+计划执行期间，以下三条与 Rulings 机制同等生效：
+
+1. **诊断-行动绑定**：执行中写下任何"这里有问题"的判断，必须同轮转化为处置——修复、按停止条件上报、或记入 Ruling 并写明代价。禁止"记录在案然后继续走"（ARFT F.4：82.5% 的轨迹已诊断却未修正）。
+2. **目标重锚**：周期性对照计划的验收条件问"当前动作在服务验收吗"；发现跑偏先停再调，不带着偏差冲刺（ARFT 案例 c：正确诊断主导负分项后预算错配到已获胜实例）。
+3. **自审不算证据**：任务完成只认 verification 命令的实时输出与 diff；自检清单打勾、解释性文字不计入验收。
+<!-- fork-added end -->
+
 ## When to Revisit Earlier Steps
 
 **Return to Review (Step 1) when:**

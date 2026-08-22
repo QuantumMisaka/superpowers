@@ -63,6 +63,10 @@ Each agent gets:
 - **Constraints:** Don't change other code
 - **Acceptance evidence:** The exact command(s) that prove the domain done
   and the expected output — so "fixed" is checkable, not claimed
+- **Fatal-flaw binding (fork-added, ARFT F.4):** discovering a fatal defect
+  means stop and report. Every "something is wrong" finding must carry a
+  disposition — fix, escalate, or rule-and-record with its cost. Never log
+  it and continue.
 - **Expected output:** Summary of what you found and fixed
 
 ### 3. Dispatch in Parallel
@@ -139,6 +143,10 @@ Return: Summary of what you found and what you fixed.
 **Need full context:** Understanding requires seeing entire system
 **Exploratory debugging:** You don't know what's broken yet
 **Shared state:** Agents would interfere (editing same files, using same resources)
+**Decision-phase artifacts (fork-added):** SPECs, plans, and acceptance
+criteria are main-agent work — their input is the conversation itself.
+Subagents gather, enumerate, and draft; decision points route back to the
+main agent and the human.
 
 ## Real Example from Session
 
