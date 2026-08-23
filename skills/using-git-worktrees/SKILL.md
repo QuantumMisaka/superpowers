@@ -38,11 +38,11 @@ Report with branch state:
 
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
-Has the user already indicated their worktree preference in your instructions? If not, ask for consent before creating a worktree:
+Has the user already indicated their worktree preference in your instructions? Honor any declared preference without asking. In a plan-execution or goal context, isolation is a ruling, not a question — the plan/goal approval already granted it, so create the worktree (Step 1) without prompting. Only in an interactive decision-phase context (no approved plan) ask once before creating:
 
 > "Would you like me to set up an isolated worktree? It protects your current branch from changes."
 
-Honor any existing declared preference without asking. If the user declines consent, work in place and skip to Step 2.
+If the user declines, work in place and skip to Step 2.
 
 ## Step 1: Create Isolated Workspace
 
@@ -143,7 +143,7 @@ Run tests to ensure workspace starts clean:
 npm test / cargo test / pytest / go test ./...
 ```
 
-**If tests fail:** Report failures, ask whether to proceed or investigate.
+**If tests fail:** Report the failures. In plan-execution mode, record them and proceed — a failing baseline is a finding, not a stop — unless the task itself depends on them.
 
 **If tests pass:** Report ready.
 
