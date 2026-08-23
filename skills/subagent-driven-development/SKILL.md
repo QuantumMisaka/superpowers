@@ -126,6 +126,8 @@ digraph process {
 
 Ensure the work happens in an isolated workspace: use
 superpowers:using-git-worktrees to create one or verify the existing one.
+In plan-execution mode, isolation is a ruling, not a question — plan or goal
+approval already granted it, so do not stop to ask for worktree consent.
 Never start implementation on a main/master branch without your human
 partner's explicit consent.
 
@@ -186,7 +188,7 @@ implementation.
 
 Use the least powerful model that can handle each role to conserve cost and increase speed.
 
-On this fork, resolve abstract roles to concrete model/effort routing via `using-superpowers/references/codex-tools.md` (capability-aware, multi-provider: deepseek/qwen/GPT); routing must not change the serial implement-review-fix lifecycle.
+On this fork, resolve abstract roles to concrete model/effort routing via your harness's routing reference (`references/*-tools.md`; Codex routes capability-aware across deepseek/qwen/GPT, Kimi Code exposes no model field so routing is omitted); routing must not change the serial implement-review-fix lifecycle.
 
 **Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
 
@@ -208,7 +210,7 @@ the implementer that got stuck.
 exposes a model field.** An omitted model inherits your session's model —
 often the most capable and most expensive — which silently defeats this
 section; but never require a field the active schema lacks (see
-`using-superpowers/references/codex-tools.md` for schema-aware routing).
+`references/*-tools.md` for schema-aware routing).
 
 **Turn count beats token price.** Wall-clock and context cost scale with how
 many turns a subagent takes, and the cheapest models routinely take 2-3× the
@@ -286,7 +288,11 @@ and fix-round diffs need it.
   a pointer to that ledger entry in the dispatch.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
-- Never dispatch multiple implementation subagents in parallel (conflicts).
+- Never dispatch implementation subagents in parallel. The implement-review-fix
+  lifecycle is serial: the task review's diff range (`BASE..HEAD`) assumes one
+  implementer's linear commits, and parallel implementers editing shared files
+  interleave those commits. Read-only investigation and disjoint-file work are
+  the parallel pattern's job (dispatching-parallel-agents), not this skill's.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 
