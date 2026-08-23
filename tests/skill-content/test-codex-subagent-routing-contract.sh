@@ -101,9 +101,18 @@ for skill in \
   requesting-code-review; do
   assert_literal \
     "$REPO_ROOT/skills/$skill/SKILL.md" \
-    'using-superpowers/references/codex-tools.md' \
-    "$skill uses shared Codex routing"
+    'references/*-tools.md' \
+    "$skill uses the harness-aware routing reference"
 done
+
+if grep -Rq -- 'codex-tools\.md' \
+  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
+  "$REPO_ROOT/skills/dispatching-parallel-agents/SKILL.md" \
+  "$REPO_ROOT/skills/requesting-code-review/SKILL.md"; then
+  printf '  [FAIL] leaf skills must not hardcode the Codex routing reference\n'
+  exit 1
+fi
+printf '  [PASS] leaf skills use the harness-aware form, not Codex-specific\n'
 
 if rg -ni 'codex-routing-kit|\b(luna|terra|sol)([_ -]|\b)|gpt-5\.6' \
   "$REPO_ROOT/skills"; then
