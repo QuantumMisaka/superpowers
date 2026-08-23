@@ -18,7 +18,10 @@ assert_phrase() {
   local pattern="$1"
   local label="$2"
 
-  grep -Pzoq -- "$pattern" "$SKILL"
+  # GNU `grep -P` (Perl regex, -z null-delimited) is not portable to macOS
+  # BSD grep; use perl's slurp mode (-0777) with the same inline `(?s)` flags.
+  perl -0777 -ne "exit 0 if /$pattern/s" "$SKILL" \
+    || { printf '  [FAIL] %s\n' "$label" >&2; exit 1; }
   printf '  [PASS] %s\n' "$label"
 }
 
