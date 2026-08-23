@@ -73,10 +73,10 @@ Each agent gets:
 
 Issue all three subagent dispatches in the same response — they run in parallel:
 
-On Codex, this is `independent-parallel` mode. Apply the capability-aware
-routing and fallback rules in
-[codex-tools.md](../using-superpowers/references/codex-tools.md), classifying
-each domain independently as routine or standard.
+Dispatch through your harness's parallel mode — Codex `independent-parallel`,
+Kimi Code `AgentSwarm`. Apply the capability-aware routing and fallback rules
+in your harness's routing reference (`references/*-tools.md`), classifying each
+domain independently as routine or standard.
 
 ```text
 Subagent (matching implementer capability): "Fix agent-tool-abort.test.ts failures"
@@ -147,6 +147,12 @@ Return: Summary of what you found and what you fixed.
 criteria are main-agent work — their input is the conversation itself.
 Subagents gather, enumerate, and draft; decision points route back to the
 main agent and the human.
+
+**Implementation with a review gate (fork-added):** tasks that write code,
+commit, and require per-task spec/quality review go through
+subagent-driven-development's serial implement-review-fix loop — not parallel
+dispatch. Parallel is for read-only investigation or disjoint-file work with
+no per-task review surface.
 
 ## Real Example from Session
 
