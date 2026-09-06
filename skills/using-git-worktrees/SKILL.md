@@ -97,63 +97,52 @@ git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
 ```
 
-**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then run setup and baseline tests in place.
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then apply Steps 2–3 in place.
 
-## Step 2: Project Setup
+## Step 2: Task-Relevant Setup
 
-**Submodule initialization:** `git worktree add` does not check out submodule
-contents — a new worktree starts with uninitialized submodules, and the
-in-place sandbox fallback may sit in a fresh clone that never initialized
-them. If the repository declares submodules, initialize them before any
-dependency install or baseline test:
+Choose setup from the task's files, required checks and repository instructions.
+Reuse inspected evidence that the needed environment is ready. A package
+manifest alone does not require installation; a documentation-only change may
+need only its link or formatting checker. When dependencies are missing, use
+the repository's documented package manager and lockfile workflow for the
+needed check, then verify readiness.
+
+**Submodules:** `git worktree add` does not check out submodule contents.
+Inspect declared submodules and identify which the task or its checks need:
 
 ```bash
 if [ -f .gitmodules ]; then
-  git submodule update --init --recursive
+  git submodule status --recursive
 fi
+# Initialize only required, missing paths before their dependent setup/checks:
+git submodule update --init --recursive -- <required-path>
 ```
 
-If initialization fails (network, auth, missing submodule commit), report the
-exact failing submodule and stop: dependency installs and baseline tests run
-against a missing submodule tree fail for misleading reasons.
+If a required submodule cannot initialize, identify its path and failure and
+diagnose it before dependent work. Continue independent work; pause that path
+only when no reliable repair is available within scope. An unrelated missing
+submodule does not require initialization or block this task.
 
-Auto-detect and run appropriate setup:
+## Step 3: Establish the Relevant Baseline
 
-```bash
-# Node.js
-if [ -f package.json ]; then npm install; fi
+Choose the smallest check that distinguishes this task's effects from existing
+failures. Reuse retained raw output and exit code only when they cover the
+unchanged relevant files and environment. Run a focused check when evidence
+is absent, stale or in doubt; a full suite is needed only for a claim that
+requires it. State when no executable baseline applies and what inspection
+supports starting instead.
 
-# Rust
-if [ -f Cargo.toml ]; then cargo build; fi
+**Failure rule:** Diagnose relevance first. Record an unrelated pre-existing
+failure and its evidence in the task record, then continue authorized work.
+Repair a relevant failure within scope; pause dependent work only if it prevents
+reliable implementation or validation and cannot be resolved within scope.
+Ask only for the missing decision or authorization. Never report a failing
+check as passing or claim an unverified acceptance condition is complete.
 
-# Python
-if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-if [ -f pyproject.toml ]; then poetry install; fi
-
-# Go
-if [ -f go.mod ]; then go mod download; fi
-```
-
-## Step 3: Verify Clean Baseline
-
-Run tests to ensure workspace starts clean:
-
-```bash
-# Use project-appropriate command
-npm test / cargo test / pytest / go test ./...
-```
-
-**If tests fail:** Report the failures. In plan-execution mode, record them and proceed — a failing baseline is a finding, not a stop — unless the task itself depends on them.
-
-**If tests pass:** Report ready.
-
-### Report
-
-```
-Worktree ready at <full-path>
-Tests passing (<N> tests, 0 failures)
-Ready to implement <feature-name>
-```
+Report the workspace/branch, checks run or evidence reused, known failures and
+remaining limitations. "Ready for this task" does not mean the whole suite is
+green.
 
 ## Quick Reference
 
@@ -161,7 +150,7 @@ Ready to implement <feature-name>
 |-----------|--------|
 | Already in linked worktree | Skip creation (Step 0) |
 | In a submodule | Treat as normal repo (Step 0 guard) |
-| Repo declares submodules | Initialize in new workspace before setup (Step 2) |
+| Required submodule missing | Initialize that path before dependent setup/checks (Step 2) |
 | Native worktree tool available | Use it (Step 1a) |
 | No native tool | Git worktree fallback (Step 1b) |
 | `.worktrees/` exists | Use it (verify ignored) |
@@ -170,8 +159,8 @@ Ready to implement <feature-name>
 | Neither exists | Check instruction file, then default `.worktrees/` |
 | Directory not ignored | Add to .gitignore + commit |
 | Permission error on create | Sandbox fallback, work in place |
-| Tests fail during baseline | Report failures + ask |
-| No package.json/Cargo.toml | Skip dependency install |
+| Baseline failure | Apply Step 3 relevance and reliability rule |
+| Required environment already ready | Reuse evidence; skip installation |
 
 ## Common Mistakes
 
@@ -195,10 +184,10 @@ Ready to implement <feature-name>
 - **Problem:** Creates inconsistency, violates project conventions
 - **Fix:** Follow priority: explicit instructions > existing project-local directory > default
 
-### Proceeding with failing tests
+### Losing failure provenance
 
-- **Problem:** Can't distinguish new bugs from pre-existing issues
-- **Fix:** Report failures, get explicit permission to proceed
+- **Problem:** New failures cannot be distinguished from existing ones
+- **Fix:** Retain baseline evidence and apply Step 3 before proceeding
 
 ## Red Flags
 
@@ -207,16 +196,16 @@ Ready to implement <feature-name>
 - Use `git worktree add` when you have a native worktree tool (e.g., `EnterWorktree`). This is the #1 mistake — if you have it, use it.
 - Skip Step 1a by jumping straight to Step 1b's git commands
 - Create worktree without verifying it's ignored (project-local)
-- Skip baseline test verification
-- Proceed with failing tests without asking
+- Claim baseline readiness without relevant evidence
+- Treat an unresolved relevant failure as passing
 
 **Always:**
 - Run Step 0 detection first
 - Prefer native tools over git fallback
 - Follow directory priority: explicit instructions > existing project-local directory > default
 - Verify directory is ignored for project-local
-- Auto-detect and run project setup
-- Verify clean test baseline
+- Select setup by task dependencies (Step 2)
+- Establish the relevant baseline and apply its failure rule (Step 3)
 
 ## Common Rationalizations
 
@@ -226,4 +215,4 @@ Ready to implement <feature-name>
 | "`git worktree add` is quicker than hunting for a native tool" | A native tool (e.g. `EnterWorktree`) owns placement, branching, and cleanup. Bypassing it is the #1 mistake — it creates phantom state your harness can't see or manage. |
 | "The worktree directory is surely ignored already" | Run `git check-ignore`. An unignored worktree directory commits the whole tree into the repo. |
 | "Any directory name works" | Explicit instructions beat an existing project-local directory, which beats the `.worktrees/` default. |
-| "The workspace is fresh — baseline tests can wait" | A dirty baseline makes every later failure ambiguous. Run the tests now; proceeding past failures is your human partner's call. |
+| "The workspace is fresh — baseline tests can wait" | Establish relevant baseline evidence under Step 3; unrelated known failures do not require another permission round. |

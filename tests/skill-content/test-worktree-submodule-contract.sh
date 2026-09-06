@@ -1,45 +1,18 @@
 #!/usr/bin/env bash
+# Structural lint only; setup/failure decisions need scenario evaluation.
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-SKILL="$REPO_ROOT/skills/using-git-worktrees/SKILL.md"
-
-assert_literal() {
-  local needle="$1"
-  local label="$2"
-
-  grep -Fq -- "$needle" "$SKILL"
-  printf '  [PASS] %s\n' "$label"
-}
-
-# Multi-line contract phrases: whitespace-flexible match across line wraps.
-assert_phrase() {
-  local pattern="$1"
-  local label="$2"
-
-  # GNU `grep -P` (Perl regex, -z null-delimited) is not portable to macOS
-  # BSD grep; use perl's slurp mode (-0777) with the same inline `(?s)` flags.
-  perl -0777 -ne "exit 0 if /$pattern/s" "$SKILL" \
-    || { printf '  [FAIL] %s\n' "$label" >&2; exit 1; }
-  printf '  [PASS] %s\n' "$label"
-}
-
-printf 'Worktree submodule contract\n'
-
-test -f "$SKILL"
-printf '  [PASS] skill exists\n'
-
-assert_literal '`git worktree add` does not check out submodule' \
-  'names the worktree submodule gap'
-assert_literal '[ -f .gitmodules ]' 'guards on declared submodules'
-assert_literal 'git submodule update --init --recursive' \
-  'initializes submodules recursively'
-assert_phrase '(?s)initialize them before any\s+dependency install or baseline test' \
-  'orders init before setup and baseline'
-assert_phrase '(?s)report the\s+exact failing submodule and stop' \
-  'halts on failed init'
-assert_literal '| Repo declares submodules | Initialize in new workspace before setup (Step 2) |' \
-  'error table routes submodule repos to Step 2'
-
-printf 'All worktree submodule contract checks passed\n'
+python3 - "$SCRIPT_DIR/../.." <<'CHECK'
+from pathlib import Path
+import re
+import sys
+root = Path(sys.argv[1]).resolve()
+skill = root / 'skills/using-git-worktrees/SKILL.md'
+text = skill.read_text()
+assert text.startswith('---\n')
+assert re.search(r'^name: using-git-worktrees$', text, re.M)
+assert re.search(r'^description: .+', text, re.M)
+assert (root / 'tests/skill-content/workflow-consistency-scenarios.md').is_file()
+print('PASS: worktree skill entry and scenario resource exist')
+print('NOT VERIFIED: isolation, submodule selection, setup or failure decisions; use scenarios')
+CHECK

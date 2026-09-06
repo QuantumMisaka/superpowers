@@ -61,13 +61,14 @@ Re-reviewer subagent:
 
     ## Tests
 
-    The implementer re-ran the tests covering the amended code and appended
-    the results to the report file. Treat the report as unverified claims:
-    confirm the fix report names the covering tests and shows their output,
-    and verify the claims against the diff. Do not re-run the suite to
-    confirm their report. Run a test only when reading the code raises a
-    specific doubt that no existing run answers — and then a focused test,
-    never a package-wide suite.
+    The implementer appended evidence for the amended code to the report
+    file. Treat the report as unverified claims: confirm it identifies the
+    exact revision, covering command, complete raw output, exit code, produced
+    artifact, and criterion coverage, then verify the claims against the diff.
+    A status or success summary alone is not evidence. Do not mechanically
+    rerun the suite when this evidence is complete and current. Run only the
+    smallest focused check when evidence is missing, stale, or a specific
+    doubt remains; a retry cap never closes a real Critical/Important gap.
 
     ## Output Format
 
@@ -80,7 +81,10 @@ Re-reviewer subagent:
     For each finding in The Findings Under Verification, in order:
     - **[finding one-liner]** — ADDRESSED | NOT ADDRESSED, with file:line
       evidence. "Attempted" is not addressed: the specific defect must no
-      longer exist.
+      longer exist. A finding can be excluded only through concrete evidence
+      that disproves it; the controller records that Ruling. Minor findings
+      may be deferred, but a real Critical/Important acceptance gap remains
+      open regardless of the cap.
 
     ### New Breakage in the Fix Diff
 

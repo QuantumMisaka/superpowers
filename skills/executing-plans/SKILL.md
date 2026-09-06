@@ -11,7 +11,10 @@ Load plan, review critically, execute all tasks, report when complete.
 
 **Announce at start:** "I'm using the executing-plans skill to implement this plan."
 
-**Note:** Tell your human partner that Superpowers works much better with access to subagents. The quality of its work will be significantly higher if run on a platform with subagent support (Claude Code, Codex CLI, Codex App, Copilot CLI, and Gemini CLI all qualify; see the per-platform tool refs in `../using-superpowers/references/`). If subagents are available, use superpowers:subagent-driven-development instead of this skill.
+Use the execution mode already selected. Availability of subagents alone does
+not require SDD: direct execution is appropriate when its coordination cost is
+lower. Delegate independent bounded work when useful and authorized; use SDD
+when the plan benefits from its per-task implementation and review cycle.
 
 ## The Process
 
@@ -19,8 +22,10 @@ Load plan, review critically, execute all tasks, report when complete.
 1. Read plan file
 2. If present, read its `**Spec:**` file and the sections cited by tasks
 3. Review critically - identify any questions or concerns about the plan
-4. If concerns: raise them via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking. Concerns answerable by
-   reading the code are resolved by reading, not raised.
+4. Resolve concerns from code or within the approved scope using Rulings below.
+   Ask through brainstorming's Grill only for a missing decision or authorization
+   that prevents reliable execution. Preserve prior authorization; do not ask
+   again merely because this is a new execution step.
 5. If no concerns: Create todos for the plan items and proceed
 
 ### Step 2: Execute Tasks
@@ -34,14 +39,14 @@ For each task:
 ### Step 3: Complete Development
 
 Exit condition — all three must hold: every task marked complete; every
-verification the plan names run fresh with passing output (see
+acceptance condition supported by current revision-bound execution evidence (see
 verification-before-completion); and every ruling you made listed in the
 final message under "Rulings I made", each with what it costs if wrong.
 
-After all tasks complete and verified:
-- Announce: "I'm using the finishing-a-development-branch skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use superpowers:finishing-a-development-branch
-- Follow that skill to verify tests, present options, execute choice
+After all tasks complete and verified, report results, evidence and the retained
+branch/workspace. If integration or cleanup is requested, use
+**superpowers:finishing-a-development-branch** for that operation and honor the
+already authorized choice. Implementation-only delivery does not open a menu.
 
 ## Rulings, Not Stalls
 
@@ -52,11 +57,11 @@ what neither answers. Record every decision as `Ruling: <what you decided>
 — <why> — <what it costs if wrong>` and keep going; the ruling list in your
 final message is where your human partner reviews and reworks them.
 
-Four things stop you, and only these: an irreversible or destructive
-operation; a security-sensitive action; a side effect outside this workspace
-that norms say you ask about first (a merge, a push to a shared branch, a
-publish); and a plan so broken that every path forward is a guess. For those,
-stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking.
+Pause for missing authorization for irreversible/destructive operations,
+security-sensitive actions or external side effects (merge, push, publish),
+or when the plan leaves no reliable path forward. Existing authorization
+persists within its scope; harness permission checks still apply. Ask only for
+the missing decision, after resolving what the codebase can answer.
 
 <!-- fork-added begin · 元认知条款（2026-08-22 QuantumMisaka fork；依据 AutoResearchEval/arXiv:2608.14905 ARFT） -->
 ## 元认知条款（fork）
@@ -74,7 +79,8 @@ stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking
 - Partner updates the plan based on your feedback
 - Fundamental approach needs rethinking
 
-**Don't force through blockers** - stop and ask.
+**Don't force through missing evidence** — diagnose and repair within scope;
+report incomplete when no reliable path remains.
 
 ## Remember
 - Review plan critically first
@@ -89,4 +95,4 @@ stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking
 **Required workflow skills:**
 - **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
 - **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - Complete development after all tasks
+- **superpowers:finishing-a-development-branch** - When integration or cleanup is requested

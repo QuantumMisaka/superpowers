@@ -1,188 +1,32 @@
 #!/usr/bin/env bash
+# Structural lint only. Behavioral evaluation lives in workflow-consistency-scenarios.md.
 set -euo pipefail
-
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-REFERENCE="$REPO_ROOT/skills/using-superpowers/references/codex-tools.md"
+python3 - "$SCRIPT_DIR/../.." <<'PY'
+import re
+import sys
+from pathlib import Path
 
-assert_literal() {
-  local file="$1"
-  local needle="$2"
-  local label="$3"
-
-  grep -Fq -- "$needle" "$file"
-  printf '  [PASS] %s\n' "$label"
-}
-
-printf 'Codex subagent routing contract\n'
-
-assert_literal "$REFERENCE" 'sequential-gated' 'sequential workflow mode'
-assert_literal "$REFERENCE" 'independent-parallel' 'parallel workflow mode'
-assert_literal "$REFERENCE" 'generic subagent' 'capability fallback'
-assert_literal "$REFERENCE" 'Routine implementer' 'routine implementer capability'
-assert_literal "$REFERENCE" 'Standard implementer' 'standard implementer capability'
-assert_literal "$REFERENCE" 'Task reviewer' 'task reviewer capability'
-assert_literal "$REFERENCE" 'Final reviewer' 'final reviewer capability'
-assert_literal "$REFERENCE" 'Monitor' 'monitor capability'
-assert_literal \
-  "$REFERENCE" \
-  'When `fork_turns` is available' \
-  'schema-aware isolated child context'
-assert_literal \
-  "$REFERENCE" \
-  'If `agent_type` is absent or no' \
-  'named-role fallback condition'
-assert_literal \
-  "$REFERENCE" \
-  'advertised role matches, omit routing fields and dispatch a generic subagent' \
-  'named-role to generic fallback order'
-
-assert_literal \
-  "$REFERENCE" \
-  '## Bailian Multi-Agent V1 Compatibility' \
-  'Bailian compatibility mode is documented'
-assert_literal \
-  "$REFERENCE" \
-  'multi_agent_v2 = false' \
-  'Bailian compatibility selects V1'
-assert_literal \
-  "$REFERENCE" \
-  'max_concurrent_threads_per_session = 4' \
-  'Bailian compatibility permits four concurrent children'
-assert_literal \
-  "$REFERENCE" \
-  'Qwen → Qwen and Qwen → GPT' \
-  'Bailian native routes are explicit'
-assert_literal \
-  "$REFERENCE" \
-  'The file package is the compatibility fallback' \
-  'file handoff is retained as fallback'
-
-assert_literal \
-  "$REFERENCE" \
-  '.superpowers/review-packages/<handoff-id>/request.md' \
-  'main-only review request has stable path'
-assert_literal \
-  "$REFERENCE" \
-  '.superpowers/review-packages/<handoff-id>/result.md' \
-  'main-only review result has stable path'
-assert_literal \
-  "$REFERENCE" \
-  '.superpowers/review-packages/<handoff-id>/decision.md' \
-  'main-only parent decision has stable path'
-assert_literal "$REFERENCE" '### Inputs' 'review package inputs contract'
-assert_literal \
-  "$REFERENCE" \
-  'Resolve every Input path from the repository root' \
-  'review inputs have an unambiguous path base'
-assert_literal "$REFERENCE" '### Output' 'review package output contract'
-assert_literal "$REFERENCE" '### Stop condition' 'review package stop contract'
-assert_literal "$REFERENCE" '### Parent decision' 'review package parent-decision contract'
-assert_literal \
-  "$REFERENCE" \
-  'independent Bailian main session' \
-  'Qwen consumes package in independent main session'
-assert_literal \
-  "$REFERENCE" \
-  'writes the result file' \
-  'Qwen writes the stable result artifact'
-assert_literal \
-  "$REFERENCE" \
-  'default GPT main session reads the result file' \
-  'GPT parent consumes the review result'
-assert_literal \
-  "$REFERENCE" \
-  'never launch one main session from the other with nested `codex exec`' \
-  'production handoff excludes nested Codex execution'
-
-for skill in \
-  subagent-driven-development \
-  dispatching-parallel-agents \
-  requesting-code-review; do
-  assert_literal \
-    "$REPO_ROOT/skills/$skill/SKILL.md" \
-    'references/*-tools.md' \
-    "$skill uses the harness-aware routing reference"
-done
-
-if grep -Rq -- 'codex-tools\.md' \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  "$REPO_ROOT/skills/dispatching-parallel-agents/SKILL.md" \
-  "$REPO_ROOT/skills/requesting-code-review/SKILL.md"; then
-  printf '  [FAIL] leaf skills must not hardcode the Codex routing reference\n'
-  exit 1
-fi
-printf '  [PASS] leaf skills use the harness-aware form, not Codex-specific\n'
-
-if rg -ni 'codex-routing-kit|\b(luna|terra|sol)([_ -]|\b)|gpt-5\.6' \
-  "$REPO_ROOT/skills"; then
-  printf '  [FAIL] skills must not depend on one routing kit or model family\n'
-  exit 1
-fi
-printf '  [PASS] no routing-kit or model identifiers in skills\n'
-
-if grep -Fq -- 'Always specify the model explicitly' \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md"; then
-  printf '  [FAIL] routing must not require fields absent from the active schema\n'
-  exit 1
-fi
-printf '  [PASS] no impossible model-field requirement\n'
-
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'most capable available model' \
-  'final review uses most capable tier'
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'fast, cheap model' \
-  'mechanical work selects cheap tier'
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'standard model' \
-  'integration work selects standard tier'
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md" \
-  'capability-aware' \
-  'task/final review route via capability-aware reference'
-
-if rg -ni 'explicit model|model controls|named role or model' \
-  "$REFERENCE" \
-  "$REPO_ROOT/skills/subagent-driven-development/SKILL.md"; then
-  printf '  [FAIL] Superpowers must not select concrete Codex models\n'
-  exit 1
-fi
-printf '  [PASS] concrete Codex models remain routing-config owned\n'
-
-if rg -n '\[MODEL|^[[:space:]]*model:' \
-  "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
-  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
-  "$REPO_ROOT/skills/subagent-driven-development/re-review-prompt.md"; then
-  printf '  [FAIL] SDD prompts must leave routing fields to the controller\n'
-  exit 1
-fi
-printf '  [PASS] SDD prompts contain no routing-field placeholders\n'
-
-if rg -n 'Subagent \(general-purpose\)' \
-  "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
-  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
-  "$REPO_ROOT/skills/subagent-driven-development/re-review-prompt.md" \
-  "$REPO_ROOT/skills/requesting-code-review/code-reviewer.md"; then
-  printf '  [FAIL] prompt headings must not force the generic fallback role\n'
-  exit 1
-fi
-printf '  [PASS] prompt headings remain abstract-role neutral\n'
-
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/implementer-prompt.md" \
-  'Implementer subagent:' \
-  'implementer prompt uses capability heading'
-assert_literal \
-  "$REPO_ROOT/skills/subagent-driven-development/task-reviewer-prompt.md" \
-  'Task reviewer subagent:' \
-  'task reviewer prompt uses task-scoped heading'
-assert_literal \
-  "$REPO_ROOT/skills/requesting-code-review/code-reviewer.md" \
-  'Reviewer subagent:' \
-  'shared reviewer prompt does not force task or final scope'
-
-printf 'All Codex subagent routing contract checks passed\n'
+root = Path(sys.argv[1]).resolve()
+reference = root / 'skills/using-superpowers/references/codex-tools.md'
+assert reference.is_file(), reference
+skills = ('subagent-driven-development', 'dispatching-parallel-agents', 'requesting-code-review')
+for name in skills:
+    path = root / 'skills' / name / 'SKILL.md'
+    content = path.read_text()
+    assert content.startswith('---\n'), path
+    assert re.search(r'^name: ' + re.escape(name) + r'$', content, re.M), path
+    # A real reference pointer, without forcing harness-specific prose on leaf skills.
+    assert 'references/*-tools.md' in content, path
+    assert 'codex-tools.md' not in content, path
+    for target in re.findall(r'\]\(([^)]+\.md)\)', content):
+        if not re.match(r'\w+://', target) and '<' not in target:
+            assert (path.parent / target).is_file(), (path, target)
+for path in (root / 'skills').rglob('*.md'):
+    assert not re.search(r'codex-routing-kit|gpt-5\.6|\b(luna|terra|sol)\b', path.read_text(), re.I), path
+for name in ('implementer-prompt.md', 'task-reviewer-prompt.md', 're-review-prompt.md'):
+    path = root / 'skills/subagent-driven-development' / name
+    assert not re.search(r'\[MODEL|^\s*model:', path.read_text(), re.M), path
+print('PASS: routing structure, local reference targets, and config-owned model boundaries')
+print('NOT VERIFIED: dispatch behavior, role precedence, authorization, or completion decisions')
+PY

@@ -45,10 +45,15 @@ fallback without skipping the review.
 - `{HEAD_SHA}` - Ending commit
 
 **3. Act on feedback:**
-- Fix Critical issues immediately
-- Fix Important issues before proceeding
-- Note Minor issues for later
-- Push back if reviewer is wrong (with reasoning)
+- Fix Critical issues immediately.
+- Fix Important issues before proceeding; a real acceptance gap remains a gate
+  even when a retry cap is reached.
+- Note Minor issues for later in the review ledger.
+- If evidence disproves a finding, record the controller's Ruling and the
+  evidence; do not silently drop it.
+- When the same fix strategy reaches its cap, change strategy or re-decompose
+  and continue an authorized feasible repair. If no reliable path exists,
+  report the work incomplete and keep it out of merge-ready status.
 
 ## Example
 
@@ -71,10 +76,10 @@ HEAD_SHA=$(git rev-parse HEAD)
   Issues:
     Important: Missing progress indicators
     Minor: Magic number (100) for reporting interval
-  Assessment: Ready to proceed
+  Assessment: Needs fixes
 
-You: [Fix progress indicators]
-[Continue to Task 3]
+You: [Fix progress indicators and request the scoped re-review]
+[Continue to Task 3 after the Important finding is addressed]
 ```
 
 ## Integration with Workflows
@@ -82,7 +87,8 @@ You: [Fix progress indicators]
 **Subagent-Driven Development:**
 - Review after EACH task
 - Catch issues before they compound
-- Fix before moving to next task
+- Fix before moving to next task; completion still requires revision-bound
+  acceptance evidence
 
 **Executing Plans:**
 - Review after each task or at natural checkpoints

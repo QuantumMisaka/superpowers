@@ -79,8 +79,16 @@ Task reviewer subagent:
     running it. If you cannot run commands in this environment, name the
     test you would run.
 
-    Warnings or other noise in the implementer's reported test output are
-    findings — test output should be pristine.
+    Warnings or other noise in reported output require a relevance check. Flag
+    them when they undermine the requested behavior or the acceptance evidence;
+    unrelated noise alone does not invalidate otherwise complete evidence.
+
+    For acceptance evidence, verify that the report identifies the exact
+    revision, command, complete raw output, exit code, produced artifact, and
+    criterion covered. A status or success summary alone is an evidence gap.
+    Do not require a mechanical full-suite rerun when this package is complete
+    and current; a missing, stale, or concretely doubtful item should be
+    reported for the controller's smallest focused check.
 
     Evidence you cannot see is not evidence that doesn't exist. If the
     report or its test evidence looks truncated, or you cannot locate the
@@ -109,6 +117,12 @@ Task reviewer subagent:
     If a requirement cannot be verified from this diff alone (it lives in
     unchanged code or spans tasks), report it as a ⚠️ item instead of
     broadening your search.
+
+    A real Critical or Important acceptance gap is a finding even if the
+    implementer has exhausted its retry cap. A cap does not make that gap
+    complete or merge-ready. If concrete evidence disproves a finding, state
+    the evidence so the controller can record a Ruling; Minor findings may be
+    deferred with an explicit ledger entry.
 
     ## Part 2: Code Quality
 

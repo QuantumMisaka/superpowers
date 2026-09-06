@@ -1,6 +1,6 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires current-workstate execution evidence and confirmed output before making success claims; evidence before assertions always
 ---
 
 # Verification Before Completion
@@ -10,10 +10,15 @@ description: Use when about to claim work is complete, fixed, or passing, before
 Before reporting a work-state claim:
 
 1. Name the exact command or observation that can support the claim.
-2. Run it fresh and read the complete relevant output and exit code.
-3. Compare the result with the claim.
-4. If they match, report the claim with fresh evidence.
-5. If they do not match, report the actual status, failing check, and next
+2. Use evidence produced for the current workstate and exact revision. "Fresh"
+   means current-state execution evidence, not that every agent or reviewer
+   must rerun the same command. Run it now when no valid retained evidence
+   covers the claim.
+3. Read the complete relevant raw output and exit code, and locate the
+   produced artifact when the check has one.
+4. Compare the result with the claim.
+5. If they match, report the claim with fresh evidence.
+6. If they do not match, report the actual status, failing check, and next
    actionable step.
 
 Use the narrowest sufficient verification for the claim. A focused test can
@@ -23,18 +28,27 @@ prove the changed behavior; a full build claim requires the full build command.
 
 | Claim | Requires | Not Sufficient |
 |-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Previous run, "should pass" |
+| Tests pass | Test command output: 0 failures | Unbound or stale run, "should pass" |
 | Linter clean | Linter output: 0 errors | Partial check, extrapolation |
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
 | Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
 | Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff shows changes | Agent reports "success" |
+| Agent completed | VCS diff plus revision-bound raw output, exit code, and artifacts | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
 
-Match the scope and freshness of the evidence to the claim. A previous run
-describes a previous work state; a partial check supports only the boundary it
-exercised; an agent report becomes evidence after inspecting the resulting
-artifacts and running their verification.
+Match the scope and freshness of the evidence to the claim. Output from a
+previous run is usable only when it is explicitly tied to the current revision
+and workstate; otherwise it describes a previous state. A partial check
+supports only the boundary it exercised. An agent report becomes evidence
+after the controller inspects the resulting artifacts and verifies its raw
+command output, exit code, and acceptance coverage.
+
+For delegated work, the controller binds acceptance to the exact revision,
+retained raw command output, exit code, produced artifact, and the criterion it
+covers. A status or success summary alone is not evidence. If this package is
+complete and current, consume it without mechanically repeating the full
+suite; if it is missing, stale, or raises a concrete doubt, run the smallest
+focused check that resolves the gap.
 
 ## Evidence Patterns
 
@@ -75,6 +89,7 @@ A failing verification command supplies useful status evidence. Report:
 - the claim you evaluated;
 - the exact command or observation;
 - the exit code and first actionable failure;
+- the raw output and produced artifact relevant to the check;
 - the narrower statement the evidence supports;
 - the next actionable step.
 
@@ -91,6 +106,6 @@ Apply the claim contract before:
 
 ## Completion Record
 
-For every final work-state claim, name the matching fresh evidence and its
-result. Where evidence and claim differ, report the actual status and retain the
-failure as the next work item.
+For every final work-state claim, name the matching current-revision evidence
+and its result. Where evidence and claim differ, report the actual status and
+retain the failure as the next work item.

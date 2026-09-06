@@ -28,11 +28,12 @@ both. See `## Bailian Multi-Agent V1 Compatibility` for the proven matrix.
 
 - **Spawning:** give children a clean context with
   `spawn_agent {fork_turns: "none"}`; the default `"all"` copies your
-  entire transcript into the child. On Codex 0.145+, role files under
-  `~/.codex/agents/` attach to isolated forks via `agent_type`.
-  Full-history forks accept `model` and `reasoning_effort` overrides
-  (only `agent_type` is refused there) — isolated forks are the SDD
-  default for context hygiene, not because overrides require them.
+  entire transcript into the child. Select an advertised `agent_type`
+  when its configured capability fits. The current full-history fork surface
+  inherits model/effort and rejects their overrides; use an isolated or
+  bounded-history fork when the active schema permits a deliberate override.
+  Recheck the schema after harness updates, rather than extrapolating from
+  a version number or an old successful call.
 - **Fix rounds:** resume the implementer instead of spawning fresh.
   V2: `followup_task` delivers your message, triggers a turn, and
   transparently reloads a child the harness evicted — on V2 a spawned
@@ -61,13 +62,9 @@ two-thirds of all wait calls were short polls that timed out.
 - While you still have local work, do not wait at all. A completed
   child's final answer is pushed into your mailbox and arrives with
   your next turn.
-- When you are genuinely idle with children outstanding, wait in
-  bounded stretches: `wait_agent` with `timeout_ms` 300000-600000
-  (5-10 minutes). After each stretch — wake or timeout — post one
-  status line, run `list_agents`, and chase any child that finished
-  without reporting. Never stack polls shorter than five minutes; the
-  event subscription wakes a bounded stretch just as fast as a short
-  one.
+- When idle with children outstanding, use an event wait bounded by the
+  active harness's communication deadline. Do not use short repeated polling;
+  after a timeout, report status and reconcile agent state before waiting again.
 - Completion mail cannot wake an idle controller (it is delivered
   without triggering a turn); covering that idle window is
   `wait_agent`'s only job. A stretch that times out with no activity
@@ -75,23 +72,33 @@ two-thirds of all wait calls were short polls that timed out.
 
 ## Model routing on spawns
 
-Every `spawn_agent` you issue — including when you are yourself a
-spawned child running a fan-out — sets `model` AND `reasoning_effort`
-explicitly, per the Model Selection rules of the skill you are
-executing — but only set fields your active spawn schema exposes.
-Setting `model` alone is a trap: the child's effort silently resets to
-that model's default, not to yours.
+Use one routing source per dispatch (2026-09-05 authorized consistency review):
 
-Ask your human partner to add a machine-level backstop to
-`~/.codex/config.toml` so any spawn that slips through still routes to
-a deliberate tier instead of silently inheriting the session's most
-expensive model:
+1. Inspect the active schema and project routing, then choose an advertised
+   role whose capability and tier fit. Role-file model/effort settings take
+   precedence; omit those overrides when the role fixes them.
+2. Without a fitting role, use a generic subagent and the configured backstop.
+   For a task-authorized tier change, use a generic isolated fork and set both
+   `model` and `reasoning_effort`, only if the schema supports them and the
+   model/effort are advertised. Keep the full task and permission contract.
+3. If the needed tier cannot be expressed, report that gap instead of claiming
+   an upgrade. Use another authorized route or ask only for the missing decision.
 
-```toml
-[agents]
-default_subagent_model = "<a mid-tier model from your spawn allowlist>"
-default_subagent_reasoning_effort = "medium"
-```
+Check existing `[agents].default_subagent_model` and
+`default_subagent_reasoning_effort` before proposing a backstop change. These
+settings avoid accidentally inheriting an expensive parent model; they do not
+supersede a role file. Use a model's supported effort domain, not a universal
+`medium` value. Selecting only a model without an effort may select its default
+effort; it is not a reliable way to preserve the parent's tier.
+
+The [official subagent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+describes role-file precedence. Actual tool schema and live runtime overrides
+remain authoritative for each dispatch; role sandbox defaults alone do not
+prove stronger isolation than the parent session grants.
+Generic forks inherit the active permission profile. A read-only task prompt
+is a behavior contract, not enforced sandbox isolation; if the task requires
+enforced isolation, use a route that actually provides it rather than treating
+a generic tier change as an equivalent replacement.
 
 ## Capability-Aware Routing
 
@@ -116,16 +123,18 @@ domains and disjoint writes.
 
 When `agent_type` is visible, prefer the matching configured role and let its
 configuration select model and effort. If `agent_type` is absent or no
-advertised role matches, omit routing fields and dispatch a generic subagent;
-mandatory reviews still proceed. When `fork_turns` is available, pass
+advertised role matches, dispatch a generic subagent using the backstop or
+the task-authorized tier change described above; required reviews still proceed. When `fork_turns` is available, pass
 `fork_turns: "none"`; otherwise omit it. Always put the complete task contract
 in `message`.
 
 Treat provider specialization as a local routing hypothesis, not a universal
-model claim. Prefer the GPT engineering group for complex implementation,
+model claim. Within routes actually advertised by the active profile, prefer the GPT engineering group for complex implementation,
 debugging, code-detail review, and final architecture review. Prefer the Qwen
 information group for large-context synthesis, progress review, document
-review, and approved HTML/Markdown drafting. Ordinary bounded implementation
+review, and approved HTML/Markdown drafting. A GPT-only profile uses its own
+matching roles; this preference does not authorize spawning an unavailable
+Qwen role or opening a paid provider session. Ordinary bounded implementation
 may use either engineering group. The parent owns unresolved decisions,
 dependency ordering, and final synthesis.
 
@@ -152,8 +161,9 @@ routes; this file only declares the priority.
 
 ## Bailian Multi-Agent V1 Compatibility
 
-Codex 0.146.0 uses different working transport paths for these Providers. Keep
-the default OpenAI profile on V2 and select V1 in the Bailian profile:
+The following is historical compatibility evidence from Codex 0.146.0, not
+a prescription to rewrite current configuration. The installed profile and
+active tools decide which routes are available:
 
 ```toml
 # config.toml
@@ -175,13 +185,15 @@ enabled = true
 max_concurrent_threads_per_session = 4
 ```
 
-The proven native matrix is GPT → GPT on V2, plus Qwen → Qwen and Qwen → GPT
-on V1. A Bailian parent may start four Qwen children concurrently. For a
+That historical probe covered GPT → GPT on V2, plus Qwen → Qwen and Qwen → GPT
+on V1. It does not prove every route is currently registered or available.
+Respect the active session's actual concurrency budget, including its counting
+convention for the primary thread. For a
 cross-model child, use an advertised role and an isolated child context
 (`fork_turns: "none"` when the schema offers it), then send the complete task
 contract in `message`.
 
-GPT → Qwen task delivery is not compatible with the current V2 transport.
+GPT → Qwen task delivery failed on that tested V2 transport.
 The file package is the compatibility fallback for that direction. Keep the Qwen
 templates installed for Bailian routing, while the default GPT profile
 advertises only routes that can receive their task payload.
@@ -235,9 +247,10 @@ and owns the accept, reject, follow-up, architecture, and final-synthesis
 decision. It records that bounded outcome and rationale in
 `.superpowers/review-packages/<handoff-id>/decision.md`.
 
-Production handoff uses independently opened top-level sessions: never launch one main session from the other with nested `codex exec`. A bounded CLI probe
-may exercise this file protocol as validation evidence, but it is not the
-production orchestration path.
+Ordinary production handoff uses independently opened top-level sessions.
+Do not invent nested `codex exec` orchestration. A project-authorized bounded
+review launcher may provide a separate controlled path; follow its current
+contract and authorization rather than generalizing that exception.
 
 ## Environment Detection
 
@@ -250,7 +263,8 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 BRANCH=$(git branch --show-current)
 ```
 
-- `GIT_DIR != GIT_COMMON` → already in a linked worktree (skip creation)
+- `GIT_DIR != GIT_COMMON` → check the submodule guard in using-git-worktrees
+  before concluding that this is a linked worktree
 - `BRANCH` empty → detached HEAD (cannot branch/push/PR from sandbox)
 
 See `using-git-worktrees` Step 0 and `finishing-a-development-branch`

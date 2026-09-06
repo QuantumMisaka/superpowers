@@ -116,7 +116,7 @@ check_verification_contract() {
     return 1
 
   for row in \
-    '| Tests pass | Test command output: 0 failures | Previous run, "should pass" |' \
+    '| Tests pass | Test command output: 0 failures |' \
     '| Build succeeds | Build command: exit 0 | Linter passing, logs look good |' \
     '| Regression test works | Red-green cycle verified | Test passes once |' \
     '| Requirements met | Line-by-line checklist | Tests passing |'; do

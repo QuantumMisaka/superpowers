@@ -7,7 +7,7 @@ description: Use when you have a spec or requirements for a multi-step task, bef
 
 ## Overview
 
-Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch for each task, code, testing, docs they might need to check, how to test it. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
+Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste. Document everything they need to know: which files to touch, observable behavior, interfaces, constraints, source references and acceptance checks. Give them the whole plan as bite-sized tasks. DRY. YAGNI. TDD. Frequent commits.
 
 Assume they are a skilled developer, but know almost nothing about our toolset or problem domain. Assume they don't know good test design very well.
 
@@ -51,7 +51,7 @@ independently testable deliverable.
 
 ## Bite-Sized Task Granularity
 
-**Each step is one action (2-5 minutes):**
+**Each step is a concrete action sized to the deliverable:**
 - "Write the failing test" - step
 - "Run it to make sure it fails" - step
 - "Implement the minimal code to make the test pass" - step
@@ -88,6 +88,12 @@ implicitly include this section.]
 ```
 
 ## Task Structure
+
+The code below illustrates a behavior-changing task. Adapt steps to the actual
+verification boundary; document/config tasks do not need a synthetic TDD cycle.
+Provide code only for a critical algorithm, an ambiguous contract or a necessary
+reproducer. Ordinary steps specify behavior and reference the existing API or
+pattern by exact path and symbol.
 
 ````markdown
 ### Task N: [Component Name]
@@ -150,55 +156,53 @@ git commit -m "feat: add specific feature"
 Replace every bracketed test-strategy field with concrete repository facts in
 the generated plan; the brackets are template guidance, not valid plan output.
 
-## No Placeholders
+## Executable Task Contracts
 
-Every step must contain the actual content an engineer needs. These are **plan failures** — never write them:
-- "TBD", "TODO", "implement later", "fill in details"
-- "Add appropriate error handling" / "add validation" / "handle edge cases"
-- "Write tests for the above" (without actual test code)
-- "Similar to Task N" (repeat the code — the engineer may be reading tasks out of order)
-- Steps that describe what to do without showing how (code blocks required for code steps)
-- References to types, functions, or methods not defined in any task
+Each task supplies exact files, observable behavior (including errors), consumed
+and produced interfaces, applicable constraints, and acceptance commands with
+expected results. A worker must be able to implement it without inventing a
+product decision. Concrete test cases can be specified as inputs and expected
+outputs; full implementation and test source are not required plan artifacts.
 
-## Remember
-- Exact file paths always
-- Complete code in every step — if a step changes code, show the code
-- Exact commands with expected output
-- DRY, YAGNI, TDD, frequent commits
+Reference a shared contract by exact path/section or task interface rather than
+copying its code. Ensure that reference is included in the worker's brief and
+accessible to it. Supply code for unresolved algorithmic detail only after the
+decision is settled; a placeholder such as "add validation" is not a contract.
+Undefined APIs, TODO decisions and missing expected results must be resolved.
 
 ## Self-Review
 
-After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
+Check spec coverage, task acceptance and producer/consumer interface consistency
+once. Fix gaps inline. Retain a short review record naming the plan/spec revision,
+checked requirements and critical interfaces, plus any unresolved items. A clean
+check needs no per-task-pair table. This is planning evidence, not implementation
+acceptance; independent task and final reviews still inspect actual changes.
 
-**1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
-
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
-
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
-
-If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
+Executors can reuse this record while its inputs remain unchanged. Changes to
+the plan, spec or relevant repository interfaces invalidate the affected part,
+which must be checked again. Missing evidence requires the initial check, not an
+assumption that an earlier author handled it.
 
 ## Execution Handoff
 
-After self-review, give the exact plan path and ask the human partner to review
-it. Revise until they explicitly approve it. Do not offer execution or invoke
-an execution skill before approval. If the review surfaces ambiguity — theirs
-or yours — resolve it via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking.
+After self-review, give the exact plan path. If the human partner has already
+authorized execution of the settled requirements, record that source in the
+plan and proceed within its scope. An approved plan or an active goal with
+settled, authorized scope does not need another approval ceremony. A goal is
+not permission to invent scope or decide unresolved architecture. Otherwise,
+ask for approval of the concrete plan; design agreement alone is insufficient.
+Resolve implementation-changing ambiguity through brainstorming's Grill,
+using repository evidence before asking.
 
-After approval, offer execution choice:
+Honor an execution mode already chosen by the user or project. When none was
+chosen, select and record the lightest reliable mode without another question:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+- Use **superpowers:subagent-driven-development** when scoped implementation
+  handoffs and independent task review justify its coordination cost.
+- Use **superpowers:executing-plans** for direct execution when that is simpler,
+  including ordinary bounded work. Availability of subagents alone does not
+  require SDD; independent evidence gathering can still be delegated.
 
-**1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
-
-**2. Inline Execution** - Execute tasks in this session using executing-plans, batch execution with checkpoints
-
-**Which approach?"**
-
-**If Subagent-Driven chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:subagent-driven-development
-- Fresh subagent per task + two-stage review
-
-**If Inline Execution chosen:**
-- **REQUIRED SUB-SKILL:** Use superpowers:executing-plans
-- Batch execution with checkpoints for review
+Only a choice that changes an unapproved scope or external-action boundary
+needs new authorization. This handoff preserves existing authorization
+(2026-09-05 authorized workflow consistency review, F2/F4).

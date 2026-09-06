@@ -11,6 +11,11 @@ Execute plan by dispatching a fresh implementer subagent per task, a task review
 
 **Core principle:** Fresh subagent per task + task review (spec + quality) + broad final review = high quality, fast iteration
 
+Completion requires both a clean review state and verified acceptance evidence.
+A Critical or Important acceptance gap remains blocking until it is fixed or
+the controller records evidence that disproves the finding. A retry cap limits
+repeating one fix strategy; it is not a correctness waiver.
+
 **Narration:** between tool calls, narrate at most one short line — the
 ledger and the tool results carry the record.
 
@@ -24,11 +29,15 @@ judgment settles what neither answers. Record every decision in the ledger as
 going. A wrong ruling costs rework your human partner can see and undo; a
 session parked on a question costs their whole day and buys nothing.
 
-Four things stop you, and only these: an irreversible or destructive
-operation; a security-sensitive action; a side effect outside this worktree
-that norms say you ask about first (a merge, a push to a shared branch, a
-publish); and a plan so broken that every path forward is a guess. For those,
-stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking questions, each with a recommended answer and an acceptance signal; resolve what the codebase can answer before asking. A stop that rambles or interrogates
+Four things stop you, and only these: an as-yet unauthorized irreversible or
+destructive operation; a security-sensitive action; a cross-workspace external
+side effect (merge, push, publish, or platform upload) that needs approval; and
+a plan so broken that every path forward is a guess. Existing authorization
+within the same scope persists. For a missing authorization or a broken plan,
+stop and ask — via the brainstorming §1 Grill protocol — at most 3 blocking
+questions, each with a recommended answer and an acceptance signal; resolve
+what the codebase can answer before asking. A stop that rambles or
+interrogates
 buys nothing over a stop that offers answers to confirm.
 
 ## When to Use
@@ -71,25 +80,27 @@ digraph process {
         "Implementer implements, tests, commits, self-reviews" [shape=box];
         "Generate review package, dispatch task reviewer (./task-reviewer-prompt.md)" [shape=box];
         "Spec ✅ and quality approved?" [shape=diamond];
+        "Controller verifies revision-bound acceptance evidence" [shape=box];
         "Finding conflicts with plan text?" [shape=diamond];
         "Rule on the conflict, ledger the ruling" [shape=box];
         "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [shape=box];
         "Dispatch scoped re-review (./re-review-prompt.md)" [shape=box];
         "All findings addressed?" [shape=diamond];
-        "R = 5?" [shape=diamond];
-        "Adjudicate each open finding" [shape=box];
-        "Any load-bearing finding?" [shape=diamond];
-        "Rule and continue; stop only if every path forward is a guess" [shape=box];
-        "Park findings in ledger with rulings" [shape=box];
-        "Append completion to ledger, mark todo complete" [shape=box];
+        "Same-strategy cap reached?" [shape=diamond];
+        "Adjudicate each open finding with evidence" [shape=box];
+        "Any real Critical/Important remains?" [shape=diamond];
+        "Parent changes strategy or re-decomposes?" [shape=diamond];
+        "Fix cycle under changed strategy" [shape=box];
+        "Record incomplete and report; do not mark complete" [shape=box];
+        "Record rulings / defer Minors; append completion" [shape=box];
     }
 
     "Setup: worktree, ledger check, read plan, pre-flight review" [shape=box];
     "More tasks remain?" [shape=diamond];
     "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" [shape=box];
-    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" [shape=box];
-    "Final review clean: delete this plan's workspace" [shape=box];
-    "Use superpowers:finishing-a-development-branch" [shape=box style=filled fillcolor=lightgreen];
+    "Final findings? ONE fix wave, one scoped re-review" [shape=box];
+    "Final review clean: archive this plan's workspace" [shape=box];
+    "Deliver evidence and retain branch; use finishing skill when integration is requested" [shape=box style=filled fillcolor=lightgreen];
 
     "Setup: worktree, ledger check, read plan, pre-flight review" -> "Dispatch implementer subagent (./implementer-prompt.md)";
     "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer asks questions?";
@@ -98,27 +109,31 @@ digraph process {
     "Implementer asks questions?" -> "Implementer implements, tests, commits, self-reviews" [label="no"];
     "Implementer implements, tests, commits, self-reviews" -> "Generate review package, dispatch task reviewer (./task-reviewer-prompt.md)";
     "Generate review package, dispatch task reviewer (./task-reviewer-prompt.md)" -> "Spec ✅ and quality approved?";
-    "Spec ✅ and quality approved?" -> "Append completion to ledger, mark todo complete" [label="yes"];
+    "Spec ✅ and quality approved?" -> "Controller verifies revision-bound acceptance evidence" [label="yes"];
     "Spec ✅ and quality approved?" -> "Finding conflicts with plan text?" [label="no"];
     "Finding conflicts with plan text?" -> "Rule on the conflict, ledger the ruling" [label="yes"];
     "Rule on the conflict, ledger the ruling" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model";
     "Finding conflicts with plan text?" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [label="no"];
     "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" -> "Dispatch scoped re-review (./re-review-prompt.md)";
     "Dispatch scoped re-review (./re-review-prompt.md)" -> "All findings addressed?";
-    "All findings addressed?" -> "Append completion to ledger, mark todo complete" [label="yes"];
-    "All findings addressed?" -> "R = 5?" [label="no"];
-    "R = 5?" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [label="no - next round"];
-    "R = 5?" -> "Adjudicate each open finding" [label="yes - breaker trips"];
-    "Adjudicate each open finding" -> "Any load-bearing finding?";
-    "Any load-bearing finding?" -> "Rule and continue; stop only if every path forward is a guess" [label="yes"];
-    "Any load-bearing finding?" -> "Park findings in ledger with rulings" [label="no"];
-    "Park findings in ledger with rulings" -> "Append completion to ledger, mark todo complete";
-    "Append completion to ledger, mark todo complete" -> "More tasks remain?";
+    "All findings addressed?" -> "Controller verifies revision-bound acceptance evidence" [label="yes"];
+    "All findings addressed?" -> "Same-strategy cap reached?" [label="no"];
+    "Same-strategy cap reached?" -> "Fix round R of 5: R≤3 resume implementer; R≥4 fresh implementer, more capable model" [label="no - next round"];
+    "Same-strategy cap reached?" -> "Adjudicate each open finding with evidence" [label="yes"];
+    "Adjudicate each open finding with evidence" -> "Any real Critical/Important remains?";
+    "Any real Critical/Important remains?" -> "Parent changes strategy or re-decomposes?" [label="yes"];
+    "Any real Critical/Important remains?" -> "Record rulings / defer Minors; append completion" [label="no"];
+    "Parent changes strategy or re-decomposes?" -> "Fix cycle under changed strategy" [label="yes — authorized path"];
+    "Parent changes strategy or re-decomposes?" -> "Record incomplete and report; do not mark complete" [label="no reliable path"];
+    "Fix cycle under changed strategy" -> "Dispatch scoped re-review (./re-review-prompt.md)";
+    "Controller verifies revision-bound acceptance evidence" -> "Record rulings / defer Minors; append completion" [label="evidence complete/current"];
+    "Controller verifies revision-bound acceptance evidence" -> "Record incomplete and report; do not mark complete" [label="missing/invalid and no focused check can close it"];
+    "Record rulings / defer Minors; append completion" -> "More tasks remain?";
     "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
     "More tasks remain?" -> "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" [label="no"];
-    "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" -> "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals";
-    "Final findings? ONE fix dispatch, one scoped re-review, adjudicate residuals" -> "Final review clean: delete this plan's workspace";
-    "Final review clean: delete this plan's workspace" -> "Use superpowers:finishing-a-development-branch";
+    "Dispatch final code reviewer (../requesting-code-review/code-reviewer.md)" -> "Final findings? ONE fix wave, one scoped re-review";
+    "Final findings? ONE fix wave, one scoped re-review" -> "Final review clean: archive this plan's workspace";
+    "Final review clean: archive this plan's workspace" -> "Deliver evidence and retain branch; use finishing skill when integration is requested";
 }
 ```
 
@@ -162,27 +177,17 @@ authority the plan argues from, and conflicts inside the plan resolve
 against it. A plan with no reachable spec gets a ledger note saying so —
 rulings made without one are provisional.
 
-Before dispatching Task 1, scan the plan once for conflicts, writing down
-what you checked as you check it:
+Before dispatching Task 1, inspect the plan's self-review record and its
+plan/spec/repository inputs. Reuse coverage and interface checks whose inputs
+are unchanged; record the source in this plan's ledger. Inspect changed or
+unreviewed requirements, unresolved items and critical producer/consumer seams.
+If no usable record exists, perform the coverage and interface check once.
 
-- tasks that contradict each other or the plan's Global Constraints
-- anything the plan explicitly mandates that the review rubric treats as a
-  defect (a test that asserts nothing, verbatim duplication of a logic block)
-
-The scan's output is a table, not a verdict. One row for every pair of tasks
-that share a file or an interface: the two tasks, what one produces against
-what the other consumes, and what you found. One row for every task: whether
-its own text agrees with itself — the tests it specifies against the code it
-specifies, the files it creates against the files it later touches. "The scan
-is clean" without those rows is not a scan you ran.
-
-Write the table to the ledger. Rule on everything you find before execution
-begins — each finding against the plan text that mandates it — and record
-each ruling in the ledger. If the scan is clean, proceed without comment.
-Rule on each conflict it surfaces — the spec is the binding authority, the
-plan is its argument — record the ruling beside its row, and dispatch
-Task 1. The review loop remains the net for conflicts that only emerge from
-implementation.
+Record concrete conflicts and their Rulings, with affected tasks and evidence.
+For a clean check, retain the checked scope and input revision in a short ledger
+entry; a row for every task or task pair is unnecessary. Resolve conflicts
+against the spec before dependent dispatch. Independent task review and final
+review still inspect implementation and catch conflicts that emerge there.
 
 ## Model Selection
 
@@ -284,8 +289,9 @@ and fix-round diffs need it.
   report. In real sessions, every reviewer a worker spawned duplicated
   the task review the controller dispatched anyway — a full extra
   review seat per task.
-- If an earlier task parked a finding in the area this task touches, carry
-  a pointer to that ledger entry in the dispatch.
+- If an earlier task deferred a Minor or recorded a finding-exclusion ruling
+  in the area this task touches, carry a pointer to that ledger entry in the
+  dispatch.
 - Record the implementer's agent identity from the dispatch result —
   fix-loop rounds 1-3 resume this agent.
 - Never dispatch implementation subagents in parallel. The implement-review-fix
@@ -317,6 +323,15 @@ Implementer subagents report one of four statuses. Handle each appropriately:
 If the implementer asks questions — before starting or mid-task — answer
 clearly and completely, provide additional context if needed, and don't
 rush it into implementation.
+
+Before accepting any DONE status, the controller owns the acceptance check.
+Tie each claim to the exact revision under review, inspect the retained raw
+command output and exit code, locate the produced artifact, and map the
+evidence to the stated criterion. A short success summary is not evidence.
+When the evidence is complete and still valid for the current workstate,
+consume it without mechanically rerunning the whole suite. If it is missing,
+stale, or raises a concrete question, run only the smallest focused check that
+resolves that gap.
 
 ### 3. Review the task
 
@@ -383,7 +398,9 @@ Before the loop starts, two routes leave it immediately:
   the plan mandates it, and do not dispatch a fix that contradicts the plan
   without a recorded ruling.
 Everything else enters the loop. A fix round is one fix dispatch plus one
-scoped re-review. Five rounds maximum per task:
+scoped re-review. Five rounds maximum per task using the same fix strategy;
+the cap limits repeated retries of that strategy and does not waive a real
+Critical/Important acceptance gap.
 
 **Rounds 1-3 — resume the original implementer.** Send it the open findings
 verbatim. Its context is intact: it knows the task, the code, and its own
@@ -421,39 +438,43 @@ minors — they never extend the loop.
 Never fix findings yourself in the controller session — your context stays
 clean for coordination, and controller fixes skip review.
 
-**The breaker.** When round 5's re-review still leaves findings open, stop
-dispatching. Adjudicate each open finding yourself — you hold the plan and
-the cross-task context the reviewer lacks:
+**The cap.** The same-strategy cap is an upper bound, not a minimum number of
+rounds. When it is reached, stop retrying that strategy and adjudicate each
+open finding using concrete evidence. If new evidence earlier disproves a
+finding, record the Ruling; if it shows the strategy cannot work, change
+strategy without spending rounds to reach the cap:
 
-- **The reviewer is wrong, or the point is contestable:** park it —
-  `Task <N>: parked — <finding> — Ruling: <why the code stands>`. The final
-  review sees both sides.
-- **Real, but nothing downstream builds on it:** park it the same way, with
-  a ruling that says it's real and deferred.
-- **Real and load-bearing** — a later task builds on it, or it reveals a
-  plan defect: rule on the smallest change that unblocks the dependent work,
-  ledger it as `Task <N>: Ruling: <finding> — <what you decided and why>`,
-  and carry it into the next task's dispatch. Parking a structural failure
-  silently lets every dependent task build on it. Stop only when the defect
-  leaves every path forward a guess.
+- If the evidence disproves a finding, record
+  `Task <N>: Ruling: finding excluded — <evidence and why>` and close it.
+- A Minor may be deferred with a ledger entry
+  `Task <N>: minor (deferred): <finding>` for final-review triage.
+- A real Critical/Important acceptance gap remains open and blocking. The
+  parent must record a meaningfully changed, testable fix strategy or
+  re-decompose the task, then continue an authorized feasible repair in a new
+  bounded cycle. Renaming the same approach is not a new strategy. If no reliable
+  path exists, record `Task <N>: incomplete — <gap and evidence>` and report
+  it; never mark it complete or merge-ready because the cap was reached.
 
-Adjudicate only at the cap. Adjudicating earlier to end a loop is
-pre-judging with a different name. Every adjudication is a ledger entry —
-a silent discard is forbidden.
+Every ruling must be in the ledger with its evidence; a cap is not permission
+to silently drop or auto-pass a finding.
 
 ### 5. Complete the task
 
-When the review comes back clean — or every open finding is parked with a
-ruling at the cap — append the completion line to the ledger in the same
-message as your other bookkeeping:
+When the review comes back clean, and the controller has verified the
+revision-bound acceptance evidence, append the completion line to the ledger
+in the same message as your other bookkeeping. A finding excluded by an
+evidence-backed ruling is no longer open; deferred Minors are carried to final
+review. A real Critical/Important gap cannot be converted to completion by
+the cap.
 
 - `Task <N>: complete (commits <base7>..<head7>, review clean)`
-- `Task <N>: complete (commits <base7>..<head7>, <K> parked)` after a
-  tripped breaker
+- `Task <N>: complete (commits <base7>..<head7>, <K> findings excluded,
+  <M> Minors deferred)` when no real Critical/Important gap remains
 
 Then mark the todo complete and move on. Never move to the next task while
-the review has open Critical/Important issues that are neither fixed nor
-parked-with-ruling at the cap.
+the review has an open real Critical/Important issue. If a changed strategy
+or re-decomposition leaves an authorized feasible repair, continue it instead;
+only an explicitly recorded incomplete task may leave that gap unresolved.
 
 ## Final Review
 
@@ -465,52 +486,65 @@ one file instead of re-deriving the branch diff with git commands. Dispatch
 on the most capable available model (see Model Selection), using
 superpowers:requesting-code-review's
 [code-reviewer.md](../requesting-code-review/code-reviewer.md). Point it at
-the ledger's deferred-minor and parked lines so it can triage which must be
-fixed before merge.
+the ledger's deferred-Minor and finding-exclusion ruling lines so it can triage
+which must be fixed before merge.
 
-If the final whole-branch review returns findings, dispatch ONE fix subagent
-with the complete findings list — not one fixer per finding.
+Before calling the branch merge-ready, the controller performs the same
+revision-bound evidence check against the final HEAD: exact command and raw
+output, exit code, produced artifact, and criterion coverage. Current complete
+evidence may be consumed; missing or stale evidence requires the smallest
+focused check that resolves it.
+
+If the final whole-branch review returns findings, dispatch ONE fix wave with
+the complete findings list — not one fixer per finding.
 Per-finding fixers each rebuild context and re-run suites; a real
 session's final-review fix wave cost more than all its tasks combined.
-Then run exactly one scoped re-review of the fix wave
+Then run one scoped re-review of that fix wave
 (`scripts/review-package PLAN_FILE FIX_BASE HEAD` over the fix range,
-[re-review-prompt.md](re-review-prompt.md)).
-Adjudicate any residual findings as in the task loop's breaker: park with
-rulings, or rule on the load-bearing ones and ledger what you decided. Only
-the four classes above stop you here. There is no second fix wave —
-residual load-bearing findings surface to your human partner when
-finishing-a-development-branch presents the options.
+[re-review-prompt.md](re-review-prompt.md)). The one-wave limit applies to
+that review pass; it cannot block another feasible repair. If a real
+Critical/Important finding remains, the parent must change strategy or
+re-decompose with a meaningfully changed, testable approach and dispatch
+another authorized fix wave, with its own scoped re-review. Renaming the same
+approach is not a new strategy. Do not auto-pass residual findings or use a
+cap to block feasible repair. If no reliable path exists, report the branch
+incomplete and keep it out of merge-ready status.
 
 ## Finish
 
-Before you delete anything, collect every ledger line containing `Ruling:` —
-preflight rulings, parked findings, breaker adjudications, all of them — into
+Before archiving anything, collect every ledger line containing `Ruling:` —
+preflight rulings, finding-exclusion rulings, cap adjudications, all of them — into
 your final message under "Rulings I made", in the order you made them, each
 with what it costs if wrong. The list is exhaustive: if the ledger holds a
-ruling, the list holds it. That list is the only place the decisions you
-took on your human partner's behalf reach them — they read it and rework
-whatever you got wrong. A ruling that dies with the workspace was a decision
-made in secret.
+ruling, the list holds it. The final summary points to the retained ledger so the human partner can
+review the decisions and evidence after the session. Preserve the ledger
+with the workspace archive.
 
-When the final whole-branch review is clean and its fixes are merged,
-delete this plan's workspace (`rm -rf <workspace>`) — the git history is
-the record now. Sibling directories belong to other plans; leave them
+When the final whole-branch review is clean and its fixes are merged, move
+this plan's workspace to an explicitly named, timestamped archive under
+`~/scratch/`, for example
+`~/scratch/superpowers-<plan-basename>-<YYYYMMDD-HHMMSS>/`. Retain the ledger,
+review packages, reports, and raw verification evidence there; do not use
+recursive deletion. Sibling directories belong to other plans; leave them
 alone.
 
-Use superpowers:finishing-a-development-branch.
+When integration or cleanup is requested, use superpowers:finishing-a-development-branch
+and honor the existing authorized choice. Otherwise report the verified result
+and retained branch/workspace without opening an integration menu.
 
 ## Common Rationalizations
 
 | Excuse | Reality |
 |--------|---------|
-| "Close enough on spec compliance" | Reviewer found spec gaps = not done. Fix or hit the cap and adjudicate — those are the only exits. |
+| "Close enough on spec compliance" | Reviewer gaps are not done. The same-strategy cap stops repeated retries; evidence may rule out a finding or defer a Minor, but a real Critical/Important gap needs a changed strategy or re-decomposition and feasible repair, or an explicit incomplete report. |
 | "I'll fix it myself, dispatching is overhead" | Controller fixes pollute your context and skip review. Resume the implementer. |
-| "One more round will converge" | Past the cap, rounds don't converge — the failure is structural. Adjudicate and route. |
+| "One more round will converge" | Past the same-strategy cap, change strategy or re-decompose; the cap limits repetition, not all feasible repair. |
 | "The reviewer will just find something new anyway" | Scoped re-reviews verify fixes; they cannot wander. New findings on untouched code go to the ledger, not the loop. |
-| "This finding is obviously wrong, I'll drop it" | You adjudicate only at the cap, and every ruling is a ledger entry. Silent discards are forbidden. |
+| "This finding is obviously wrong, I'll drop it" | Use concrete evidence and record a ruling that excludes it; silent discards and auto-passes are forbidden. |
 | "The fix was small, skip the re-review" | Unreviewed fixes are how regressions land. Every round ends with a scoped re-review. |
 | "Reviews slow the loop down" | The loop without reviews is just unverified churn. Reviews are the loop's brakes and steering. |
 | "Ledger bookkeeping is overhead" | The ledger is what survives compaction. Controllers without one have re-dispatched entire completed task sequences. |
+| "The final fix wave was enough" | A residual real Critical/Important finding keeps the branch out of merge-ready status; change strategy or re-decompose for another feasible fix wave, or report incomplete. |
 | "The implementer spawned its own reviewer — free extra assurance" | It's a duplicate seat reviewing the same diff; the task review is the gate. A worker-spawned reviewer is a defect to flag, not rigor. |
 
 ## Example Workflow
@@ -524,8 +558,9 @@ Per task:
 1. task-brief <plan-file> N  →  dispatch implementer (brief + report paths + context)
 2. Implementer implements, tests, commits, self-reviews; asks questions before starting
 3. review-package <plan-file> BASE HEAD  →  dispatch task reviewer (spec + quality)
-4. Critical/Important findings → fix subagent → re-review; Minor → ledger for final review
-5. Ledger: Task N complete (commits base..head, review clean)
+4. Critical/Important findings → fix subagent → re-review; Minor → ledger for final review; cap → evidence-backed ruling or changed strategy
+5. Ledger: Task N complete only after revision-bound evidence verifies acceptance
 
-After all tasks: final whole-branch review (code-reviewer.md) → finishing-a-development-branch.
+After all tasks: final whole-branch review → deliver evidence and retained workspace;
+requested integration/cleanup → finishing-a-development-branch with existing authorization.
 ```

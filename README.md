@@ -4,7 +4,7 @@
 
 ## 这个 fork 是什么
 
-- **消费方式**：skills 本体在 `skills/`，经 `~/.codex/skills-repos/superpowers/skills/*` 符号链接进 `~/.codex/skills/`，以 `superpowers:*` 命名空间暴露给 Codex，会话开始自动触发入口路由。
+- **消费方式**：skills 本体在 personal 仓的 `codex-sync/superpowers/skills/`（submodule），经 `codex-sync/sync-superpowers.sh --mount` 符号链接进 `~/.codex/skills/` 与 `~/.agents/skills/`，以 `superpowers:*` 命名空间暴露给 Codex，会话开始自动触发入口路由。
 - **与上游的差异**（完整思想见 [`docs/superpowers/fork-design-philosophy.md`](docs/superpowers/fork-design-philosophy.md)）：
 
 | 方面 | 上游 | 本 fork |
@@ -25,7 +25,7 @@
 ## 结构与验证
 
 - `skills/`：14 个 skill；`skills/using-superpowers/references/` 为 harness 专属 reference（`codex-tools.md` = 多 Provider 路由权威文本；`kimi-code-tools.md` = Kimi Code 编排映射，扩展上游 `.kimi-plugin/plugin.json` 的基础映射）。
-- 契约测试：`bash tests/skill-content/run-tests.sh`（路由契约 / 正向证据 mutation / 设计产物 / worktree submodule）+ `tests/codex/*.sh`（打包与 manifest）。
+- 结构 lint 与契约测试：`bash tests/skill-content/run-tests.sh`（路由契约 / 正向证据 mutation / 设计产物 / worktree submodule）+ `tests/codex/*.sh`（打包与 manifest）。
 - `docs/superpowers/`：设计哲学、specs、plans、validation 存档。
 
 ## 致谢与许可
