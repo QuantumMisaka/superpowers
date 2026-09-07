@@ -1,6 +1,6 @@
 ---
 name: finishing-a-development-branch
-description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+description: Use when development is ready for integration or the user requests cleanup of completed worktrees
 ---
 
 # Finishing a Development Branch
@@ -19,6 +19,9 @@ Choose the path from the user's request (2026-09-06 authorized redundancy review
 
 - An integration or retention choice is already authorized: execute that path
   without another menu. Ask only if a necessary target or authorization is missing.
+- An independent cleanup is authorized: verify absorption into the named target
+  and current workspace state, then enter Step 6. No new merge or discard choice
+  is needed; cleanup alone does not require rerunning unrelated software tests.
 - The request is implementation only: report verified results and retain the
   branch/workspace. No integration decision is required to complete that request.
 - The user asks to choose an integration method: present applicable options in
@@ -72,7 +75,7 @@ This determines available actions and cleanup:
 |-------|------|---------|
 | `GIT_DIR == GIT_COMMON` (normal repo) | Merge / PR / retain | No worktree to clean up |
 | `GIT_DIR != GIT_COMMON`, named branch | Merge / PR / retain | Provenance-based (see Step 6) |
-| `GIT_DIR != GIT_COMMON`, detached HEAD | PR from named branch / retain | No cleanup (externally managed) |
+| `GIT_DIR != GIT_COMMON`, detached HEAD | Name branch before PR / retain | Verify ownership; preserve commit before authorized cleanup |
 
 ### Step 3: Determine Base Branch
 
@@ -200,53 +203,38 @@ git branch -D <feature-branch>
 
 ### Step 6: Cleanup Workspace
 
-**Only runs after local merge or explicitly confirmed discard.** PR and retention
-always preserve the worktree. Both callers have already changed directory
-to the main repo root — worktree removal must run from outside the worktree
-— and use the `GIT_DIR`/`GIT_COMMON`/`WORKTREE_PATH` values captured in
-Step 2, from before that directory change.
-
-First honor the project's retention contract. If it requires archiving under
-`~/scratch`, retain both the linked worktree and its checked-out branch instead of
-removing either. Skip subsequent branch deletion. For a linked
-worktree, use `git worktree move` to a unique archive destination so registration
-stays valid; if the move is unsupported, preserve it in place and report its
-path. Do not substitute deletion. The removal path below applies only when
-deletion is allowed by the project's contract and the user's authorization.
+Run after local merge, explicit discard, or an authorized independent cleanup
+(2026-09-08 cleanup incident and user ruling). PR and retention requests preserve
+the workspace. Work from outside the target, using Step 2's recorded paths.
 
 **If `GIT_DIR == GIT_COMMON`:** Normal repo, no worktree to clean up. Done.
 
-**If worktree path is under `.worktrees/` or `worktrees/`:** Superpowers created this worktree — we own cleanup.
+Confirm each target from user scope, Git registration and active use; a directory
+named `.worktrees/` does not prove ownership. Retain active or externally managed
+workspaces. Record branch/detached HEAD and absorption evidence; preserve a recovery
+ref for detached commits. Independent cleanup keeps branches unless their deletion
+was separately authorized.
 
-```bash
-git worktree remove "$WORKTREE_PATH"
-git worktree prune  # Self-healing: clean up any stale registrations
-```
+Inspect parent and recursive submodule HEADs, gitlinks, staged/unstaged/untracked
+state and ignored evidence. Preserve historical differences rather than resetting
+or deinitializing them. Honor the project's retention contract: prefer a unique
+`~/scratch` archive and `git worktree move` when supported.
 
-**If removal is refused** (`contains modified or untracked files`): the
-worktree holds files that exist nowhere else — uncommitted plans, notes,
-or scratch work. Never `--force` on your own initiative. Show your human
-partner what is at stake and ask:
+If submodules prevent native move, an authorized cleanup can use a verified
+recoverable archive and registration cleanup. Preserve files, indexes, objects,
+Git metadata and external object dependencies; a copied checkout with broken
+`.git` pointers is not sufficient. Before releasing the original registration,
+verify content and demonstrate restoration of HEADs and dirty state. State whether
+the archive is a live checkout or an offline recovery package, its dependencies,
+original/archive paths and recovery steps. Keep the branch/recovery ref.
 
-```bash
-git -C "$WORKTREE_PATH" status --porcelain -uall
-```
-
-```
-Worktree removal refused — these files were never committed:
-
-<file list>
-
-1. Commit them to <branch> before cleanup
-2. Move them into <main repo root>
-3. Delete them (unrecoverable)
-
-Which?
-```
-
-Carry out the choice, then remove the worktree.
-
-**Otherwise:** The host environment (harness) owns this workspace. Do NOT remove it. If your platform provides a workspace-exit tool, use it. Otherwise, leave the workspace in place.
+Diagnose refusals separately: submodule support, local changes, locks/active use,
+or permissions. Complete reversible preservation within existing authorization;
+do not ask for the same cleanup approval again. `--force` is not a substitute for
+verification or permission to lose local content. New loss, uncertain recovery or
+active use blocks only the affected tree; report the exact gap and continue safe
+targets. For missing directories, preserve residual metadata before clearing only
+the confirmed stale registrations; do not claim the missing files were recovered.
 
 ## Quick Reference
 
@@ -254,6 +242,7 @@ Carry out the choice, then remove the worktree.
 |---------|--------|-----------|
 | Already authorized merge | Verify target, merge, verify result | Apply retention rules after success |
 | Already authorized PR | Push/create PR with authorized target | Retain for feedback |
+| Authorized independent cleanup | Verify absorption, ownership and recovery | Archive/clean registration; retain branches |
 | Implementation only or explicit retain | Report evidence and paths | Retain; no menu |
 | Help choosing integration, no choice yet | Step 4 menu once | Retain until chosen action succeeds |
 | Explicit discard | Confirm concrete loss, then discard procedure | Retention contract takes precedence |
@@ -266,11 +255,11 @@ Carry out the choice, then remove the worktree.
 - Verify the base from prior authorization and repository evidence. Ask for a
   target only when it remains ambiguous. A rejected push requires diagnosis;
   force-push needs explicit authorization.
-- PR and retained work keep their workspace. Cleanup after merge or confirmed
-  discard must follow Step 6, preserve uncommitted evidence and run outside the
+- PR and retained work keep their workspace. Authorized cleanup must follow
+  Step 6, preserve uncommitted evidence and run outside the
   target worktree. Never remove a workspace whose ownership is unproven.
 - Apply the project's archive/retention contract before branch deletion. A
-  retained or archived linked worktree keeps its branch. Removal refusal is
-  evidence of unique local files, not permission to force removal.
+  retained or archived worktree keeps its branch. Diagnose removal refusals;
+  they are not permission to force removal or discard local files.
 - Discard requires the concrete loss list and typed confirmation above. It is
   never inferred from completion or offered as the default next step.
