@@ -36,14 +36,14 @@ results carry the durable record.
 settled work packages without asking to repeat that authorization. Pause for
 the safety and reliability conditions below, not for a ceremony checkpoint.
 
-**Rulings, not stalls.** A running plan does not wait on a human for ordinary
-implementation choices. Conflicts,
-ambiguities, plan defects, or a review-loop limit you would have asked to exceed — decide
-them. The spec is the binding authority, the plan is its argument, and your
-judgment settles what neither answers. Record material decisions or deviations
-in the current progress record as `Ruling: <what you decided> — <why> — <what
-it costs if wrong>`, and keep going. A wrong ruling costs rework your human partner can see
-and undo; a session parked on a question costs their whole day and buys nothing.
+**Rulings, not stalls.** Ordinary implementation choices, conflicts, plan
+defects, and review-loop limits you would have asked to exceed are decided,
+not parked: a wrong ruling costs rework your human partner can see and undo,
+while a session parked on a question costs their whole day and buys nothing.
+Record material decisions or deviations in the current progress record as
+`Ruling: <what you decided> — <why> — <what it costs if wrong>`, and keep
+going. The spec-as-binding-authority contract is executing-plans' Rulings, Not
+Stalls section; the entry router carries the same meta-rule.
 
 Pause for: a missing authorization; a decision that would change the approved
 product, architecture, scope, or security boundary; an as-yet unauthorized
@@ -127,8 +127,7 @@ small package, the plan checklist and verification record may be enough.
   `.superpowers/sdd/progress.md` — is not current progress.
 - If you create a ledger, give it the identity first line:
   `# SDD ledger — plan: <plan file path>`. Keep material rulings, recovery
-  state, and unresolved uncertainty there; do not duplicate a reliable plan
-  record only for ceremony.
+  state, and unresolved uncertainty there.
 - Task briefs, reports, and review packages are optional handoff artifacts.
   Use the provided scripts and formats when one is chosen or when a selected
   review needs a durable diff/evidence file.
@@ -152,53 +151,34 @@ If no usable record exists, perform the coverage and interface check once.
 Record material conflicts and their Rulings, with affected packages and evidence.
 For a clean check, retain the checked scope and input workstate in a short
 progress-record entry when durable recovery is useful; a row for every task or
-task pair is unnecessary. Resolve conflicts
-against the spec before dependent dispatch. A selected package or final review
+task pair is unnecessary. A selected package or final review
 can inspect implementation and catch conflicts that emerge there.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role to conserve cost and increase speed.
-
-On this fork, resolve abstract roles to concrete model/effort routing via your
-harness's routing reference (`references/*-tools.md`; Codex routes
-capability-aware across deepseek/qwen/GPT, Kimi Code exposes no model field so
-routing is omitted). If a review package is selected, keep its implement-review
+Use the least powerful model that can handle each role; on this fork, resolve
+roles to concrete model/effort routing via your harness's routing reference
+(`references/*-tools.md`; Kimi Code exposes no model field, so routing is
+omitted there). If a review package is selected, keep its implement-review
 sequence coherent.
 
-**Mechanical implementation tasks** (isolated functions, clear specs, 1-2 files): use a fast, cheap model. Most implementation tasks are mechanical when the plan is well-specified.
+| Work | Tier |
+|------|------|
+| Mechanical: 1-2 files with a complete spec; plan text already contains the code (transcription plus testing) | cheapest |
+| Integration: multi-file coordination, pattern matching, debugging | standard |
+| Design judgment or broad codebase understanding; whole-branch review, when selected | most capable |
+| Reviewers, scaled to the diff's size, complexity, and risk; implementers working from prose | mid-tier floor |
+| Scoped re-reviews of small fix diffs | cheap-to-mid |
 
-**Integration and judgment tasks** (multi-file coordination, pattern matching, debugging): use a standard model.
-
-**Architecture and design tasks**: use a model with enough judgment for the
-change. A whole-branch review, when selected, should meet the same bar.
-
-**Review tasks**: choose the model with the same judgment, scaled to the
-diff's size, complexity, and risk. A small mechanical diff does not need the
-most capable model; a subtle concurrency change does. Scoped re-reviews of
-small fix diffs take a cheap-to-mid tier.
-
-When repeated repair attempts do not change the result, use a fresh perspective
-or a more capable model rather than repeating the same dispatch.
+**Turn count beats token price.** The cheapest models routinely take 2-3× the
+turns on multi-step work and often cost more overall.
 
 **Specify the model explicitly only when your harness's dispatch schema
 exposes a model field.** An omitted model inherits your session's model —
 often the most capable and most expensive — which silently defeats this
-section; but never require a field the active schema lacks (see
-`references/*-tools.md` for schema-aware routing).
-
-**Turn count beats token price.** Wall-clock and context cost scale with how
-many turns a subagent takes, and the cheapest models routinely take 2-3× the
-turns on multi-step work — costing more overall. Use a mid-tier model as the
-floor for reviewers and for implementers working from prose descriptions.
-When the task's plan text contains the complete code to write, the
-implementation is transcription plus testing: use the cheapest tier for
-that implementer. Single-file mechanical fixes also take the cheapest tier.
-
-**Task complexity signals (implementation tasks):**
-- Touches 1-2 files with a complete spec → cheap model
-- Touches multiple files with integration concerns → standard model
-- Requires design judgment or broad codebase understanding → most capable model
+section; but never require a field the active schema lacks. When repeated
+repair attempts do not change the result, use a fresh perspective or a more
+capable model rather than repeating the same dispatch.
 
 ## The Task Loop
 
@@ -414,35 +394,27 @@ used):
 `Task <N>: fix cycle <R> (<X> addressed, <Y> open — <finding one-liners>; work-state <identifier>)`
 
 If repeated attempts do not change the result, change strategy or re-decompose
-instead of repeating the same dispatch. A time or round limit is not permission
-to mark a real Critical/Important gap complete. If no authorized feasible path
-remains, record the work as incomplete and report the gap honestly.
+instead of repeating the same dispatch. If no authorized feasible path remains,
+record the work as incomplete and report the gap honestly.
 
-When evidence disproves a finding, record the Ruling; if it shows the strategy
-cannot work, change strategy:
+When evidence disproves a finding, record
+`Task <N>: Ruling: finding excluded — <evidence and why>` and close it; if the
+evidence shows the strategy cannot work, change strategy. A real
+Critical/Important acceptance gap remains open and blocking: record a
+meaningfully changed, testable fix strategy or re-decompose, then continue an
+authorized feasible repair — renaming the same approach is not a new strategy.
+If no reliable path exists, record `Task <N>: incomplete — <gap and evidence>`
+and report it.
 
-- If the evidence disproves a finding, record
-  `Task <N>: Ruling: finding excluded — <evidence and why>` and close it.
-- A Minor may be deferred with a ledger entry
-  `Task <N>: minor (deferred): <finding>` for final-review or controller triage.
-- A real Critical/Important acceptance gap remains open and blocking. The
-  parent must record a meaningfully changed, testable fix strategy or
-  re-decompose the task, then continue an authorized feasible repair. Renaming
-  the same approach is not a new strategy. If no reliable path exists, record
-  `Task <N>: incomplete — <gap and evidence>` and report it; never mark it
-  complete or merge-ready because an iteration limit was reached.
-
-Every material ruling must be in the current progress record with its evidence;
-when no durable record exists, retain it in the report or controller handoff.
-An iteration limit is not permission to silently drop or auto-pass a finding.
+Every material ruling must be in the current progress record with its evidence,
+or in the report/controller handoff when no durable record exists.
 
 ### 5. Complete the work package
 
 When the selected review is clean, or when self-review is sufficient, and the
 controller has verified current-workstate-bound acceptance evidence, append the
 completion line to the progress record when one is maintained. A finding excluded by an evidence-backed ruling
-is no longer open; deferred Minors go to final review or controller triage. A real
-Critical/Important gap cannot be converted to completion by an iteration limit.
+is no longer open; deferred Minors go to final review or controller triage.
 
 - `Task <N>: complete (work-state <identifier>, reviewed or self-checked)`
 - `Task <N>: complete (work-state <identifier>, <K> findings excluded,
@@ -475,17 +447,15 @@ they exist so it can triage
 which must be fixed before merge.
 
 Before calling the branch merge-ready, the controller performs the same
-current-workstate evidence check against the final revision or dirty snapshot: exact command and raw
-output, exit code, produced artifact, and criterion coverage. Current complete
-evidence may be consumed; missing or stale evidence requires the smallest
-focused check that resolves it.
+current-workstate evidence check (per "Handle the report") against the final
+revision or dirty snapshot.
 
 If the final whole-branch review returns findings, group related findings into
 repair packages by ownership and dependency — not one fixer per finding — and
 review each changed surface at the appropriate scope. Re-run the checks that
 cover each amended area. Continue repairing and re-reviewing while a real
-Critical/Important finding remains and an authorized feasible strategy exists;
-there is no fixed-iteration waiver. If the same strategy does not
+Critical/Important finding remains and an authorized feasible strategy exists.
+If the same strategy does not
 change the result, change strategy or re-decompose. Do not auto-pass residual
 findings. If no reliable path exists, report the branch incomplete and keep it
 out of merge-ready status.

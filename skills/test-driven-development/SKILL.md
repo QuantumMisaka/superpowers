@@ -48,31 +48,8 @@ selected, complete the appropriate evidence cycle for each changed behavior.
 
 ## Red-Green-Refactor
 
-The diagram shows the full cycle for a behavior change that also needs
-structural cleanup. If no cleanup is needed, finish after GREEN and the
-owning-suite verification; do not manufacture a REFACTOR step.
-
-```dot
-digraph tdd_cycle {
-    rankdir=LR;
-    red [label="RED\nWrite failing test", shape=box, style=filled, fillcolor="#ffcccc"];
-    verify_red [label="Verify fails\ncorrectly", shape=diamond];
-    green [label="GREEN\nMinimal code", shape=box, style=filled, fillcolor="#ccffcc"];
-    verify_green [label="Verify passes\nAll green", shape=diamond];
-    refactor [label="REFACTOR\nClean up", shape=box, style=filled, fillcolor="#ccccff"];
-    next [label="Next", shape=ellipse];
-
-    red -> verify_red;
-    verify_red -> green [label="yes"];
-    verify_red -> red [label="wrong\nfailure"];
-    green -> verify_green;
-    verify_green -> refactor [label="yes"];
-    verify_green -> green [label="no"];
-    refactor -> verify_green [label="stay\ngreen"];
-    verify_green -> next;
-    next -> red;
-}
-```
+If no cleanup is needed, finish after GREEN and the owning-suite verification;
+do not manufacture a REFACTOR step.
 
 ### RED - Write Failing Test
 
@@ -239,27 +216,6 @@ Next failing test for next feature.
 | **Minimal** | One reason to fail | Unrelated behaviors in one test |
 | **Clear** | Name describes behavior | `test('test1')` |
 | **Shows intent** | Demonstrates desired API | Obscures what code should do |
-
-## Evidence Produced by the Order
-
-Each phase contributes a distinct, observable record:
-
-| Phase | Evidence | What it establishes |
-|-------|----------|---------------------|
-| RED | Focused test command, expected failure, and output | The test detects the missing behavior |
-| GREEN | Same focused command passing after the minimal implementation | The implementation supplies the requested behavior |
-| REFACTOR (if needed) | Owning suite passing after structural cleanup | Structure changed without changing behavior |
-| BASELINE/CANDIDATE | Existing checks on the unchanged baseline and candidate | A behavior-preserving refactor or non-behavior configuration change kept its contract |
-
-A test first run after implementation supplies GREEN evidence but no RED
-evidence. Manual checks can help exploration, while an automated RED record
-supplies the repeatable baseline needed for regression protection. If code
-exists before that baseline is captured, use an isolated prior revision,
-separate worktree, or safe targeted mutation to establish RED, then restore the
-candidate and record GREEN without overwriting shared or user-modified work.
-For behavior-preserving refactors, the existing suite run before and after the
-change is the relevant current-state verification; do not create an artificial
-failure merely to fill the RED column.
 
 ## Example: Bug Fix
 

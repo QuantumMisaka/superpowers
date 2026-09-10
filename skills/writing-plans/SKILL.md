@@ -25,6 +25,10 @@ the project says otherwise. Start with:
 **Verification:** [checks that can support the acceptance claims]
 ```
 
+When the Spec line already records the requirement source and its authority —
+the common `none - requirements supplied directly` case — Authorization may
+fold into that line instead of a separate field.
+
 Read the referenced spec directly. Do not duplicate it; point to the sections
 that govern a task.
 

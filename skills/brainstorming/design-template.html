@@ -76,7 +76,10 @@
     table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
     th, td { padding: .65rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
     th { background: var(--wash); }
+    .table-wrap { overflow-x: auto; }
     code { padding: .1rem .3rem; background: var(--wash); }
+    pre { overflow-x: auto; }
+    pre code { padding: 0; background: none; }
     .decision {
       border-left: 4px solid var(--accent);
       padding: .5rem .75rem;
@@ -89,7 +92,6 @@
       h1 { font-size: 2rem; }
       nav ol { columns: 1; }
       section { padding: 1rem; }
-      .table-wrap { overflow-x: auto; }
     }
     @media print {
       body { background: #fff; font-size: 11pt; }
@@ -188,6 +190,6 @@
     </section>
   </main>
 
-  <footer>Replace all guidance text before requesting design approval.</footer>
+  <footer>Replace all guidance text before requesting design approval; set the html lang attribute and title to the spec's language and topic.</footer>
 </body>
 </html>
