@@ -1,8 +1,8 @@
 # Task Reviewer Prompt Template
 
-Use this template when dispatching a task reviewer subagent. The reviewer
-reads the task's diff once and returns two verdicts: spec compliance and
-code quality.
+Use this template when an independent task review is selected. The reviewer
+reads the scoped change and returns two verdicts: spec compliance and code
+quality.
 
 **Purpose:** Verify one task's implementation matches its requirements (nothing
 more, nothing less) and is well-built (clean, tested, maintainable)
@@ -18,31 +18,32 @@ Task reviewer subagent:
 
     ## What Was Requested
 
-    Read the task brief: [BRIEF_FILE]
+    Read the task brief when supplied: [BRIEF_FILE]
+    If no brief was created, use the requirements supplied in this prompt.
 
     Global constraints from the spec/design that bind this task:
     [GLOBAL_CONSTRAINTS]
 
     ## What the Implementer Claims They Built
 
-    Read the implementer's report: [REPORT_FILE]
+    Read the implementer's report when supplied: [REPORT_FILE]
+    Otherwise treat the implementer's response and the current work state as
+    the available evidence.
 
     ## Diff Under Review
 
-    **Base:** [BASE_SHA]
-    **Head:** [HEAD_SHA]
-    **Diff file:** [DIFF_FILE]
+    **Base:** [BASE_SHA, when the package is committed]
+    **Head/work state:** [HEAD_SHA or current work-state identifier]
+    **Diff/status file:** [DIFF_FILE]
 
-    Read the diff file once — it contains the commit list, a stat summary,
-    and the full diff with surrounding context, and it is your view of the
-    change. The diff's context lines ARE the changed files: do not Read a
-    changed file separately unless a hunk you must judge is cut off
-    mid-function — and say so in your report. Do not re-run git commands.
-    If the diff file is missing, fetch the diff yourself:
-    `git diff --stat [BASE_SHA]..[HEAD_SHA]` and `git diff [BASE_SHA]..[HEAD_SHA]`.
-    Do not crawl the broader codebase. Inspect code outside the diff only
-    to evaluate a concrete risk you can name — one focused check per named
-    risk, and name both the risk and what you checked in your report.
+    Read the supplied diff/status artifact first. A committed artifact should
+    contain the commit list, stat summary, and full diff with context; a dirty
+    artifact should name the owned paths, status, and path-scoped diff. The
+    artifact is the primary view of the change. Inspect a changed file or
+    nearby unchanged context when a hunk is cut off or a concrete named risk
+    requires it, and say so in the report. Do not crawl unrelated code. A
+    focused call-site/configuration check is appropriate for a concrete
+    cross-cutting risk; name the risk and what you checked.
     Cross-cutting changes are legitimate named risks: if the diff changes
     lock ordering, a function or API contract, or shared mutable state,
     checking the call sites is the right method.
@@ -70,24 +71,23 @@ Task reviewer subagent:
 
     ## Tests
 
-    The implementer already ran the tests and reported results with TDD
-    evidence for exactly this code. Do not re-run the suite to confirm their
-    report. Run a test only when reading the code raises a specific doubt
-    that no existing run answers — and then a focused test, never a
-    package-wide suite, race detector run, or repeated/high-count loop. If
-    heavy validation seems warranted, recommend it in your report instead of
-    running it. If you cannot run commands in this environment, name the
-    test you would run.
+    The implementer's test evidence, when supplied, is a claim to assess
+    against the current work state; TDD or a full-suite run is not assumed.
+    Do not mechanically duplicate a check that is complete and current. Run
+    the smallest targeted test or inspection when reading the code raises a
+    concrete doubt or leaves an evidence gap. A broader check is appropriate
+    when the changed risk warrants it; record why and what ran. If you cannot
+    run commands in this environment, name the check you would run.
 
     Warnings or other noise in reported output require a relevance check. Flag
     them when they undermine the requested behavior or the acceptance evidence;
     unrelated noise alone does not invalidate otherwise complete evidence.
 
-    For acceptance evidence, verify that the report identifies the exact
-    revision, command, complete raw output, exit code, produced artifact, and
-    criterion covered. A status or success summary alone is an evidence gap.
-    Do not require a mechanical full-suite rerun when this package is complete
-    and current; a missing, stale, or concretely doubtful item should be
+    For acceptance evidence, when a report or response makes a claim, verify
+    that it identifies the exact revision/work state, command or inspection,
+    relevant output, exit status when applicable, produced artifact when
+    applicable, and criterion covered. A status or success summary alone is an
+    evidence gap. A missing, stale, or concretely doubtful item should be
     reported for the controller's smallest focused check.
 
     Evidence you cannot see is not evidence that doesn't exist. If the
@@ -115,14 +115,15 @@ Task reviewer subagent:
     batch looks.
 
     If a requirement cannot be verified from this diff alone (it lives in
-    unchanged code or spans tasks), report it as a ⚠️ item instead of
-    broadening your search.
+    unchanged code or spans packages), inspect the smallest relevant context
+    or run a focused check for the concrete risk. If it remains unresolved,
+    report it as a ⚠️ item with the exact controller check needed.
 
-    A real Critical or Important acceptance gap is a finding even if the
-    implementer has exhausted its retry cap. A cap does not make that gap
-    complete or merge-ready. If concrete evidence disproves a finding, state
-    the evidence so the controller can record a Ruling; Minor findings may be
-    deferred with an explicit ledger entry.
+    A real Critical or Important acceptance gap is a finding regardless of
+    review scope or how many repair attempts have occurred. Scope does not
+    lower severity. If concrete evidence disproves a finding, state the
+    evidence so the controller can record a Ruling; Minor findings may be
+    deferred with an explicit progress-record entry.
 
     ## Part 2: Code Quality
 
@@ -167,6 +168,10 @@ Task reviewer subagent:
     block), that IS a finding — report it as Important, labeled
     plan-mandated. The plan's authorship does not grade its own work; the
     human decides.
+    Judge severity by the actual impact and likelihood. An issue in unchanged
+    context or outside the selected package may be routed out of scope, but it
+    remains Critical or Important when its impact warrants that level; scope
+    is not a reason to relabel it Minor.
     Acknowledge what was done well before listing issues — accurate praise
     helps the implementer trust the rest of the feedback.
 
@@ -200,19 +205,19 @@ Task reviewer subagent:
 ```
 
 **Placeholders:**
-- `[BRIEF_FILE]` — REQUIRED: the task brief file (`scripts/task-brief PLAN N`
-  prints the path; same file the implementer worked from)
+- `[BRIEF_FILE]` — the task brief file when the controller created one
+  (`scripts/task-brief PLAN N` prints the path); otherwise omit it and use the
+  requirements in the dispatch
 - `[GLOBAL_CONSTRAINTS]` — the binding requirements copied verbatim from
   the plan's Global Constraints section or the spec: exact values, formats,
   and stated relationships between components (not process rules — those
   are already in this template)
-- `[REPORT_FILE]` — REQUIRED: the file the implementer wrote its detailed
-  report to
-- `[BASE_SHA]` — commit before this task
-- `[HEAD_SHA]` — current commit
-- `[DIFF_FILE]` — REQUIRED: the path the controller wrote the review
-  package to (`scripts/review-package PLAN_FILE BASE HEAD` prints the unique
-  path it wrote; the package never enters the controller's context)
+- `[REPORT_FILE]` — the implementer's detailed report when one was requested
+- `[BASE_SHA]` — commit before this package, when it has committed history
+- `[HEAD_SHA]` — current commit, when applicable
+- `[DIFF_FILE]` — the scoped diff/status artifact supplied by the controller;
+  `scripts/review-package PLAN_FILE BASE HEAD` prints one for committed
+  history, while dirty work uses an equivalent path-scoped artifact
 
 **Reviewer returns:** Spec Compliance verdict (✅/❌/⚠️), Strengths, Issues
 (Critical/Important/Minor), Task quality verdict

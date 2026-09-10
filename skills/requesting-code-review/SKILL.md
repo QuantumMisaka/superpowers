@@ -1,121 +1,41 @@
 ---
 name: requesting-code-review
-description: Use when completing tasks, implementing major features, or before merging to verify work meets requirements
+description: Use when an implementation has enough risk, scope, or independent judgment value that another reviewer should inspect it before integration.
 ---
 
 # Requesting Code Review
 
-Dispatch a code reviewer subagent to catch issues before they cascade. The reviewer gets precisely crafted context for evaluation — never your session's history. This keeps the reviewer focused on the work product, not your thought process, and preserves your own context for continued work.
+Review is a risk-control tool. Request it at a meaningful work-package
+boundary when the change affects public behavior, security, data, architecture,
+multiple owners, or an integration decision. A tiny low-risk mechanical change
+may use self-review plus focused verification; policy text and configuration
+can change behavior or permissions and are not automatically low risk.
 
-**Core principle:** Review early, review often.
+For a plan with several small tasks, group them into a coherent review package;
+do not create a review gate for every edit or checklist step. A final review is
+appropriate before merge or another external integration when the change is
+substantial or high risk.
 
-## When to Request Review
+## Review request
 
-**Mandatory:**
-- After each task in subagent-driven development
-- After completing major feature
-- Before merge to main
+Give the reviewer a concise description, the settled requirements or relevant
+plan sections, the exact review scope (revision range or identified dirty
+snapshot), and the evidence already collected.
+Use [code-reviewer.md](code-reviewer.md) for the prompt shape. The reviewer
+should inspect the diff, check real behavior and security boundaries, and cite
+findings with file and line references. Resolve the dispatch schema through the
+applicable `references/*-tools.md` when the harness exposes one.
 
-**Optional but valuable:**
-- When stuck (fresh perspective)
-- Before refactoring (baseline check)
-- After fixing complex bug
+## Act on findings
 
-## How to Request
+- Fix a valid Critical/Important issue before claiming the package complete.
+- Record a Minor for later when it does not affect the approved behavior.
+- If evidence disproves a finding, record the reasoning instead of silently
+  dropping it.
+- Re-review a changed review surface when the fix can alter the original risk;
+  a one-line typo or isolated documentation correction needs only its focused
+  check.
 
-**1. Get git SHAs:**
-```bash
-BASE_SHA=$(git rev-parse HEAD~1)  # or origin/main
-HEAD_SHA=$(git rev-parse HEAD)
-```
-
-**2. Dispatch code reviewer subagent:**
-
-Resolve the reviewer with the capability-aware rules in your harness's routing
-reference (`references/*-tools.md`), then fill
-[code-reviewer.md](code-reviewer.md). Use the task reviewer role for one bounded
-task. Use the final reviewer role for a whole branch, major feature, high-risk
-change, or pre-merge review. If no matching role is exposed, use the generic
-fallback without skipping the review.
-
-**Placeholders:**
-- `{DESCRIPTION}` - Brief summary of what you built
-- `{PLAN_OR_REQUIREMENTS}` - What it should do
-- `{BASE_SHA}` - Starting commit
-- `{HEAD_SHA}` - Ending commit
-
-**3. Act on feedback:**
-- Fix Critical issues immediately.
-- Fix Important issues before proceeding; a real acceptance gap remains a gate
-  even when a retry cap is reached.
-- Note Minor issues for later in the review ledger.
-- If evidence disproves a finding, record the controller's Ruling and the
-  evidence; do not silently drop it.
-- When the same fix strategy reaches its cap, change strategy or re-decompose
-  and continue an authorized feasible repair. If no reliable path exists,
-  report the work incomplete and keep it out of merge-ready status.
-
-## Example
-
-```
-[Just completed Task 2: Add verification function]
-
-You: Let me request code review before proceeding.
-
-BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
-HEAD_SHA=$(git rev-parse HEAD)
-
-[Dispatch code reviewer subagent]
-  DESCRIPTION: Added verifyIndex() and repairIndex() with 4 issue types
-  PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
-  BASE_SHA: a7981ec
-  HEAD_SHA: 3df7661
-
-[Subagent returns]:
-  Strengths: Clean architecture, real tests
-  Issues:
-    Important: Missing progress indicators
-    Minor: Magic number (100) for reporting interval
-  Assessment: Needs fixes
-
-You: [Fix progress indicators and request the scoped re-review]
-[Continue to Task 3 after the Important finding is addressed]
-```
-
-## Integration with Workflows
-
-**Subagent-Driven Development:**
-- Review after EACH task
-- Catch issues before they compound
-- Fix before moving to next task; completion still requires revision-bound
-  acceptance evidence
-
-**Executing Plans:**
-- Review after each task or at natural checkpoints
-- Get feedback, apply, continue
-
-**Ad-Hoc Development:**
-- Review before merge
-- Review when stuck
-
-## Common Rationalizations
-
-| Excuse | Reality |
-|--------|---------|
-| "I'll just review the diff myself instead of dispatching a reviewer" | You're the coordinator — reviewing the diff inline burns the context window you need to keep driving the work. Dispatch a reviewer subagent: the diff and the evaluation live in its context, and only the findings come back to you. |
-| "The reviewer needs my whole session history to understand the change" | Hand it precisely crafted context, never your session's history. That keeps the reviewer on the work product, not your thought process. |
-
-## Red Flags
-
-**Never:**
-- Skip review because "it's simple"
-- Ignore Critical issues
-- Proceed with unfixed Important issues
-- Argue with valid technical feedback
-
-**If reviewer wrong:**
-- Push back with technical reasoning
-- Show code/tests that prove it works
-- Request clarification
-
-See template at: [code-reviewer.md](code-reviewer.md)
+Do not pre-judge findings or ask for a review merely to satisfy a fixed count.
+The purpose is an independent, useful check at the point where it can change
+the result.

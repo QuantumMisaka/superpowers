@@ -1,6 +1,23 @@
-## Subagent dispatch requires multi-agent support
+## Codex native subagent mechanism
 
-Add to your Codex config (`~/.codex/config.toml`):
+Checked 2026-09-10: local CLI 0.153.4 and this session's advertised tool schema.
+Codex is the primary development entry; OpenCode uses its own
+[native adapter](opencode-tools.md), not nested Codex invocations.
+The [official documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
+describes parallel threads, model/effort inheritance, and inherited sandbox policy.
+Installed CLI version and a hosted session's tool surface need not be identical.
+
+Use the active schema first. This session exposes `spawn_agent`,
+`followup_task`, `send_message`, `interrupt_agent`, `list_agents`, and
+`wait_agent`. A follow-up starts an idle agent; a message alone does not.
+The current `fork_turns` control supports none, all, or bounded history; a
+full-history fork inherits model/effort and rejects overrides. Separate context
+does not create a separate worktree or private Git index.
+
+## Multi-agent availability
+
+Current documented releases enable subagents by default. On a profile that
+still gates them, the historical feature flag is:
 
 ```toml
 [features]
@@ -9,14 +26,14 @@ multi_agent = true
 
 This enables the multi-agent tools that skills like
 `dispatching-parallel-agents` and `subagent-driven-development` use.
-Which tools you get depends on the multi-agent version your model
-preset selects (current presets run V2; older ones run V1). Trust your
+Which tools you get depends on the active profile and transport. Trust your
 actual tool list over any table — including this one — when they
 disagree.
 
 ### Profile split: V2 vs V1
 
-Multi-agent transport follows the profile, not just the Codex version:
+The following is this fork's historical profile mapping, not a guarantee about
+every current installation; transport follows the active schema:
 
 - **Default OpenAI profile (GPT):** `multi_agent_v2 = true` → V2 surface
   (`followup_task`, no `close_agent`).
@@ -36,14 +53,15 @@ both. See `## Bailian Multi-Agent V1 Compatibility` for the proven matrix.
   a version number or an old successful call.
 - **Fix rounds:** resume the implementer instead of spawning fresh.
   V2: `followup_task` delivers your message, triggers a turn, and
-  transparently reloads a child the harness evicted — on V2 a spawned
-  agent can always be messaged again. V1: message the existing
+  can resume an existing child while the harness retains its identity. V1: message the existing
   implementer with `send_input`. Only if your harness truly cannot
   message a spawned agent again, dispatch each fix round as a fresh
   implementer carrying the brief, the report file, and the findings.
-- **Lifecycle:** V2 has no `close_agent`. Finished children are
-  evicted automatically when slots are needed; leaving them unclosed
-  costs nothing. Only V1 sessions have `close_agent` — there, close
+- **Lifecycle:** This V2 surface has no `close_agent`. Do not invent it.
+  Concurrent slots and total thread limits are separate constraints: this
+  session rejected new threads even when earlier children had finished.
+  Reuse a suitable retained child or continue locally; completion is not proof
+  that spawning capacity was released. On V1 surfaces with `close_agent`, close
   reviewers when their review returns, and close each implementer
   after its task's review passes.
 - **Model names:** never copy a model name from a skill, table, or old
@@ -116,10 +134,9 @@ owns role identifiers, models, reasoning effort, sandboxing, and limits.
 
 Keep controller work, unresolved architecture decisions, and escalation in the
 parent. Planned implementation of an approved design may still use an
-implementer role. Treat subagent-driven development as `sequential-gated`; its
-implement-review-fix cycle stays serial. Treat parallel dispatch as
-`independent-parallel`, only after the calling skill establishes independent
-domains and disjoint writes.
+implementer role. Serialize dependent work and shared writes. Parallel dispatch
+requires independent domains, disjoint ownership, and a review snapshot that
+identifies each package's actual changes; the calling workflow owns that choice.
 
 When `agent_type` is visible, prefer the matching configured role and let its
 configuration select model and effort. If `agent_type` is absent or no

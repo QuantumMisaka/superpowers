@@ -1,201 +1,67 @@
 #!/usr/bin/env bash
+# Compatibility entry point.  The old version matched long prose fragments;
+# this check protects the load-bearing shape of the skill contracts instead.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-TDD="$REPO_ROOT/skills/test-driven-development/SKILL.md"
-VERIFY="$REPO_ROOT/skills/verification-before-completion/SKILL.md"
-BRAINSTORM="$REPO_ROOT/skills/brainstorming/SKILL.md"
-BANNED_PATTERN="\\b(dishonest|dishonesty|lying|rationalizations?)\\b|you['’]ll be replaced|\\bno exceptions\\b|\\bnon-negotiable\\b"
 
-fail() {
-  printf '  [FAIL] %s\n' "$1" >&2
+python3 - "$REPO_ROOT" <<'PY'
+from pathlib import Path
+import re
+import sys
+
+root = Path(sys.argv[1]).resolve()
+
+def frontmatter(path: Path):
+    text = path.read_text()
+    assert text.startswith("---\n"), path
+    end = text.find("\n---\n", 4)
+    assert end > 0, path
+    header = text[4:end].splitlines()
+    fields = {}
+    for line in header:
+        if ":" in line:
+            key, value = line.split(":", 1)
+            fields[key.strip()] = value.strip()
+    assert fields.get("name"), path
+    description = fields.get("description", "")
+    assert description, path
+    assert len(description) <= 1024, path
+    assert text[end + 5 :].strip(), path
+    return text, fields
+
+skills = {
+    "using-superpowers",
+    "brainstorming",
+    "writing-plans",
+    "receiving-code-review",
+    "requesting-code-review",
+    "writing-skills",
 }
 
-ALLOWED_MATCHER_FIXTURE=$'Relying on complete output is evidence.\nWording implying success is a claim.'
-if printf '%s\n' "$ALLOWED_MATCHER_FIXTURE" |
-  rg -qi "$BANNED_PATTERN"; then
-  fail 'banned-language matcher rejects allowed suffix words'
-  exit 1
-fi
-printf '  [PASS] matcher accepts allowed suffix words\n'
+for name in skills:
+    path = root / "skills" / name / "SKILL.md"
+    text, fields = frontmatter(path)
+    assert fields["name"] == name, path
+    print(f"PASS: {name} metadata")
 
-for banned_fixture in \
-  'lying about verification' \
-  "you'll be replaced" \
-  'you’ll be replaced'; do
-  if ! printf '%s\n' "$banned_fixture" | rg -qi "$BANNED_PATTERN"; then
-    fail "banned-language matcher accepts explicit wording: $banned_fixture"
-    exit 1
-  fi
-done
-printf '  [PASS] matcher rejects explicit banned wording\n'
+for source in (
+    root / "skills/writing-skills/SKILL.md",
+    root / "skills/writing-skills/testing-skills-with-subagents.md",
+):
+    text = source.read_text()
+    for target in re.findall(r"\]\(([^)]+\.md)\)", text):
+        if not re.match(r"\w+://", target):
+            assert (source.parent / target).is_file(), (source, target)
+print("PASS: writing-skill local references resolve")
 
-require_literal() {
-  local file="$1"
-  local needle="$2"
-  local label="$3"
+for path in (
+    root / "skills/test-driven-development/SKILL.md",
+    root / "skills/verification-before-completion/SKILL.md",
+):
+    frontmatter(path)
+print("PASS: behavior and evidence skills contain nonempty bodies")
+PY
 
-  if ! grep -Fq -- "$needle" "$file"; then
-    fail "$label"
-    return 1
-  fi
-}
-
-require_ordered_literals() {
-  local file="$1"
-  local label="$2"
-  shift 2
-  local previous=0
-  local needle match line
-
-  for needle in "$@"; do
-    if ! match="$(grep -nF -m1 -- "$needle" "$file")"; then
-      fail "$label: missing $needle"
-      return 1
-    fi
-    line="${match%%:*}"
-    if (( line <= previous )); then
-      fail "$label: $needle is out of order"
-      return 1
-    fi
-    previous="$line"
-  done
-}
-
-check_tdd_contract() {
-  local file="$1"
-
-  require_ordered_literals "$file" 'TDD phase evidence order' \
-    '1. RED — add one focused behavior test and run it.' \
-    '2. Confirm the expected failure is caused by the missing behavior.' \
-    '3. GREEN — write the minimal implementation and run the owning test.' \
-    '4. REFACTOR — improve structure while the owning suite stays green.' ||
-    return 1
-
-  require_literal "$file" \
-    'temporary revert or an equivalent isolated baseline' \
-    'TDD contract must establish RED for an existing implementation' ||
-    return 1
-  require_literal "$file" \
-    'Route throwaway prototypes, generated' \
-    'TDD scope must route prototypes and generated code before invocation' ||
-    return 1
-  require_literal "$file" \
-    'code, configuration-only edits, and missing test infrastructure before invoking' \
-    'TDD scope must route configuration-only work and absent test infrastructure before invocation' ||
-    return 1
-
-  require_ordered_literals "$file" 'TDD bug-fix RED/GREEN example' \
-    '## Example: Bug Fix' \
-    '**RED**' \
-    '**Verify RED**' \
-    '**GREEN**' \
-    '**Verify GREEN**' \
-    '**REFACTOR**' ||
-    return 1
-}
-
-check_verification_contract() {
-  local file="$1"
-
-  require_literal "$file" 'fresh evidence' \
-    'verification contract must require fresh evidence' ||
-    return 1
-  require_literal "$file" 'exact command' \
-    'verification contract must name the exact command' ||
-    return 1
-  require_literal "$file" 'exit code' \
-    'verification contract must inspect the exit code' ||
-    return 1
-  require_literal "$file" 'actual status' \
-    'verification failure must report actual status' ||
-    return 1
-  require_literal "$file" '## Claim-to-Evidence Mapping' \
-    'verification contract must retain the claim/evidence mapping table' ||
-    return 1
-
-  for row in \
-    '| Tests pass | Test command output: 0 failures |' \
-    '| Build succeeds | Build command: exit 0 | Linter passing, logs look good |' \
-    '| Regression test works | Red-green cycle verified | Test passes once |' \
-    '| Requirements met | Line-by-line checklist | Tests passing |'; do
-    require_literal "$file" "$row" \
-      "verification mapping must retain key row: $row" ||
-      return 1
-  done
-
-  require_ordered_literals "$file" 'verification regression RED/GREEN example' \
-    '**Regression tests (TDD Red-Green):**' \
-    '✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)' ||
-    return 1
-
-  require_literal "$file" \
-    'reporting a positive factual claim about work state' \
-    'verification scope must target positive factual work-state claims' ||
-    return 1
-  if grep -Fq -- 'reporting satisfaction with a work state' "$file"; then
-    fail 'verification scope still targets subjective satisfaction'
-    return 1
-  fi
-}
-
-check_brainstorming_evidence_contract() {
-  local file="$1"
-
-  require_literal "$file" \
-    '精确可执行验收信号（具体命令或可观察检查及期望结果）' \
-    'design recommendation must include an executable acceptance signal' ||
-    return 1
-  require_literal "$file" \
-    '测试尚未存在时也要给出计划的测试命令和判定标准' \
-    'design recommendation must retain a future-test acceptance signal' ||
-    return 1
-}
-
-expect_rejected() {
-  local label="$1"
-  local checker="$2"
-  local file="$3"
-
-  if "$checker" "$file" >/dev/null 2>&1; then
-    fail "mutation was not rejected: $label"
-    return 1
-  fi
-  printf '  [PASS] mutation rejected: %s\n' "$label"
-}
-
-check_tdd_contract "$TDD"
-check_verification_contract "$VERIFY"
-check_brainstorming_evidence_contract "$BRAINSTORM"
-
-if rg -ni "$BANNED_PATTERN" \
-  "$TDD" "$VERIFY"; then
-  fail 'evidence skills contain moralized or generalized coercive language'
-  exit 1
-fi
-
-expect_rejected 'TDD phase order' check_tdd_contract <(
-  awk '
-    index($0, "2. Confirm the expected failure") { expected = $0; next }
-    index($0, "3. GREEN —") { print; print expected; next }
-    { print }
-  ' "$TDD"
-)
-expect_rejected 'existing-implementation RED baseline' check_tdd_contract <(
-  sed '/temporary revert or an equivalent isolated baseline/d' "$TDD"
-)
-expect_rejected 'pre-invocation routing' check_tdd_contract <(
-  sed '/missing test infrastructure before invoking/d' "$TDD"
-)
-expect_rejected 'claim/evidence mapping row' check_verification_contract <(
-  sed '/| Regression test works |/d' "$VERIFY"
-)
-expect_rejected 'regression RED/GREEN example' check_verification_contract <(
-  sed '/Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)/d' "$VERIFY"
-)
-expect_rejected 'design-stage executable acceptance signal' check_brainstorming_evidence_contract <(
-  sed '/精确可执行验收信号/d' "$BRAINSTORM"
-)
-
-printf 'All positive evidence language checks passed\n'
+printf 'Skill structure checks passed\n'

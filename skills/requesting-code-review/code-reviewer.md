@@ -33,6 +33,10 @@ Reviewer subagent:
     git diff [BASE_SHA]..[HEAD_SHA]
     ```
 
+    This range covers committed work only. For an uncommitted candidate,
+    inspect the supplied working-tree/index diff and new files as well; record
+    the reviewed scope and snapshot. HEAD alone does not identify dirty content.
+
     ## Read-Only Review
 
     Your review is read-only on this checkout. Do not mutate the working tree, the index, HEAD, or branch state in any way. Use tools like `git show`, `git diff`, and `git log` to inspect history. If you need a working copy of a different revision, check it out into a separate temporary directory (e.g. `git worktree add /tmp/review-[SHA] [SHA]`) — never move HEAD on this checkout.
@@ -67,7 +71,7 @@ Reviewer subagent:
     - Integrates cleanly with surrounding code?
 
     **Testing:**
-    - Tests verify real behavior, not mocks?
+    - Tests verify production behavior, using controlled doubles where appropriate?
     - Edge cases covered?
     - Integration tests where they matter?
     - Does each new test catch a named production regression?

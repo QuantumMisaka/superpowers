@@ -37,11 +37,15 @@ Kimi Code dispatches subagents through the `Agent` tool: `prompt` (the complete 
 | `plan` | Read-only implementation planning and architecture design |
 | `agent` | General dispatch needing the full toolset (background shells, cron, nested subagents) |
 
-Skills dispatch with `Subagent (…):` and either reference a `*-prompt.md` template or supply an inline prompt. On Kimi Code, fill every template placeholder and pass the result as `Agent`'s `prompt`; never pass a Claude-style `general-purpose` as `subagent_type`.
+Skills dispatch with `Subagent (…):` and either reference a `*-prompt.md` template or supply an inline prompt. On Kimi Code, fill every placeholder selected by the dispatch and omit optional artifacts that were not used; pass the result as `Agent`'s `prompt`. Never pass a Claude-style `general-purpose` as `subagent_type`.
 
-### Fix rounds: resume, don't respawn
+### Repair context: resume when useful
 
-`Agent` accepts a `resume` parameter with a prior agent's id: the resumed agent keeps its full context. Subagent-driven development's fix rounds 1-3 resume the original implementer this way — the harness supports it, so the "fresh implementer carrying the report file" fallback is not needed. Record the agent id from each dispatch result.
+`Agent` accepts a `resume` parameter with a prior agent's id: the resumed agent
+keeps its full context. Use it when preserving the implementer's context helps
+with a repair; dispatch a fresh agent when a different perspective or clean
+context is safer. Record the agent id from each dispatch result when it is
+needed for resumption.
 
 ### Foreground and background
 
@@ -59,7 +63,11 @@ There is no `wait_agent` poll loop on Kimi Code. A background subagent's complet
 - Constraints: at least 2 `items` (a single task uses `Agent`), at most 128, and the `AgentSwarm` call must be the only tool call in its response.
 - `resume_agent_ids` continues existing subagents (failed or timed out) alongside or instead of new items.
 
-The subagent-driven-development implement-review-fix cycle stays serial on Kimi Code: one foreground `Agent` per stage. Never dispatch implementation subagents in parallel, via swarm or otherwise.
+When the next stage depends on a prior result, use a foreground `Agent` so its
+result is available before continuing. Independent packages may use separate
+`Agent` calls or `AgentSwarm` after the calling skill establishes disjoint
+ownership and attributable work states; shared writes and integration remain
+coordinated by the controller.
 
 ## Model routing on spawns
 

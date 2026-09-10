@@ -10,7 +10,8 @@ description: Use when about to claim work is complete, fixed, or passing, before
 Before reporting a work-state claim:
 
 1. Name the exact command or observation that can support the claim.
-2. Use evidence produced for the current workstate and exact revision. "Fresh"
+2. Use evidence produced for the current workstate: the exact revision, or an
+   identified dirty snapshot including staged, unstaged, and new files. "Fresh"
    means current-state execution evidence, not that every agent or reviewer
    must rerun the same command. Run it now when no valid retained evidence
    covers the claim.
@@ -33,17 +34,17 @@ prove the changed behavior; a full build claim requires the full build command.
 | Build succeeds | Build command: exit 0 | Linter passing, logs look good |
 | Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
 | Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff plus revision-bound raw output, exit code, and artifacts | Agent reports "success" |
-| Requirements met | Line-by-line checklist | Tests passing |
+| Agent completed | VCS diff plus current-workstate-bound raw output, exit code, and artifacts | Agent reports "success" |
+| Requirements met | Requirements mapped to inspected artifacts and relevant execution evidence | Checklist ticks or tests passing alone |
 
 Match the scope and freshness of the evidence to the claim. Output from a
-previous run is usable only when it is explicitly tied to the current revision
-and workstate; otherwise it describes a previous state. A partial check
+previous run is usable only when its relevant inputs match the current revision
+or identified dirty snapshot; otherwise it describes a previous state. A partial check
 supports only the boundary it exercised. An agent report becomes evidence
 after the controller inspects the resulting artifacts and verifies its raw
 command output, exit code, and acceptance coverage.
 
-For delegated work, the controller binds acceptance to the exact revision,
+For delegated work, the controller binds acceptance to the revision or identified dirty snapshot,
 retained raw command output, exit code, produced artifact, and the criterion it
 covers. A status or success summary alone is not evidence. If this package is
 complete and current, consume it without mechanically repeating the full
@@ -58,10 +59,13 @@ focused check that resolves the gap.
 Evidence gap: "Should pass now" / "Looks correct"
 ```
 
-**Regression tests (TDD Red-Green):**
+**Regression tests:**
 ```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
-Evidence gap: "I've written a regression test" without red-green verification
+✅ Test fails for the missing behavior on baseline → candidate passes the same test
+For code already written, compare in an isolated baseline or use a safe targeted
+mutation; do not revert shared/user changes or claim retroactive test-first work.
+Behavior-preserving refactors use characterization checks on baseline and candidate.
+Evidence gap: a passing test alone does not show that it detects the original defect.
 ```
 
 **Build:**
@@ -106,6 +110,6 @@ Apply the claim contract before:
 
 ## Completion Record
 
-For every final work-state claim, name the matching current-revision evidence
+For every final work-state claim, name the matching current-workstate evidence
 and its result. Where evidence and claim differ, report the actual status and
 retain the failure as the next work item.

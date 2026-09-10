@@ -2,8 +2,8 @@
 # Validate the Kimi Code harness reference. Upstream ships the base tool
 # mapping inside .kimi-plugin/plugin.json's skillInstructions (covered by
 # tests/kimi/); this contract guards the fork-owned reference that extends it
-# with orchestration concerns: Agent subagent_type routing, resume-based fix
-# rounds, AgentSwarm for same-shape parallel work, and the no-model-field
+# with orchestration concerns: Agent subagent_type routing, resumable repair
+# context, AgentSwarm for same-shape parallel work, and the no-model-field
 # routing boundary.
 set -euo pipefail
 
@@ -36,14 +36,11 @@ assert_literal "$MAPPING" '`explore`' 'explore subagent type'
 assert_literal "$MAPPING" '`plan`' 'plan subagent type'
 
 # --- Fork orchestration concerns ---------------------------------------------
-assert_literal "$MAPPING" '`resume`' 'resume-based fix rounds'
+assert_literal "$MAPPING" '`resume`' 'resumable repair context'
 assert_literal "$MAPPING" 'at least 2 `items`' 'swarm minimum items constraint'
 assert_literal "$MAPPING" \
   'schema exposes **no `model` or effort field**' \
   'no-model-field routing boundary'
-assert_literal "$MAPPING" \
-  'Never dispatch implementation subagents in parallel' \
-  'SDD serial-implementer red line'
 
 # --- Consistency with upstream plugin manifest mapping -----------------------
 for token in AskUserQuestion TodoList Read Write Edit Bash Grep Glob FetchURL WebSearch; do

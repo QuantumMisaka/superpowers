@@ -14,7 +14,8 @@ Load plan, review critically, execute all tasks, report when complete.
 Use the execution mode already selected. Availability of subagents alone does
 not require SDD: direct execution is appropriate when its coordination cost is
 lower. Delegate independent bounded work when useful and authorized; use SDD
-when the plan benefits from its per-task implementation and review cycle.
+when the plan benefits from isolated implementers and reviewable work-package
+checkpoints.
 
 ## The Process
 
@@ -30,18 +31,21 @@ when the plan benefits from its per-task implementation and review cycle.
 
 ### Step 2: Execute Tasks
 
-For each task:
+For each work package (one or more plan tasks):
 1. Mark as in_progress
-2. Follow each step exactly (plan has bite-sized steps)
+2. Follow the relevant plan steps, resolving ordinary implementation choices
+   from the plan and repository context
 3. Run verifications as specified
 4. Mark as completed
 
 ### Step 3: Complete Development
 
-Exit condition — all three must hold: every task marked complete; every
-acceptance condition supported by current revision-bound execution evidence (see
-verification-before-completion); and every ruling you made listed in the
-final message under "Rulings I made", each with what it costs if wrong.
+Exit condition — all planned work packages are complete, acceptance conditions
+are supported by current revision-bound execution evidence (see
+verification-before-completion), and material decisions, deviations, and
+uncertainty are retained in the plan ledger or report. The final message should
+surface the decisions that affect scope, safety, or acceptance and link the
+durable record; it need not repeat every ordinary implementation choice.
 
 After all tasks complete and verified, report results, evidence and the retained
 branch/workspace. If integration or cleanup is requested, use
@@ -50,14 +54,17 @@ already authorized choice. Implementation-only delivery does not open a menu.
 
 ## Rulings, Not Stalls
 
-A running plan does not wait on a human. Blockers, unclear instructions,
-plan gaps, a failed verification you can diagnose — decide them. The spec is
-the binding authority, the plan is its argument, and your judgment settles
-what neither answers. Record every decision as `Ruling: <what you decided>
-— <why> — <what it costs if wrong>` and keep going; the ruling list in your
-final message is where your human partner reviews and reworks them.
+A running plan does not wait on a human for ordinary implementation choices.
+Blockers, unclear instructions, plan gaps, and failed verification that you can
+diagnose should be resolved within scope. The spec is the binding authority,
+the plan is its argument, and your judgment settles what neither answers.
+Record material decisions or deviations as `Ruling: <what you decided> — <why>
+— <what it costs if wrong>` and keep going; link the record in the final
+message.
 
-Pause for missing authorization for irreversible/destructive operations,
+Return an implementation-changing product or architecture decision to the user;
+a Ruling cannot revise the approved design or expand scope. Pause for missing
+authorization for irreversible/destructive operations,
 security-sensitive actions or external side effects (merge, push, publish),
 or when the plan leaves no reliable path forward. Existing authorization
 persists within its scope; harness permission checks still apply. Ask only for
@@ -84,7 +91,7 @@ report incomplete when no reliable path remains.
 
 ## Remember
 - Review plan critically first
-- Follow plan steps exactly
+- Follow the plan's acceptance intent and record justified deviations
 - Don't skip verifications
 - Reference skills when plan says to
 - Stop when blocked, don't guess
