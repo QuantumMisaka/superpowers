@@ -5,16 +5,171 @@
 # tasks intact.
 #
 # Usage: review-package PLAN_FILE BASE HEAD [OUTFILE]
+#        review-package PLAN_FILE --dirty -- PATH...
 # Default OUTFILE: <repo-root>/.superpowers/sdd/<plan-basename>/review-<base7>..<head7>.diff
 # (named per range, so a re-review after fixes gets a distinct fresh file).
 set -euo pipefail
 
-if [ $# -lt 3 ] || [ $# -gt 4 ]; then
+usage() {
   echo "usage: review-package PLAN_FILE BASE HEAD [OUTFILE]" >&2
+  echo "       review-package PLAN_FILE --dirty -- PATH..." >&2
+}
+
+if [ $# -lt 1 ]; then
+  usage
   exit 2
 fi
 
 plan=$1
+[ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }
+
+if [ "$#" -ge 2 ] && [ "$2" = "--dirty" ]; then
+  if [ "$#" -lt 4 ] || [ "$3" != "--" ]; then
+    usage
+    exit 2
+  fi
+
+  # Status may refresh index metadata unless optional locking is disabled.
+  export GIT_OPTIONAL_LOCKS=0
+  paths=( "${@:4}" )
+  if [ "${#paths[@]}" -eq 0 ]; then
+    echo "dirty mode requires at least one repository-relative path" >&2
+    exit 2
+  fi
+
+  root=$(git rev-parse --show-toplevel) || {
+    echo "not inside a git repository" >&2
+    exit 2
+  }
+
+  realpath_zero=0
+  if command -v realpath >/dev/null 2>&1 && realpath --help 2>&1 | grep -q -- '--zero'; then
+    realpath_zero=1
+  fi
+
+  root_real=$root
+  if [ "$realpath_zero" -eq 1 ]; then
+    root_real=
+    IFS= read -r -d '' root_real < <(realpath -m -z -- "$root") || {
+      echo "cannot resolve repository root: $root" >&2
+      exit 2
+    }
+  fi
+
+  validate_path() {
+    local path=$1
+    local component
+    local candidate
+    local resolved
+    local -a components
+
+    if [ -z "$path" ]; then
+      echo "dirty mode rejects an empty path" >&2
+      exit 2
+    fi
+    case "$path" in
+      /*)
+        echo "dirty mode path is not repository-relative: $path" >&2
+        exit 2
+        ;;
+    esac
+
+    # Refuse parent components before asking Git to interpret the path. This
+    # keeps the contract literal and makes traversal rejection independent of
+    # the caller's current directory or the platform's path normalizer.
+    IFS=/ read -r -a components <<< "$path"
+    for component in "${components[@]}"; do
+      if [ "$component" = ".." ]; then
+        echo "dirty mode path escapes the repository: $path" >&2
+        exit 2
+      fi
+    done
+
+    # A symlinked path can escape even when its spelling is relative. When
+    # GNU-style NUL output is available, resolve the candidate without
+    # losing newlines in a filename and reject such escapes too. Lexical
+    # validation above remains the portable fallback.
+    if [ "$realpath_zero" -eq 1 ]; then
+      candidate="$root/$path"
+      resolved=
+      IFS= read -r -d '' resolved < <(realpath -m -z -- "$candidate") || {
+        echo "cannot resolve dirty mode path: $path" >&2
+        exit 2
+      }
+      case "$resolved" in
+        "$root_real"|"$root_real"/*) ;;
+        *)
+          echo "dirty mode path escapes the repository: $path" >&2
+          exit 2
+          ;;
+      esac
+    fi
+  }
+
+  for path in "${paths[@]}"; do
+    validate_path "$path"
+  done
+
+  head=$(git -C "$root" rev-parse --verify HEAD 2>/dev/null || printf '%s' '(unborn HEAD)')
+  workspace=$("$(cd "$(dirname "$0")" && pwd)/sdd-workspace" "$plan")
+  out=$(mktemp "$workspace/review-dirty-XXXXXX")
+
+  untracked_paths=()
+  while IFS= read -r -d '' path; do
+    untracked_paths+=( "$path" )
+  done < <(
+    git -C "$root" --literal-pathspecs ls-files --others --exclude-standard -z -- "${paths[@]}"
+  )
+
+  {
+    echo "# Dirty review package"
+    echo
+    echo "NOTE: This dirty snapshot is not attributable to this package or agent without a pre-dispatch baseline."
+    echo
+    echo "## HEAD"
+    printf '%s\n' "$head"
+    echo
+    echo "## Owned paths (repository-relative, literal)"
+    for path in "${paths[@]}"; do
+      printf '%q\n' "$path"
+    done
+    echo
+    echo "## Scoped status (porcelain v1, NUL-delimited)"
+    git -C "$root" --literal-pathspecs status --porcelain=v1 --untracked-files=all -z -- "${paths[@]}"
+    printf '\n'
+    echo
+    echo "## Staged diff"
+    git -C "$root" --literal-pathspecs diff --cached --binary --full-index --no-ext-diff --no-textconv --no-renames -U10 -- "${paths[@]}"
+    echo
+    echo "## Unstaged diff"
+    git -C "$root" --literal-pathspecs diff --binary --full-index --no-ext-diff --no-textconv --no-renames -U10 -- "${paths[@]}"
+    echo
+    echo "## Untracked file diffs"
+    if [ "${#untracked_paths[@]}" -eq 0 ]; then
+      echo "(none)"
+    else
+      for path in "${untracked_paths[@]}"; do
+        printf '### %q\n' "$path"
+        diff_rc=0
+        git -C "$root" --literal-pathspecs diff --no-index --binary --full-index --no-ext-diff --no-textconv --no-renames -U10 -- /dev/null "$path" || diff_rc=$?
+        if [ "$diff_rc" -ne 0 ] && [ "$diff_rc" -ne 1 ]; then
+          echo "unable to capture untracked file diff: $path" >&2
+          exit "$diff_rc"
+        fi
+        echo
+      done
+    fi
+  } > "$out"
+
+  echo "wrote ${out}: dirty snapshot at HEAD ${head}, ${#paths[@]} owned path(s), $(wc -c < "$out" | tr -d ' ') bytes"
+  exit 0
+fi
+
+if [ $# -lt 3 ] || [ $# -gt 4 ]; then
+  usage
+  exit 2
+fi
+
 base=$2
 head=$3
 [ -f "$plan" ] || { echo "no such plan file: $plan" >&2; exit 2; }

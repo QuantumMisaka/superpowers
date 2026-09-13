@@ -156,29 +156,39 @@ can inspect implementation and catch conflicts that emerge there.
 
 ## Model Selection
 
-Use the least powerful model that can handle each role; on this fork, resolve
-roles to concrete model/effort routing via your harness's routing reference
-(`references/*-tools.md`; Kimi Code exposes no model field, so routing is
-omitted there). If a review package is selected, keep its implement-review
-sequence coherent.
+Choose a suitable model for each task's type, complexity, and risk, balancing
+capability with total execution cost. Different packages may use different
+models; the controller need not assign its own model to every child.
+Resolve concrete routing through the active harness's `references/*-tools.md`
+and its advertised roles/configuration.
 
-| Work | Tier |
-|------|------|
-| Mechanical: 1-2 files with a complete spec; plan text already contains the code (transcription plus testing) | cheapest |
-| Integration: multi-file coordination, pattern matching, debugging | standard |
-| Design judgment or broad codebase understanding; whole-branch review, when selected | most capable |
-| Reviewers, scaled to the diff's size, complexity, and risk; implementers working from prose | mid-tier floor |
-| Scoped re-reviews of small fix diffs | cheap-to-mid |
+| Task type | Preset capability to look for |
+| --- | --- |
+| Mechanical, fully specified edits and focused checks | Routine implementer |
+| Multi-file integration, debugging, implementation from prose | Standard implementer; escalate when the package exceeds its capability |
+| Bounded source analysis or progress/evidence audit | Context analyst or progress reviewer |
+| Approved document or paper drafting, evidence-based review | Matching document/paper writer or reviewer |
+| Scoped implementation review | Task reviewer, scaled to the changed risk |
+| Whole-change correctness, security, or architecture review | Final reviewer with broad judgment capability |
+| Waiting on long-running jobs and summarizing logs | Monitor |
 
-**Turn count beats token price.** The cheapest models routinely take 2-3× the
-turns on multi-step work and often cost more overall.
+These are capability categories, not mandatory role names or a fixed model
+ranking. The parent retains unresolved design decisions and final acceptance.
+Preconfigured roles provide reusable model, reasoning-effort, permission, and
+input/output contracts; inspect the actual configuration and tool surface.
 
-**Specify the model explicitly only when your harness's dispatch schema
-exposes a model field.** An omitted model inherits your session's model —
-often the most capable and most expensive — which silently defeats this
-section; but never require a field the active schema lacks. When repeated
-repair attempts do not change the result, use a fresh perspective or a more
-capable model rather than repeating the same dispatch.
+Prefer a matching advertised role and let its configuration choose model and
+effort. When no role fits, use the configured default route or an authorized
+explicit model/effort selection supported by the harness. Omission does not
+universally mean parent-model inheritance: role settings, default-subagent
+settings, and context-fork rules can change the result. Full-history forks may
+forbid overrides; a model field's existence alone does not authorize or require
+setting it. Concrete presets belong in harness configuration, not this skill.
+
+When a task outgrows its route, supply missing context, split the package, or
+select an authorized more capable route. Repeated unchanged repair attempts
+are a reason to change strategy. Judge efficiency by completed work and repair
+cost, not token price alone; keep the original permission and task boundaries.
 
 ## The Task Loop
 
@@ -198,9 +208,8 @@ and is re-read on every later turn. Hand artifacts over as files.
 short timeouts, and never sit in one silent, open-ended wait either.
 While you have local work — ledger updates, packaging the next review,
 reading reports — keep working; child results arrive on their own.
-When you are genuinely idle, wait in bounded stretches (five to ten
-minutes, where your platform allows), and between stretches post one
-line of status and reconcile your live children: list them, and chase
+When idle, bound each wait by the active harness's user-update deadline.
+Between stretches post one line of status and reconcile your live children: list them, and chase
 any that finished without reporting. A bounded stretch keeps nearly
 all of a long wait's efficiency while guaranteeing a stuck or lost
 child is noticed within minutes, not at the end of the session.
@@ -254,6 +263,11 @@ misattributed to this package. The dirty-snapshot references below use this scop
   each package's path-scoped diff. For a committed linear package use the
   recorded `BASE..HEAD` review range; for dirty work provide a path-scoped
   status/diff artifact. Never use a commit range to imply uncommitted changes.
+  For a dirty package, `scripts/review-package PLAN_FILE --dirty -- PATH...`
+  captures repository-root-relative owned paths, staged/unstaged diffs, and
+  untracked contents. Preserve the pre-dispatch baseline separately; the
+  snapshot records current state, not authorship. Quiesce writes to those paths
+  while capturing and reviewing; separate snapshots are not atomic isolation.
 
 Template: [implementer-prompt.md](implementer-prompt.md)
 

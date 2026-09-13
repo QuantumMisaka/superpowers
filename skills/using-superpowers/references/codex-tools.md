@@ -1,6 +1,6 @@
 ## Codex native subagent mechanism
 
-Checked 2026-09-10: local CLI 0.153.4 and this session's advertised tool schema.
+Checked 2026-09-13: local CLI 0.154.0 and this session's advertised tool schema.
 Codex is the primary development entry; OpenCode uses its own
 [native adapter](opencode-tools.md), not nested Codex invocations.
 The [official documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
@@ -130,7 +130,23 @@ owns role identifiers, models, reasoning effort, sandboxing, and limits.
 | Standard implementer | Bounded multi-file integration or debugging |
 | Task reviewer | Task-scoped, read-only requirement and quality review |
 | Final reviewer | Whole-change, high-judgment read-only review |
+| Context analyst / progress reviewer | Bounded source analysis or acceptance/progress auditing |
+| Document / paper writer or reviewer | Approved drafting or evidence-grounded document review |
 | Monitor | Read-only external-job waiting |
+
+The local preset catalog is the reusable design mechanism: each advertised
+role packages a model/effort selection, permission defaults, and a bounded
+input/output contract. Different task categories can therefore use different
+models without changing the controller model. Inspect the live role descriptions
+and their config files; this reference does not duplicate concrete model names.
+A role name is not proof of enforced isolation.
+
+For example, send a fully specified mechanical edit to the routine implementer,
+a dependency integration to the standard implementer, a source-only diagnosis
+to the context analyst, and the combined change to the final reviewer when its
+risk warrants that review. Keep their task and evidence contracts explicit.
+Choose a generic isolated fork when a fitting preset is absent or a permitted
+tier adjustment needs it; follow the routing precedence above.
 
 Keep controller work, unresolved architecture decisions, and escalation in the
 parent. Planned implementation of an approved design may still use an

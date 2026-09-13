@@ -7,7 +7,7 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 ## Overview
 
-You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
+You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. Prefer a fresh or bounded context and supply the task's required inputs explicitly, using the active harness's controls. This also preserves your own context for coordination work.
 
 When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
 
@@ -71,10 +71,9 @@ Each agent gets:
 
 ### 3. Dispatch in Parallel
 
-Issue all three subagent dispatches in the same response — they run in parallel:
-
-Dispatch through your harness's parallel mode — Codex `independent-parallel`,
-Kimi Code `AgentSwarm`. Apply the capability-aware routing and fallback rules
+Start independent tasks through the active harness's native dispatch interface
+before waiting for their results, where asynchronous or concurrent dispatch is
+supported. Apply the capability-aware routing and fallback rules
 in your harness's routing reference (`references/*-tools.md`), classifying each
 domain independently as routine or standard.
 
@@ -85,14 +84,17 @@ Subagent (matching implementer capability): "Fix tool-approval-race-conditions.t
 # All three run concurrently.
 ```
 
-Multiple dispatch calls in one response = parallel execution. One per response = sequential.
+Concurrency depends on overlapping task execution, not response boundaries.
+Use the live slot budget and its counting convention; queue excess work and
+reuse retained agents when supported. Transport, resume, and wait behavior
+belong in the active harness reference.
 
 ### 4. Review and Integrate
 
 When agents return:
 - Read each summary
 - Verify fixes don't conflict
-- Run full test suite
+- Run the checks covering the combined changes; broaden when risk warrants it
 - Integrate all changes
 
 ## Agent Prompt Structure
@@ -148,11 +150,13 @@ criteria are main-agent work — their input is the conversation itself.
 Subagents gather, enumerate, and draft; decision points route back to the
 main agent and the human.
 
-**Implementation with a review gate (fork-added):** tasks that write code,
-commit, and require per-task spec/quality review go through
-subagent-driven-development's serial implement-review-fix loop — not parallel
-dispatch. Parallel is for read-only investigation or disjoint-file work with
-no per-task review surface.
+**Implementation with a review gate:** use subagent-driven-development to
+coordinate each package's implementation, review, and repair sequence.
+Independent packages may overlap when ownership and write sets are disjoint,
+there is no shared generated state, and each review has an attributable
+snapshot. Dependencies, shared files, and shared Git index mutations stay
+serial. A package's review follows its implementation; selected reviews still
+finish before acceptance.
 
 ## Real Example from Session
 
@@ -193,7 +197,7 @@ Agent 3 → Fix tool-approval-race-conditions.test.ts
 After agents return:
 1. **Review each summary** - Understand what changed
 2. **Check for conflicts** - Did agents edit same code?
-3. **Run full suite** - Verify all fixes work together
+3. **Verify integration** - Run checks covering the combined changes; broaden when warranted
 4. **Spot check** - Agents can make systematic errors
 
 ## Real-World Impact

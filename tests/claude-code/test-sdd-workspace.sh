@@ -10,6 +10,7 @@ SDD_SCRIPTS="$REPO_ROOT/skills/subagent-driven-development/scripts"
 
 FAILURES=0
 TEST_ROOT=""
+TEST_SCRATCH_DIR="${HOME:?HOME must be set}/scratch"
 
 pass() { echo "  [PASS] $1"; }
 fail() {
@@ -17,17 +18,12 @@ fail() {
     FAILURES=$((FAILURES + 1))
 }
 
-cleanup() {
-    if [[ -n "$TEST_ROOT" && -d "$TEST_ROOT" ]]; then
-        rm -rf "$TEST_ROOT"
-    fi
-}
-
 main() {
     echo "=== Test: sdd-workspace ==="
 
-    TEST_ROOT="$(mktemp -d)"
-    trap cleanup EXIT
+    mkdir -p "$TEST_SCRATCH_DIR"
+    TEST_ROOT="$(mktemp -d "$TEST_SCRATCH_DIR/sdd-workspace-test.XXXXXX")"
+    echo "  fixture retained at: $TEST_ROOT"
 
     # Resolve repo to its physical path so string comparisons match the
     # helper's output (git rev-parse --show-toplevel resolves symlinks; on
@@ -163,6 +159,102 @@ PLAN
     else
         fail "review-package honors an explicit OUTFILE"
         echo "    got: $rp_explicit"
+    fi
+
+    # --- dirty, path-scoped review package ---
+    local staged_owned="staged-owned.txt"
+    local unstaged_owned="f"
+    local untracked_owned="untracked-owned.txt"
+    local untracked_binary="untracked-owned.bin"
+    local literal_owned="literal*.txt"
+    local unrelated="unrelated.txt"
+    printf 'staged content\n' > "$repo/$staged_owned"
+    ( cd "$repo" && git add -- "$staged_owned" )
+    printf 'worktree change\n' >> "$repo/$unstaged_owned"
+    printf 'untracked content\n' > "$repo/$untracked_owned"
+    printf '\000\377\001binary\n' > "$repo/$untracked_binary"
+    printf 'literal path content\n' > "$repo/$literal_owned"
+    printf 'unrelated content\n' > "$repo/$unrelated"
+
+    local staged_index_before
+    staged_index_before="$(cd "$repo" && git ls-files --stage)"
+    local dirty_out dirty_path dirty_rc=0
+    dirty_out="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md --dirty -- \
+        "$staged_owned" "$unstaged_owned" "$untracked_owned" "$untracked_binary" "$literal_owned")" || dirty_rc=$?
+    dirty_path="$(printf '%s\n' "$dirty_out" | sed -n 's/^wrote \(.*\): dirty snapshot.*$/\1/p')"
+
+    if [[ "$dirty_rc" -eq 0 && -s "$dirty_path" && "$dirty_out" == *"$dirty_path"* ]]; then
+        pass "dirty review-package writes a non-empty default workspace file"
+    else
+        fail "dirty review-package writes a non-empty default workspace file"
+        echo "    exit: $dirty_rc"
+        echo "    output: $dirty_out"
+        echo "    path: $dirty_path"
+    fi
+
+    if [[ -n "$dirty_path" ]] && grep -a -q '^## HEAD$' "$dirty_path" && grep -a -q '^## Owned paths' "$dirty_path" && \
+        grep -a -q '^## Scoped status' "$dirty_path"; then
+        pass "dirty package records HEAD, owned paths, and scoped status"
+    else
+        fail "dirty package records HEAD, owned paths, and scoped status"
+    fi
+
+    if [[ -n "$dirty_path" ]] && grep -a -q 'staged content' "$dirty_path" && grep -a -q 'worktree change' "$dirty_path" && \
+        grep -a -q 'untracked content' "$dirty_path" && grep -a -q 'GIT binary patch' "$dirty_path" && \
+        grep -a -q 'literal path content' "$dirty_path"; then
+        pass "dirty package captures staged, unstaged, text-untracked, binary-untracked, and literal paths"
+    else
+        fail "dirty package captures staged, unstaged, text-untracked, binary-untracked, and literal paths"
+    fi
+
+    if [[ -n "$dirty_path" && -s "$dirty_path" ]] && { ! grep -a -q "$unrelated" "$dirty_path" && ! grep -a -q 'unrelated content' "$dirty_path"; }; then
+        pass "dirty package excludes unrelated working-tree files"
+    else
+        fail "dirty package excludes unrelated working-tree files"
+    fi
+
+    if [[ -n "$dirty_path" ]] && grep -a -q 'not attributable.*pre-dispatch baseline' "$dirty_path"; then
+        pass "dirty package warns that attribution requires a pre-dispatch baseline"
+    else
+        fail "dirty package warns that attribution requires a pre-dispatch baseline"
+    fi
+
+    local staged_index_after
+    staged_index_after="$(cd "$repo" && git ls-files --stage)"
+    if [[ "$staged_index_before" == "$staged_index_after" ]]; then
+        pass "dirty package leaves the git index unchanged"
+    else
+        fail "dirty package leaves the git index unchanged"
+    fi
+
+    local dirty_out_2 dirty_path_2 dirty_rc_2=0
+    dirty_out_2="$(cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md --dirty -- "$untracked_owned")" || dirty_rc_2=$?
+    dirty_path_2="$(printf '%s\n' "$dirty_out_2" | sed -n 's/^wrote \(.*\): dirty snapshot.*$/\1/p')"
+    if [[ "$dirty_rc_2" -eq 0 && -s "$dirty_path_2" && "$dirty_path" != "$dirty_path_2" ]]; then
+        pass "dirty default output is unique across snapshots"
+    else
+        fail "dirty default output is unique across snapshots"
+        echo "    exit: $dirty_rc_2"
+        echo "    first:  $dirty_path"
+        echo "    second: $dirty_path_2"
+    fi
+
+    local rc=0
+    (cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md --dirty -- >/dev/null 2>&1) || rc=$?
+    if [[ "$rc" -eq 2 ]]; then
+        pass "dirty review-package rejects an empty owned path list"
+    else
+        fail "dirty review-package rejects an empty owned path list"
+        echo "    exit: $rc"
+    fi
+
+    rc=0
+    (cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md --dirty -- ../outside.txt >/dev/null 2>&1) || rc=$?
+    if [[ "$rc" -eq 2 ]]; then
+        pass "dirty review-package rejects an out-of-repository path"
+    else
+        fail "dirty review-package rejects an out-of-repository path"
+        echo "    exit: $rc"
     fi
 
     # --- Worktree isolation: a linked worktree resolves its own workspace ---

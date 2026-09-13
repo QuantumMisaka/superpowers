@@ -92,3 +92,31 @@ J. Two absorbed trees are in scope. One has a test process writing files; the
    other is idle with verified recovery. Give per-tree actions.
 K. A small implementation-only request is done and tested. Its workspace is
    under `.worktrees`; no integration or cleanup was requested.
+
+## Subagent routing and package scenarios (2026-09-13)
+
+Read dispatching-parallel-agents and the active harness adapter as well.
+Use hypothetical available roles from the scenario; do not spawn real jobs or
+change provider settings. Return the dispatch fields or next action, cited
+rule, and any uncertainty for each case.
+
+L. The parent uses a high-capability model. Available presets include a routine
+   implementer, standard implementer, context analyst, and final reviewer with
+   fixed model/effort settings. Assign a fully specified mechanical edit, an
+   integration bug, a bounded source analysis, and a whole-change security
+   review. Repeat with no matching preset but a configured generic backstop,
+   then with a task-authorized tier change and an isolated fork. The schema
+   forbids model/effort overrides on a full-history fork.
+M. Two independent implementation packages each require review. They own
+   disjoint files and generated state and can supply separate dirty snapshots.
+   The native surface has asynchronous spawn/follow-up/message/wait tools and
+   four slots including the parent. Give the execution/review schedule. Repeat
+   when both packages need the same generated file or Git index mutation.
+N. A child has completed and its identity is retained. A fix in the same scope
+   needs its previous context. Describe continuation on the active surface,
+   including what to do if new-thread capacity is exhausted. Separately, a
+   reviewed dirty package changes after its recorded tests: what remains valid?
+O. The working tree contains pre-existing edits, staged and unstaged changes
+   to owned files, an untracked owned file, and unrelated changes. Describe
+   the review artifact, authorship baseline, and capture coordination needed
+   before accepting the package.
