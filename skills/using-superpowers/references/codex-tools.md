@@ -51,12 +51,10 @@ both. See `## Bailian Multi-Agent V1 Compatibility` for the proven matrix.
   bounded-history fork when the active schema permits a deliberate override.
   Recheck the schema after harness updates, rather than extrapolating from
   a version number or an old successful call.
-- **Fix rounds:** resume the implementer instead of spawning fresh.
-  V2: `followup_task` delivers your message, triggers a turn, and
-  can resume an existing child while the harness retains its identity. V1: message the existing
-  implementer with `send_input`. Only if your harness truly cannot
-  message a spawned agent again, dispatch each fix round as a fresh
-  implementer carrying the brief, the report file, and the findings.
+- **Fix rounds:** reuse an implementer when its context helps; use a fresh
+  one when the task needs a different perspective. V2 `followup_task` starts
+  a retained child; V1 uses `send_input`. If continuation is unavailable,
+  supply the needed requirements, changes and findings to a new child.
 - **Lifecycle:** This V2 surface has no `close_agent`. Do not invent it.
   Concurrent slots and total thread limits are separate constraints: this
   session rejected new threads even when earlier children had finished.

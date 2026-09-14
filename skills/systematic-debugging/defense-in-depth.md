@@ -1,122 +1,38 @@
-# Defense-in-Depth Validation
+# Validation at Distinct Boundaries
 
-## Overview
+Use additional validation when a separate caller, trust boundary or dangerous
+side effect can bypass an existing check. Validation at every internal layer
+is not a default repair strategy; repeated checks of the same unchanged fact
+can add maintenance and execution cost without protecting another behavior.
 
-When you fix a bug caused by invalid data, adding validation at one place feels sufficient. But that single check can be bypassed by different code paths, refactoring, or mocks.
+## Select the boundary
 
-**Core principle:** Validate at EVERY layer data passes through. Make the bug structurally impossible.
+Trace the bad input to its source and the operation that consumes it. Repair
+the source where possible. Then ask whether another supported path can still
+reach the operation with invalid state. A separate boundary can justify a
+separate guard; otherwise reuse the existing validation.
 
-## Why Multiple Layers
+- Entry validation protects callers at a public boundary.
+- Operation-specific validation protects assumptions not established upstream.
+- Environment restrictions can protect a dangerous side effect in test or
+  deployment contexts.
+- Temporary instrumentation explains a failure; it is not itself prevention
+  and need not become permanent runtime work.
 
-Single validation: "We fixed the bug"
-Multiple layers: "We made the bug impossible"
+## Example
 
-Different layers catch different cases:
-- Entry validation catches most bugs
-- Business logic catches edge cases
-- Environment guards prevent context-specific dangers
-- Debug logging helps when other layers fail
+An empty working directory falls back to the process cwd, causing a Git command
+to act on the source checkout. Correct the producer that supplied the empty
+value and verify the failing behavior. If the Git executor also has independent
+callers, a guard there protects those callers too. If the executor is reachable
+only through an already validated path, duplicating that same validation at
+every helper is not automatically useful.
 
-## The Four Layers
+Test the actual rejected/accepted behavior at the owning boundary. Validate
+path containment by path semantics, not a textual prefix. Preserve authorization
+and source data while reproducing the problem. Choose checks for the distinct
+risk being changed rather than a quota of validation layers.
 
-### Layer 1: Entry Point Validation
-**Purpose:** Reject obviously invalid input at API boundary
-
-```typescript
-function createProject(name: string, workingDirectory: string) {
-  if (!workingDirectory || workingDirectory.trim() === '') {
-    throw new Error('workingDirectory cannot be empty');
-  }
-  if (!existsSync(workingDirectory)) {
-    throw new Error(`workingDirectory does not exist: ${workingDirectory}`);
-  }
-  if (!statSync(workingDirectory).isDirectory()) {
-    throw new Error(`workingDirectory is not a directory: ${workingDirectory}`);
-  }
-  // ... proceed
-}
-```
-
-### Layer 2: Business Logic Validation
-**Purpose:** Ensure data makes sense for this operation
-
-```typescript
-function initializeWorkspace(projectDir: string, sessionId: string) {
-  if (!projectDir) {
-    throw new Error('projectDir required for workspace initialization');
-  }
-  // ... proceed
-}
-```
-
-### Layer 3: Environment Guards
-**Purpose:** Prevent dangerous operations in specific contexts
-
-```typescript
-async function gitInit(directory: string) {
-  // In tests, refuse git init outside temp directories
-  if (process.env.NODE_ENV === 'test') {
-    const normalized = normalize(resolve(directory));
-    const tmpDir = normalize(resolve(tmpdir()));
-
-    if (!normalized.startsWith(tmpDir)) {
-      throw new Error(
-        `Refusing git init outside temp dir during tests: ${directory}`
-      );
-    }
-  }
-  // ... proceed
-}
-```
-
-### Layer 4: Debug Instrumentation
-**Purpose:** Capture context for forensics
-
-```typescript
-async function gitInit(directory: string) {
-  const stack = new Error().stack;
-  logger.debug('About to git init', {
-    directory,
-    cwd: process.cwd(),
-    stack,
-  });
-  // ... proceed
-}
-```
-
-## Applying the Pattern
-
-When you find a bug:
-
-1. **Trace the data flow** - Where does bad value originate? Where used?
-2. **Map all checkpoints** - List every point data passes through
-3. **Add validation at each layer** - Entry, business, environment, debug
-4. **Test each layer** - Try to bypass layer 1, verify layer 2 catches it
-
-## Example from Session
-
-Bug: Empty `projectDir` caused `git init` in source code
-
-**Data flow:**
-1. Test setup → empty string
-2. `Project.create(name, '')`
-3. `WorkspaceManager.createWorkspace('')`
-4. `git init` runs in `process.cwd()`
-
-**Four layers added:**
-- Layer 1: `Project.create()` validates not empty/exists/writable
-- Layer 2: `WorkspaceManager` validates projectDir not empty
-- Layer 3: `WorktreeManager` refuses git init outside tmpdir in tests
-- Layer 4: Stack trace logging before git init
-
-**Result:** All 1847 tests passed, bug impossible to reproduce
-
-## Key Insight
-
-All four layers were necessary. During testing, each layer caught bugs the others missed:
-- Different code paths bypassed entry validation
-- Mocks bypassed business logic checks
-- Edge cases on different platforms needed environment guards
-- Debug logging identified structural misuse
-
-**Don't stop at one validation point.** Add checks at every layer.
+The original multi-layer debugging example is a historical case, not a mandate
+that every repair add four guards or make a bug “impossible.” Additional
+hardening outside the approved repair is a separate scope decision.

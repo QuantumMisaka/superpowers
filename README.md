@@ -1,34 +1,30 @@
 # Superpowers — QuantumMisaka 个人定制 Fork
 
-本仓是 [obra/superpowers](https://github.com/obra/superpowers) 的个人定制 fork，是本人工程开发模式的承载模块：为多 Provider Codex 定制的 superpowers 方法论，刻意比上游轻。上游原版 README（各 harness 安装指引、商业服务等）不适用于本仓。
+本仓是 [obra/superpowers](https://github.com/obra/superpowers) 的个人定制 fork，承载本人当前的开发品味，为模型提供可借用的工程方法和必要的协作边界。在已确认的目标、设计与授权内，保留模型选择实现和工作方法的空间。
 
-## 这个 fork 是什么
+是否保留某项指导，以其对真实交付的作用判断。随着模型、工具和本人需求变化，已有指导可以缩小、替换或退役。具体维护判据见 [AGENTS.md](AGENTS.md)，演进依据见[设计哲学](docs/superpowers/fork-design-philosophy.md)。上游安装说明不直接代表本 fork 的消费方式。
 
-- **消费方式**：skills 本体在 personal 仓的 `codex-sync/superpowers/skills/`（submodule），经 `codex-sync/sync-superpowers.sh --mount` 符号链接进 `~/.codex/skills/` 与 `~/.agents/skills/`，以 `superpowers:*` 命名空间暴露给 Codex，会话开始自动触发入口路由。
-- **与上游的差异**（完整思想见 [`docs/superpowers/fork-design-philosophy.md`](docs/superpowers/fork-design-philosophy.md)）：
+## 消费与结构
 
-| 方面 | 上游 | 本 fork |
-|---|---|---|
-| 设计确认 | 完整 brainstorming 仪式 | Grill 快路径为默认，spec 产出仅为升级路径 |
-| 模型路由 | 单 provider 隐式 | 按任务能力 × 多 Provider（OpenAI V2 + bailian/deepseek/scnet V1 双轨） |
-| 规则风格 | 枚举式规则为主 | meta-rule 优先 + 正向目标（窄禁止仅限安全/不可逆/已证可绕过三类） |
-| 入口技能 | 英文 | 中文优先（`using-superpowers` / `brainstorming` 中文重写） |
-| 计划执行 | STOP 清单停下询问 | Rulings-not-stalls 裁决纪律 + 四类硬停 + dispatch 验收证据 |
-| TDD | 逐行为 RED-GREEN | 增补反点对点语料触发器（表驱动合并、文本契约结构化断言） |
+- `skills/`：可组合的工程方法；按任务需要加载。
+- 本人的源仓位于 `codex-sync/superpowers/` 子模块，通过父仓 `sync-superpowers.sh --mount` 链接到 `~/.codex/skills/` 与 `~/.agents/skills/`。Codex 是主要消费入口；具体角色与模型选择归现行配置。
+- `skills/using-superpowers/references/` 保存具体工具适配；公共技能不固定模型、Provider 或某个 harness 的调用语法。
+- `docs/superpowers/` 保存设计、计划与验证记录；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施；验证与未发布边界见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)。
 
-## 与上游同步
+## 上游纳入与分发
 
-- 按上游版本同步（`sync(upstream-vX)` merge commits）；上游承载行为的内容（`skills/`、`hooks/`、`tests/`）照常合并。
-- `AGENTS.md` / `README.md` / `CLAUDE.md` / `GEMINI.md` 为 fork-owned 文件，冲突 resolve ours。
-- fork 内容不提交上游。
+按上游版本人工纳入，保留 `sync(upstream-vX)` 合并历史：查询上游版本与 SHA，对比上次合入点，审阅相关差异，在隔离分支处理合并并验证受影响部分，再在实际授权内发布 fork、更新消费仓 gitlink。
 
-## 结构与验证
+`AGENTS.md` / `README.md` / `CLAUDE.md` / `GEMINI.md` 为 fork-owned 文件，冲突保留本地所有权。`skills/`、`hooks/`、`tests/` 的上游变更同样按本 fork 设计审阅；无文本冲突不等于应恢复已消融的流程。fork 定制不提交上游。
 
-- `skills/`：14 个 skill；`skills/using-superpowers/references/` 为 harness 专属 reference（`codex-tools.md` = 多 Provider 路由权威文本；`kimi-code-tools.md` = Kimi Code 编排映射，扩展上游 `.kimi-plugin/plugin.json` 的基础映射）。
-- 结构 lint 与契约测试：`bash tests/skill-content/run-tests.sh`（路由契约 / 正向证据 mutation / 设计产物 / worktree submodule）+ `tests/codex/*.sh`（打包与 manifest）。
-- `docs/superpowers/`：设计哲学、specs、plans、validation 存档。
-- [2026-09-13 子代理路由与本地同步验证](docs/superpowers/validation/subagent-routing-2026-09-13.md)：预置角色选择、并行审查、线程复用与 dirty 审查包。
+父仓 `sync-superpowers.sh` 的默认模式同步 fork 与 origin，`--mount` 只负责本机链接；两者都不执行 obra 的版本合并。上游是否有更新以成功的远端查询与 Git 比较为准，不能把查询失败当作零差异。2026-09-14 的已核实基线与现有脚本限制见上述 SPEC。
+
+## 验证入口
+
+`bash tests/skill-content/run-tests.sh` 检查技能元数据、链接、部分结构与适配契约；`tests/codex/*.sh` 覆盖打包和 manifest。按实际变更选择相关检查；结构通过不代表模型已正确执行工作流。
+
+[2026-09-13 子代理路由验证](docs/superpowers/validation/subagent-routing-2026-09-13.md) 记录了预置角色、线程复用与 dirty 审查包的已有证据及局限。后续效果判断结合真实任务，不以文档、测试或代理数量为目标。
 
 ## 致谢与许可
 
-上游项目：[obra/superpowers](https://github.com/obra/superpowers)（Jesse Vincent / Primeradiant），MIT 许可。本 fork 沿用 MIT（见 `LICENSE`），借鉴与原创边界在设计哲学文档中逐条标注。
+上游项目：[obra/superpowers](https://github.com/obra/superpowers)（Jesse Vincent / Primeradiant），MIT 许可。本 fork 沿用 MIT（见 `LICENSE`）；借鉴与原创背景见设计哲学。

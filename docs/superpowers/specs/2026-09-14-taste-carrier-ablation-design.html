@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Superpowers 作为开发品味载体：系统性消融设计</title>
+  <style>
+    :root { color-scheme: light dark; --ink:#17202a; --muted:#52606d; --line:#cbd2d9; --paper:#fff; --wash:#f5f7f8; --accent:#146c5b; --note:#8a5a00; }
+    @media(prefers-color-scheme:dark) { :root { --ink:#e6edf3; --muted:#9aa7b4; --line:#3d4751; --paper:#161b22; --wash:#0d1117; --accent:#4cc38a; --note:#d4a72c; } }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--wash); color:var(--ink); font:16px/1.7 system-ui,sans-serif; }
+    header,nav,main,footer { width:min(100% - 2rem,1080px); margin-inline:auto; }
+    header { padding:2.5rem 0 1.25rem; border-bottom:3px solid var(--accent); }
+    h1 { font-size:2.1rem; line-height:1.3; margin:0 0 1rem; }
+    h2 { font-size:1.4rem; } h3 { font-size:1.1rem; }
+    a { color:var(--accent); overflow-wrap:anywhere; }
+    nav { padding:1rem 0; } nav ul { display:flex; flex-wrap:wrap; gap:.5rem 1.5rem; list-style:none; padding:0; }
+    main { background:var(--paper); border:1px solid var(--line); }
+    section { padding:1.5rem; border-bottom:1px solid var(--line); }
+    .table-wrap { overflow-x:auto; } table { width:100%; border-collapse:collapse; margin:1rem 0; }
+    th,td { border:1px solid var(--line); padding:.65rem; text-align:left; vertical-align:top; }
+    th { background:var(--wash); } code { overflow-wrap:anywhere; }
+    .decision { border-left:4px solid var(--accent); background:var(--wash); padding:.5rem 1rem; }
+    .open { border-left-color:var(--note); } .muted,footer { color:var(--muted); }
+    footer { padding:1.5rem 0; }
+    @media print { body { background:white; font-size:11pt; } nav { display:none; } main { border:0; } section { padding:1rem 0; } a { color:inherit; } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>Superpowers 作为开发品味载体<br>系统性消融与模型自由度设计</h1>
+  <p><strong>状态：</strong>设计已确认；开发准则与本地 Skill 消融已实施并验证，未提交或发布。<strong>日期：</strong>2026-09-14。</p>
+  <p>依据：本人本轮要求、现行 USER_TASTE、Superpowers 与 Paimon 项目近期开发记录。工作流：L3α，当前交付为调查与设计。本文是本地设计规范源；设计认可不等于技能已实施。本人已再次复制路由修订版到 /mnt/d/wsl-web 供查看；其后本次上游与消费定位补充仅写入本地规范源。</p>
+</header>
+<p style="width:min(100% - 2rem,1080px);margin:1rem auto">当前实施结果见<a href="../plans/2026-09-14-taste-carrier-ablation.md">实施记录</a>。下文调查时点、设计修订与“尚未实施”叙述保留其原时点含义；当前状态以本摘要和实施记录为准。外部项目消费 pin 与同步脚本不在本轮修改范围。</p>
+<nav aria-label="目录"><ul>
+  <li><a href="#judgment">判断与边界</a></li><li><a href="#evidence">记录与归因</a></li><li><a href="#residual">当前残留</a></li><li><a href="#design">优化设计</a></li><li><a href="#routing">L3 路由消融</a></li><li><a href="#maintenance">长期准则与演进</a></li><li><a href="#changes">改动落点</a></li><li><a href="#validation">验收与落地</a></li><li><a href="#decisions">确认与修订</a></li><li><a href="#sources">证据索引</a></li>
+</ul></nav>
+<main>
+<section id="judgment">
+  <h2>判断与边界</h2>
+  <p><strong>过度指导的关系成立，但属于多层叠加，不能将项目每个治理机制都归罪于当前 Superpowers。</strong>历史技能提供了强制分派、逐阶段服从和不断补漏洞的倾向；项目入口复制并加严，测试又把这些规则与一次性验收事实固化。9 月 10 日已完成一轮实质消融，当前仍有下游模板、调试技能和项目副本残留。</p>
+  <p>优化目标是让模型在已确认目标、设计、授权与验收边界内，自主选择实现、分解、验证和协作方法。约束重点落在用户可见行为、科学有效性、真实交接和可恢复性；模型应对结果负责，而不必证明走过所有标准步骤。</p>
+  <p>保留本人已确认的目标与顶层设计先行、中文 Grill、设计确认、L3 PLAN、60 行 / 6144 字节入口预算、主代理验收责任、同范围授权持续有效、必要科学来源与发布身份。消融不取消真实权限、兼容、数据和发布边界，也不将“少文档、少测试、少代理”设为新的绩效目标。</p>
+  <p>本轮依据为本地 Git、活跃规则与历史报告，不含完整逐次会话轨迹或受控成本实验。可确认规则传播路径及若干冲突，不能给出各层致因百分比，不能声称成本或缺陷率已经改善。文章中的模型、Star 与卸载趋势不作为证据。</p>
+</section>
+<section id="evidence">
+  <h2>近期记录确认的传播关系</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>时间与来源</th><th>观察事实</th><th>关系与状态</th></tr></thead>
+    <tbody>
+      <tr><td>Superpowers 历史 <code>4084c60</code>、<code>3ef0e8d</code></td><td>入口曾要求吞吐任务 dispatch、多源调查分派；writing-skills 要求所有编辑先失败测试、不断补反例直至 bulletproof。</td><td>直接的历史指导来源。当前入口与 writing-skills 已于 9 月 10 日收敛，不能再列为当前未修问题。[S1]</td></tr>
+      <tr><td>ABACUS 9 月 10 日消融报告</td><td>明确记录共享技能、项目“只能更严格”、测试准入手续、CPL 历史常量四层叠加；取消逐文件 owner / 到期例外等手续，拆分 docs 与 corpus 检查。</td><td>有项目执行记录支持的传播链。原始 reviewer 全文不齐全，不能推断用户曾逐项批准这些锁定。[S2]</td></tr>
+      <tr><td>ABACUS 同日扩大审计</td><td>内存中仅改 demo 展示名，公共契约通过，特定名称测试失败；无害局部赋值被“单条 canonical handler”检查拒绝；历史报告、owner 名称与措辞被测试锁定。</td><td>报告包含具体反例；本轮未重跑。具体单条 handler 等来自项目检查器 / ATP 规则，不能说是 Superpowers 明文要求。属于方法倾向与地方实现共同作用。[S3]</td></tr>
+      <tr><td>Corpus 同日复审与后续收口</td><td>成员双写没有消费价值、同输入重复 compile、固定 55 条回执、检索质量与真实 timeout 混跑；未来方案又加入导航回写和额外 Skill 等前置，后被缩减。</td><td>存在“做消融时再设计新治理”的反馈循环；后续已修的条目不重开。保留真实确定性、科学来源和检索质量验证。[S4]</td></tr>
+      <tr><td>Forge 9 月 1 日至当前</td><td><code>c3b353d3</code> 写入“删除或合并测试前必须记录真实 mutation 及剩余测试的失败证据”；当前 AGENTS 与 tests/README 仍有该要求。</td><td>当前项目加严残留。Superpowers 现行 writing-good-tests 已明确 mutation 不是删冗余测试的前置。只更新共享技能不会自动消除这个副本。[S5]</td></tr>
+      <tr><td>个人规则 9 月 5 日、9 月 10 日</td><td>跨模型审查从强制尝试改为按需；品味改为治理服务交付、允许演进、执行时自主负责。</td><td>现行取向已获本人确认；不应借本轮再次引入跨模型硬门或重写稳定品味。[S6]</td></tr>
+      <tr><td>Superpowers 9 月 13 日</td><td>修复虚构并行接口、模型继承假设与并发审查冲突；修复前结构 lint 已通过。</td><td>结构检查不足以证明语义和模型执行正确；新增文字断言不能解决这一证据缺口。[S7]</td></tr>
+    </tbody>
+  </table></div>
+  <p>更准确的因果表述是：<strong>Superpowers 曾是过度治理的上游诱因之一，地方复制与自动化锁定将其放大并延长了寿命。</strong>普通 TDD 并不要求 contract ID、历史文件 hash、固定语料规模或每个报告一条永久测试；这些必须追到实际作者规则和消费者。</p>
+</section>
+<section id="residual">
+  <h2>当前技能仍存在的具体问题</h2>
+  <ol>
+    <li><strong>调试入口与正文冲突。</strong><a href="../../../skills/systematic-debugging/SKILL.md">systematic-debugging</a> frontmatter 仅触发非平凡、根因不明问题，正文却说 ANY technical issue、必须四阶段，三次失败后必须与用户讨论架构。失败次数不能单独证明架构错误；有新证据的第四次实验不应因计数被阻止。</li>
+    <li><strong>计划文件清单被提升为实现事实。</strong><a href="../../../skills/subagent-driven-development/task-reviewer-prompt.md">task reviewer 模板</a>要求列出的每个文件都必须有对应 hunk，否则直接 Missing；同时要求遵循计划文件结构。经调查发现无需改某文件、复用已有行为或等价实现，可能被误判。真正明确指定的文件编辑仍是约束，但预估落点不能一律当作公共契约。</li>
+    <li><strong>已批准取舍难以进入审查上下文。</strong><a href="../../../skills/subagent-driven-development/SKILL.md">SDD</a>把 prompt 中出现 “the plan chose” 也作为预判审查的红旗。应区分提供真实设计决定与要求 reviewer 不报问题；否则 reviewer 会反复重开已批准取舍。</li>
+    <li><strong>下游重新强制审查。</strong>SDD 主流程可选择 self-review，但 task reviewer 模板仍宣称全分支审查会在任务后另行发生；流程图按会话位置导向 SDD，未体现协调收益；“Reviews are the loop's brakes and steering”等绝对表达与按风险选择不一致。</li>
+    <li><strong>入口和 TDD 的适用性衔接仍偏硬。</strong>入口 L2 说行为变化按 TDD 建立回归证据，TDD 又要求先在 router 处理原型、生成代码、缺基础设施等情况，但入口没有清楚承接；writing-good-tests 明确 trivial code 无需测试，主文“每个行为”的清单容易覆盖这个边界。应明确按保护价值选证据，再执行所选方法。</li>
+    <li><strong>相同判断重复成为多份流程。</strong>授权、暂停、Ruling、验收身份在入口、执行、SDD、review 与 verification 重复展开。SDD 524 行、TDD 328 行、Codex reference 316 行只是阅读面信号，不是删除依据。应按重复责任消融，不能只把同样义务搬到更多文件。</li>
+    <li><strong>说明材料仍带旧承诺。</strong><a href="../fork-design-philosophy.md">设计哲学</a>的“至多三问”与当前可超三项真实决策不一致，仍将旧 prose mutation 测试描述为正向契约执法；当前相应脚本已变为元数据 / 链接检查。README 的旧路由概述也需与当前正文核对。</li>
+  </ol>
+</section>
+<section id="design">
+  <h2>建议设计：保护结果，开放方法</h2>
+  <div class="decision"><p><strong>拟加入的核心表达：</strong>在已确认的目标、设计、授权和验收边界内，自主选择实现路径与工作方法。优先复用已有检查和文档，仅在任务需要时补充。相同输入的有效证据可复用，历史验收事实保持历史范围。普通实施取舍在授权内自主决定，实质设计或授权变化交由用户决定。</p></div>
+  <p>保护对象与实际消费者用于本次维护者判断哪些规则值得保留，不要求执行者每次证明规则合理性、调查全套治理来源或填写记录。本文中的分类和场景服务这一次消融，不转化为每个项目的常驻义务。三层承载应清楚：USER_TASTE 保存稳定品味；Superpowers 提供通用判断与按需方法；项目规则只承载真实项目边界，harness reference / 配置承载具体工具与角色。</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>保留的品味</th><th>模型可自主选择</th><th>仍需人类决定或授权的边界</th></tr></thead>
+    <tbody>
+      <tr><td>设计与文档先行</td><td>复用已有设计 / PLAN；按恢复与审阅需要确定细节、粒度和文件落点；不把计划写成第二份代码。</td><td>目标、关键架构、产品语义和验收取舍；保留 L3 PLAN 与当前本地规范源约定。</td></tr>
+      <tr><td>严谨查询与复用</td><td>选择搜索路径、实验、实现方法和必要内部重构；有证据地修订实现预估。</td><td>公共兼容性、数据语义、科学算法定义或授权范围变化。</td></tr>
+      <tr><td>主动验证</td><td>在稳定行为边界组织测试；复用套件；按风险选择负例、集成和真实运行；合并冗余测试无需逐项 mutation 证书。</td><td>不得以自述代替实际证据、放宽已确认科学指标或把本地通过宣称为平台 / 科学验收。</td></tr>
+      <tr><td>可控、可复现、可回滚</td><td>采用现有日志、Git、计划与产物，按真实恢复需要留存；来源事实一处维护，其余引用 / 派生。</td><td>凭据、不可逆操作、用户数据、正式发布与外部状态权限；必要科学身份和来源检查。</td></tr>
+      <tr><td>独立审查与负责交付</td><td>按实际风险选择分派与审查范围，复用有效证据；提供已批准设计和理由，允许 reviewer 独立质疑。</td><td>有效的实质缺陷必须处置；不能通过改标签或“计划这样写”隐去风险。</td></tr>
+    </tbody>
+  </table></div>
+  <h3>基模判断空间与任务支持</h3>
+  <p>本人澄清：优先面向主要消费者，是为了让基模参考 Skill 的方法后保有自己的判断，同时使判断留在任务契约内。Skill 提供可借用的方法、简明例子与停止条件；消融的是机械服从和重复义务，不是删除所有实践内容、只留下“自行判断”的抽象口号。</p>
+  <p>按本人给定的使用分组，astra / sol / GLM-5.3 与 luna / deepseek-flash / glm-flash 可以共享这套设计。这里是设计适用性判断，不是模型能力排名或已完成六模型实测的结论。支持密度随具体任务、现有上下文与实际表现调整：能独立收束问题时给目标、约束与验收并开放方法；任务需要更多接地时，在现有工作说明中补充相关代码入口、已定接口、一个必要例子或聚焦验证办法，不扩展全局流程。</p>
+  <p>局部实现、命名、内部组织、实验路径和行为等价的改进允许自主判断；更好的架构或范围建议可以提出，但实质改变已批准设计时先回到该决策。发现无关机会不自动扩展本次任务。无需因使用通量模型而强制 L3、强模复审或逐行计划；也不因使用强模型而放宽授权、验收与诚实报告。执行中需要补充上下文或调整工作包时就局部处理，不建立模型分级评分表或新的升级手续。</p>
+  <h3>验证方法的具体边界</h3>
+  <p>TDD 继续作为可稳定自动验证的功能与 bugfix 的默认方法，所选 RED/GREEN 的真实性要求不变。对无独立保护价值的平凡转发、普通文案或纯格式调整，采用相应直接检查；行为不变重构复用相关基线 / 候选证据；重复或同形行为按稳定边界合并。原型、生成产物、不可控外部依赖应选择合适的集成、替身或观测方法，并说明局限。缺测试设施时仍需选择足以支持本次交付声明的办法；仅处理本次变更与验收相关的覆盖空白，不因读到旧代码便补齐全仓测试。</p>
+  <p>判据是测试能否发现真实错误，而非是否逐函数、逐分支、逐文件留下 RED 记录。已选择的必要证据不能以成本为由伪造或略过；用户明确要求的测试策略持续有效。</p>
+  <h3>长期规则与一次性事实</h3>
+  <p>公开字段、返回状态、路径交接和安全边界可形成长期检查；特定案例的 Slurm 号、一次 corpus 的数量、旧报告文件名、临时 source hash 和 reviewer 的建议不自动获得长期约束地位。历史批次保真在显式迁移 / 科学复现层保存。hash 的用途应区分产物身份与实现锁定，不一概删除。</p>
+  <h3>调试和审查的自主权</h3>
+  <p>调试保留“观察 → 假设 → 最小判别实验 → 修复验证”的方法；允许证据充分时合并步骤。重复失败应触发更新假设或调查边界，不以三次阈值代替架构判断。只有下一步会改变批准设计 / 授权，或确已没有可靠路径时，才回到用户。</p>
+  <p>审查按需求和行为判断是否缺失，计划列出的预估文件无需强行制造 diff。模板支持提供已批准取舍与来源，但不能指令 reviewer 降低严重性或忽略风险。普通实现建议不能仅因 reviewer 提出就成为新硬门；主代理按证据、范围和实际影响裁决。</p>
+</section>
+<section id="routing">
+  <h2>入口与 brainstorming：消融自动升级链</h2>
+  <p>本人补充实际观察：Agent 容易把任务归到 L3。当前文本支持这个风险判断，但本轮没有统计误路由频率。上一稿仅强调保留分级，没有充分处理触发条件和退出路径，现将两份技能列为首批消融对象。</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>当前结构</th><th>容易造成的升级</th><th>拟消融方向</th></tr></thead>
+    <tbody>
+      <tr><td>L2 要求目标、范围、验收与设计全部明确；L3 包含未决产品 / 架构 / 安全决策。</td><td>一处普通选择未定便不符合 L2，直接进入 L3。</td><td>L2 容纳有界澄清。先查事实；确有产品取舍时问清相关项，随后继续有界实施。需要问问题与需要正式计划分别判断。</td></tr>
+      <tr><td>brainstorming 自称仅处理 L3；轻量对齐结束也默认进入 writing-plans。</td><td>加载技能即被视为 L3；一次澄清把整个任务带进计划流程。</td><td>brainstorming 可供任何层级的必要澄清使用。问题解决即退出，由剩余工作决定直接执行还是计划化。设计确认继续生效，澄清本身不要求 PLAN。</td></tr>
+      <tr><td>多文件机械迁移直接 writing-plans；公共 API / schema / 持久化数据等字样可直接触发 HTML spec。</td><td>对象类别和文件数代替实际决策负担。</td><td>移除类别自动触发。已知映射、兼容可选参数、常规跨模块接线可以走 L2；文档取决于用户明确要求或实际共同审阅 / 长期约定需要。</td></tr>
+      <tr><td>跨系统协调、高风险副作用、高返工成本都是较宽泛的 L3 条件。</td><td>普通依赖调用、一次外部操作或主观“不放心”就能升级。</td><td>L3 用于确需统筹关联决策、迁移 / 发布顺序、跨所有者交接，或确需可恢复计划的工作。审批一个外部动作不自动要求整套 L3，真实授权边界独立保留。</td></tr>
+      <tr><td>入口明确鼓励升级；brainstorming 降级需记录理由。</td><td>升级容易，回到简单路径还需额外说明。</td><td>查明事实、收束选择后自然重选最轻路径；不为回到 L1/L2 增加降级报告或豁免手续。仅保留本已要求的重要裁决记录。</td></tr>
+      <tr><td>入口无范围限定地说“直接执行用 executing-plans”。</td><td>L1/L2 直接执行也可能被引向要求 PLAN 与隔离工作区的技能。</td><td>限定为已有计划的执行方式选择；普通有界执行在入口完成，不因直接执行这个词再加载计划链。</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>建议路由语义：</strong>一般有界开发走 L2，局部简单调整走 L1。未知事实先查，可局部解决的产品选择先澄清；只有剩余工作确实需要统筹设计、协调或可恢复计划时才走 L3。L3 保留 PLAN，但不能因为已经提问、读过 brainstorming 或想写清单而反推 L3。</p>
+  <p>这是用更窄的路由替换现有宽泛触发，不添加 L3 打分表、升级申请、证明清单、次数阈值或降级台账。探索性实施中的普通技术判断仍可自主作出；未知信息会影响实质产品决定时，只暂停受影响工作，不把未确认选择当作既定事实。</p>
+  <p>brainstorming 保留中文 Grill 的提问质量与设计确认，消融“L3 专属入口 → 默认计划”的绑定。HTML 模板按实际设计内容使用；先确认设计并不意味着每次都新建 HTML。用户明确要求设计稿时仍交付设计稿，但文档格式本身不决定后续开发等级。</p>
+  <h3>本 SPEC 的去加固校正</h3>
+  <p><strong>本次主要工作是删除、合并、缩小适用范围和解除强制衔接。</strong>授权、科学证据、真实验收等是原有边界的保留说明，实施时不在各技能重新复制。入口预算沿用本人已确认规则，不扩大到所有文件。</p>
+  <p>初稿“新增约束必须有保护对象和消费者”容易衍生逐项准入审计，现降为本次维护判断；“出现覆盖空白就补证据”缩到本次变更；有限场景和真实任务观察是本次可选择的验证办法，不构成每次改技能或普通开发的附加门禁。此次不顺带新增 lint、治理台账、全仓覆盖要求或新的发布审查层。</p>
+  <p>若消融实现中发现真实缺陷，按原有正确性与授权边界处理；与本次目标无关的强化建议单独说明，不搭车加入消融方案。</p>
+</section>
+<section id="maintenance">
+  <h2>实施前的长期准则落点与演进</h2>
+  <p>本人提出：先确认哪些原则应进入 README / AGENTS，再开展技能消融，并考虑模型进步与个人 taste 的变化。本人已确认本节准则；本轮已原位更新 README、CLAUDE.md（AGENTS.md 的链接目标）与设计哲学。此阶段覆盖开发准则，未改动具体 SKILL.md、适配器、父仓脚本或个人 taste 源。</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th>载体</th><th>应承载</th><th>整理方式</th></tr></thead>
+    <tbody>
+      <tr><td>README</td><td>本 fork 是本人当前开发品味的工程载体；给模型可借用的方法和必要边界，以可靠交付与判断空间的平衡为目标。随着模型、harness 和需求变化调整指导。</td><td>替换当前定位和过时对照表，保留安装、上游纳入与消费指针；不复制测试、提问或审查步骤。</td></tr>
+      <tr><td>AGENTS.md（实际链接到 CLAUDE.md）</td><td>维护本仓时按意图、真实行为和最小充分验证判断；在确认边界内允许方法自主；消融优先处理重复义务和过宽触发；区分当前明确偏好与历史案例。</td><td>合并进已有四条维护判据，必要时短补充，不再贴一份 SPEC。不添加模型清单、逐项证明或周期审计。</td></tr>
+      <tr><td>fork-design-philosophy.md</td><td>为什么保留或收缩方法指导、模型进步假设如何检验、taste 如何由本人修订及规则如何随之调整。</td><td>修正旧的三问上限、固定模型分工、分派精确命令要求与已退役 prose mutation 说明；将历史证据保留为历史，原则引用现行来源。</td></tr>
+      <tr><td>USER_TASTE 规范源与分发源</td><td>本人明确确认的跨项目稳定偏好。</td><td>沿用既有源文件与同步关系，获同范围授权后更新源与运行版；不在此 fork 新建第二份个人品味，也不自动重写偏好。</td></tr>
+    </tbody>
+  </table></div>
+  <h3>入口采用的原则表述</h3>
+  <p><strong>README 定位：</strong>本 fork 承载本人当前的开发品味，为模型提供可借用的工程方法和必要的协作边界。在已确认的目标、设计与授权内，保留模型选择实现和工作方法的空间。是否保留某项指导，以其对真实交付的作用判断；模型与工具能力变化时，已有指导可以缩小、替换或退役。</p>
+  <p><strong>AGENTS 维护判据：</strong>维护 Skill 时，优先消除重复义务、过宽触发和实现形状锁定；保留有用的方法、必要约束与清晰退出路径。规则变化依据本人当前明确要求与任务证据，历史案例或模型表现不自动成为通用禁令。工作在当前确认边界内自主推进，真正改变目标、设计或授权时再回到对应决策。</p>
+  <p>已有“断言行为”按当前 USER_TASTE 澄清：反对把偶然措辞、实现形状与历史快照当正确性；必要的科学来源、产物完整性和正式公共文本契约不被一概取消。“意图锚定”允许复用现有需求 / 计划载体，不要求每次另写文档。</p>
+  <h3>如何使用“强基模会吸收 Skill”这一观点</h3>
+  <p>采用可检验的较弱假设：某些通用工程方法可能已由模型掌握或由 harness 承担，使额外指导的边际价值下降。不能据文章断言模型内部已吸收某条 Skill，也不能由单次成功推断永久不需要。个人偏好、项目事实、授权和验收仍需由实际上下文提供。</p>
+  <p>遇到实际摩擦或修改相关技能时，可以对同类任务局部移除 / 缩短指导，观察交付质量、越界、返工与沟通成本；若没有看见保留收益而负担明确，缩小或退役该指导。保留必要边界再比较，不以模型服从旧步骤、文件数量或 lint 通过作为效果标准。无需为每条规则做 A/B、建立效果数据库或开展六模型全矩阵测试。</p>
+  <h3>taste 与能力变化的轻量演进</h3>
+  <p>复用现有对话、规范源和 Git 版本记录。本人明确纠正偏好时，更新受影响的现行约定；项目例外默认保持项目范围。重复摩擦或新模型 / harness 能力提供调整线索，Agent 可结合具体案例提出局部修订，但不能从一次抱怨、单次成功或新版本名称自动推导本人长期偏好变化。</p>
+  <p>普通方法和实现调整在已有授权内推进；实质改变已确认 taste、设计或权限边界的提案，由本人确认具体变化，不重开其余已确认部分。落实时原位更新主要来源及受影响引用，历史记录保留原时点含义；是否继续有用随实际开发检视，无固定周期、到期机制、自动晋升规则或额外审批管线。</p>
+</section>
+<section id="changes">
+  <h2>改动落点与消融顺序</h2>
+  <div class="table-wrap"><table>
+    <thead><tr><th>工作面</th><th>拟操作</th><th>完成信号</th></tr></thead>
+    <tbody>
+      <tr><td>入口 + brainstorming + 设计哲学 + README（首批）</td><td>按前节替换宽泛 L3 触发；L2 容纳局部澄清，brainstorming 解耦等级并提供直接退出；executing-plans 仅承接已有计划。保留分级与入口预算，合并重复义务和旧说明。</td><td>一次提问、公共 API 字样、多文件、机械迁移、加载设计技能不自动升级；真正需要计划的工作仍有 PLAN。</td></tr>
+      <tr><td>systematic-debugging</td><td>统一触发范围；将四阶段作为按需方法；删除固定三次架构讨论门和“按字面流程即精神”的表述；保留根因与验证要求。</td><td>已知原因的小修可直接完成；连续失败但获得新证据时可继续有界实验，改变架构时才确认。</td></tr>
+      <tr><td>TDD + writing-good-tests + verification</td><td>统一适用性与证据出口；集中保存证据有效性规则；删重复清单、与正文矛盾的示例和形式要求。</td><td>既能保留真实 bug 回归，也能不为平凡代码造无效测试；合法删并不需要新准入手续。</td></tr>
+      <tr><td>SDD + execution + implementer / reviewer 模板</td><td>以工作所有权和验收为核心；删除强制终审残句、计划文件 hunk 配额、阻止陈述设计选择的禁词；合并证据 / Ruling / 复审重复说明。</td><td>自审路径真实可达；等价实现可通过；审查仍发现遗漏、越权和真实缺陷；多写者与 dirty 快照边界保留。</td></tr>
+      <tr><td>writing-skills 与引用材料</td><td>保留已消融的主文；只核对其活跃引用有无旧强制回流。已有内容符合目标时不重写。</td><td>新增技能不自动增加门禁、压力配额或部署仪式；不把归档历史当现行契约。</td></tr>
+      <tr><td>项目消费端，另按范围实施</td><td>核对实际 pin 和 dirty 内容；定点修正 Forge 的 mutation 前置及重复审批表述；ABACUS 仅处理仍存在的残留，不重做已闭环修复；ATP 专有约束归其技能或项目。</td><td>共享改动发布并获授权更新 pin 后，实际入口消费新规则；无同名旧入口回流。项目自身明确硬约束不能由通用技能静默越过。</td></tr>
+    </tbody>
+  </table></div>
+  <p>暂不改技能名、不做全套目录迁移、不引入通用治理框架、自动义务注册器或持续成本打点服务。优先修真实语义冲突，再消融重复。既有 helper 与机器接口无必要不改。</p>
+</section>
+<section id="validation">
+  <h2>最小充分验收与落地</h2>
+  <p>使用已有场景文件和结构检查入口，不为本次另建完整评测平台。结构检查仅证明发现、链接、元数据和 helper 行为；不能把关键短语包含测试当作模型正确执行证明。以下场景是本次可选的验收素材，按实际改动选取，不是逐项全跑的固定套件；未在本轮执行模型对照：</p>
+  <ul>
+    <li>已确认可选参数的小改动：聚焦实现与相关回归，不强制完整设计 / 分派。</li>
+    <li>只缺一个默认行为选择：问清后走 L2 继续；跨两个模块的已知映射迁移也不因文件数要求 PLAN。与需要兼容迁移顺序、跨所有者协调的真实 L3 对照。</li>
+    <li>行为等价重构或 demo 改名：真实行为仍受保护，文件落点 / 展示文字变化不自动失败。</li>
+    <li>合并两个明显重复测试：剩余覆盖清楚时允许合并；真正缺覆盖的反例仍需补齐。</li>
+    <li>已有设计与授权的 L3：复用 / 补齐 PLAN 后继续，不重开批准或复制第二份 ledger。</li>
+    <li>三次调试失败但新证据明确：调整假设继续；另以改变公共架构的场景验证仍会回到用户。</li>
+    <li>分派任务通过等价路径实现、已有当前测试证据：审查结果，不强制每个预估文件产生 hunk 或重复全套测试。</li>
+    <li>用户未授权平台发布 / 真实计算，或本地结果尚无科学验收：保留授权与声明边界。</li>
+  </ul>
+  <p>实施后可利用已有真实任务记录观察交付质量、返工、误升 L3、无效提问和重复命令；耗时与 token 数据有现成来源时再使用。该观察不作为本次交付额外的等待门。优先比较当前已消融基线与候选；“项目规则 + 极简入口”可作为局部对照，保持相同项目约束。有限样本只支持有限结论，不设任意收益比例，不用删行数充当成功标准。</p>
+  <p>同一组依赖、输入与产物未变的证据可复用；触达新消费者或发现实际疑点时补相关检查。对高风险边界保留必要负例。合并重复检查前确认保护对象，互补的 staging / ZIP 内容 / 来源检查不因名称相近而删除。</p>
+  <p>建议先在当前源仓做一个可审阅的本地改动，保留回滚 diff；沿用仓库适用的检查与独立审查约定后，按已有或新增授权发布共享技能并更新消费端 pin；此处不新增审查层。未发布时明确区分本地候选与项目实际使用版本；无需为试用另建同步系统。项目残留修正独立限定路径，避免借技能优化改动科学算法或生产权限。</p>
+  <p><strong>停止条件：</strong>已确认目标与验收满足、所选检查支持当前状态、实际发现的实质缺陷已处置，即交付。新假想风险、一般性“覆盖可以更多”建议与文案偏好不自动开启下一轮治理。</p>
+</section>
+<section id="decisions">
+  <h2>确认与本次修订</h2>
+  <div class="decision">
+    <p>本人已整体同意初稿的“结果约束 + 方法自主”方向，包括消融调试次数强停、计划文件锁定和 TDD 手续化，同时保留 Grill / 真正 L3 的 PLAN / 入口预算。</p>
+    <p>本次依据本人新增观察，将 using-superpowers 与 brainstorming 的自动升级链纳入首批消融，并收回初稿可能衍生附加审计的表达。推荐采用第“L3 路由消融”节的有界澄清与直接退出路径；本次是设计修订，运行技能仍未改动。</p>
+  </div>
+  <h3>修改前确认：上游纳入与消费定位</h3>
+  <p>2026-09-14 通过 GitHub API 查询 obra/superpowers：main 为 <code>b36e0829c6d0140e93cfef2ca599b1b07d4a7797</code>，最新正式发布仍为 v6.3.0（2026-08-12）。本地 <code>0151cd1</code> 的第二父提交与该 SHA 一致，且该 SHA 是当前 HEAD 的祖先。因此本次核查未发现尚未纳入的上游主线更新；不将未合入 PR / 其他分支算作正式纳入对象。git ls-remote 的 TLS 请求失败，本结论使用成功的 API 查询与本地 Git 关系。</p>
+  <p>沿用按版本人工合入：查询上游版本及 SHA，与上次合入点比较 → 阅读相关差异，保留本人定制意图并处理语义冲突 → 在隔离分支形成 sync(upstream-vX) 合并 → 按触达面验证 → 在实际授权内发布 fork、更新消费仓 pin。fork-owned 入口文件保留本地所有权；skills/hooks/tests 的合并也需按 fork 设计审阅，不能因无文本冲突就恢复已消融的流程。使用现有 Git、README 与检查入口，不新建治理系统。</p>
+  <p>现状缺口：当前只有 origin/codeup，没有 upstream remote；父仓 sync-superpowers.sh 的默认模式仅同步 fork 并尝试查询 upstream，不执行 obra 合并，而且容忍 upstream fetch 失败。它的 behind=0 不能证明上游已最新。后续将上游纳入、fork 同步与本机挂载三件事在现有说明中分清；涉及父仓脚本的修正另按该路径范围处理，本轮未执行同步、推送或 remote 修改。</p>
+  <p>本人指定第一消费环境为 Codex，优先面向 gpt-6-astra 与 gpt-5.6-sol / gpt-5.6-luna；本地 codex-sync 配置与当前会话可用角色覆盖这些模型。此处记录使用定位，不规定固定主子模型分工。模型名、effort 与具体工具语法继续归配置 / adapter；通用技能正文保持自然的任务与行为描述，兼容 OpenCode、Kimi Code，不反复强调多 harness。沿用现有三份 adapter，避免将 Codex API 写进通用流程。兼容定位不等于三个 harness 已完成相同强度的模型驱动 E2E；本次不启动 Kimi 实验或改变默认生产入口。</p>
+  <p>整体设计认可持续有效，不重开已同意的取舍。本次补充的路由方案在本文集中呈现，后续实施以确认后的设计为依据；跨仓消费端修正与共享发布沿用各自实际授权范围。</p>
+</section>
+<section id="sources">
+  <h2>证据索引与核验范围</h2>
+  <p>读取时 Superpowers：<code>ac35b3c47db7cff122b275787334311d1db46e10</code>；app-tools workplace：<code>1502ed5e8e618c698cca41c19aca41ab0fa4082a</code>；Forge：<code>9edc8ffdea2064a52552d08e34da61b064ef97aa</code>。读取的项目入口及关键历史报告无 scoped dirty 差异。其他并行工作未审计或修改。以下本机路径是来源定位，不是可移植发布链接。</p>
+  <ol>
+    <li id="s1">S1：Superpowers Git <code>git show 4084c60:skills/using-superpowers/SKILL.md</code>、<code>git show 3ef0e8d:skills/writing-skills/SKILL.md</code>；当前 <a href="../../../skills/using-superpowers/SKILL.md">入口</a>、<a href="../../../skills/writing-skills/SKILL.md">writing-skills</a>。历史指导与当前删改分别核对。</li>
+    <li id="s2">S2：<a href="/home/james/work/sidereus/workplace/app-tools/toolbox/ABACUS/docs/reports/2026-09-10-governance-ablation-report.md">ABACUS 开发治理消融实施与验证</a>；整合提交 <code>ec173fae</code>。报告含历史中间状态，不能将每段“未提交”视为当前状态。</li>
+    <li id="s3">S3：<a href="/home/james/work/sidereus/workplace/app-tools/toolbox/ABACUS/docs/reports/2026-09-10-current-governance-audit.md">扩大治理审计</a> U1–U4、I1、B1–B4、D1–D2、G3、S1–S3；其未实施建议须与当前代码另核对后才能改动。</li>
+    <li id="s4">S4：<a href="/home/james/work/sidereus/workplace/app-tools/toolbox/ABACUS/docs/reports/2026-09-10-corpus-governance-ablation-review.md">Corpus 消融复审</a> K1–K7 与后续整改。本文使用已记录反例与取舍，不重新宣称所有初审问题仍存在。</li>
+    <li id="s5">S5：<a href="/home/james/work/sidereus/workplace/abacus-forge/AGENTS.md">Forge AGENTS</a> 第 22 行及 <a href="/home/james/work/sidereus/workplace/abacus-forge/tests/README.md">tests/README</a> 第 163 行；<code>git blame</code>定位 <code>c3b353d3</code>；对照当前 <a href="../../../skills/test-driven-development/writing-good-tests.md">Mutation Reasoning</a>。</li>
+    <li id="s6">S6：<a href="/home/james/.agents/USER_TASTE.md">现行 USER_TASTE</a>、<a href="/home/james/personal/docs/reviews/2026-09-05-governance-review-proportionality.md">9 月 5 日治理审查按需化记录</a>；9 月 10 日个人品味校准见 S3。</li>
+    <li id="s7">S7：<a href="../validation/subagent-routing-2026-09-13.md">9 月 13 日路由验证</a>；<a href="../../../tests/skill-content/test-positive-evidence-language.sh">当前结构检查脚本</a>。</li>
+  </ol>
+  <p>本文基于源码与文档审阅；未运行 ABACUS、Slurm、平台任务或生产测试，也未调用付费模型进行技能成本 A/B 实验。历史执行数值属于原报告，不是本轮重新运行的结果。</p>
+  <p><strong>初稿复核（不覆盖本次新增路由段）：</strong>独立 gpt_document_reviewer（ablation_design_review）核对品味、关键来源、归因与优化边界，未发现需修订的实质问题；这是设计审阅，不是优化效果实验。本次新增路由与去加固段经同一独立 reviewer 增量复核，未发现实质问题。修订版 HTML 标签结构及 25 个本地链接 / 锚点检查通过，未做浏览器视觉验收。</p>
+</section>
+</main>
+<footer>本地设计稿 · 规范源与建议状态分离 · 由现行开发品味约束消融，不建立新的永久治理管线。</footer>
+</body>
+</html>

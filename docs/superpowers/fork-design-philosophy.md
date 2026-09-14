@@ -1,59 +1,46 @@
-# Fork 设计哲学（QuantumMisaka/superpowers）
+# Fork 设计哲学
 
-> 本 fork 关于"superpowers 如何构建、如何消费"的基本思考模式的聚合入口，从 2026-07 以来的 fork 实践中提取。维护本 fork（含 agent 会话）修改 skills、流程或文档前先读本文。
-> 与上游的关系：obra/superpowers 是上游，本 fork 按版本同步（`sync(upstream-vX)` commits）；本文只描述与上游原始设计的不同点，来源诚实——借鉴与原创分别标注。
+本文件解释 QuantumMisaka/superpowers 的维护取向；开发判据见 [AGENTS.md](../../AGENTS.md)，本轮依据见[已确认消融设计](specs/2026-09-14-taste-carrier-ablation-design.html)。以下是后续优化原则，具体 Skill 的实施状态由设计记录区分。
 
-## 1. Grill 元规则：一个协议覆盖所有审批点（原创）
+## 品味、方法与判断空间
 
-所有需要人类审批/澄清的位置——brainstorming 设计确认、writing-plans 计划审批、executing-plans 疑虑、SDD 硬停——复用同一个 Grill 协议：至多 3 个阻塞问题，每问附推荐答案与可执行验收信号；能从代码库查证的先查证再问。不发明新的审讯仪式。
+本 fork 承载本人当前的开发品味。目标、关键设计、授权和验收约束交付；模型可以在这些边界内选择实现、调试、测试和协作方法，提出更好的方案。实质改变已批准决定时，再回到相应决策。
 
-由此 brainstorming 被简化为"Grill 快路径是默认，完整 spec 产出仅是升级路径"（§1/§2 结构）。仪式随任务缩放：有界任务一问一答即过，只有需要固化公共行为/架构边界/跨团队约定时才产出设计文档。
+Skill 保留有用的方法、简明例子和退出路径。消融优先删除重复义务、缩小过宽触发、解除机械衔接；不把所有实践删成“自行判断”，也不为避免消融风险另加一套检查。规则的保护对象与消费者用于维护者判断价值，不产生执行者每次填写的证明或台账。
 
-参考：`bff72f7`（integrate grill-me as default path）、`fa76b4d`（grill-spirit pass: protocol reuse）。注：上游 v6.3.0 在 #2063 独立收敛到"ceremony 随任务缩放"，本 fork 先行到达，方向一致。
+## 澄清与工作流相称
 
-## 2. 模型路由不绑 GPT：按任务能力选，不跟随主进程（原创）
+Grill 保留中文澄清方式：先查可验证事实，只问影响实现的未决取舍，给出有依据的推荐和可观察的成功标准。通常一至三问足够，问题数量不是配额，也不以缺少现成命令为由虚构验证。
 
-Codex 多 Provider 现实（OpenAI V2 + bailian/deepseek/scnet V1）下，子代理路由按任务能力选择 Provider 与档位，不默认跟随主会话模型：普通实现可互换，工程判断与代码审查偏强档，大上下文归纳/进度/文档偏 Qwen。三条配套原则：
+需要澄清、需要设计文档与需要计划化执行分别判断。有界开发可以局部问清后继续；加载 brainstorming、涉及公共 API 或多个文件，不应自动升级 L3。真正需要统筹关联决策、迁移顺序、跨所有者交接或恢复进度的工作保留 PLAN。普通实施取舍在既有授权内自主处理，不重开已批准部分。
 
-- **configuration-owned**：角色标识、模型、effort 归 Codex 配置（`~/.codex/agents/`），skill 只用抽象角色名，不在 skill 文本里写死模型名；
-- **双轨**：V1/V2 多 agent 指导并存在 `skills/using-superpowers/references/codex-tools.md`，不把 V2-only 编排建议写成普适规则;
-- **诚实边界**：分工是本地实践假设，不是模型能力定律；随 benchmark 与社区证据更新。
+这些路由目标已在本地技能中实施；范围与有限验证见[实施记录](plans/2026-09-14-taste-carrier-ablation.md)，不据此推断所有模型或外部消费仓均已验证。
 
-参考：fork 原创 spec `docs/superpowers/specs/2026-07-31-adaptive-workflow-dual-provider-routing-design.html`、commit 链 `32692c2 → 266b839 → c9ac1db`、validation/ 契约测试。
+## 任务支持与工具适配
 
-## 3. 优先抽象为 meta-rules，不写死规则（原创）
+给模型的支持程度随任务、上下文和实际表现调整。边界明确时给目标与验收并开放方法；需要更多接地时，在现有任务说明中补充相关代码入口、已定接口、必要例子或聚焦检查。无需按模型名称固定一套更重的流程。
 
-能用一条可推理的原则覆盖的，不枚举具体规则：
+具体角色、模型和 effort 归现行配置，调用语法归适配 reference；通用技能不复制这些细节。主要消费方式影响实际试用与优化优先级，不构成模型能力定律。分派时给清楚的任务、范围和验收依据，已有命令可以引用；调查或尚无测试的任务也可以使用可观察的结果标准。
 
-- 工作流路由是 meta-rule——"选择能可靠完成目标的最轻工作流，按歧义、行为风险、跨模块协调和返工成本升级"，L1/L2/L3 只是它的实例化；
-- "Rulings, not stalls" 用判断纪律 + 四类硬停取代枚举 STOP 清单：计划执行不等人，冲突与歧义由执行者裁决并记账，只有不可逆/安全/跨工作区副作用/计划彻底损坏才停；
-- 每个流程 skill 用三个元属性定义：触发范围（何时**不**加载与何时加载同等重要）、显式退出条件、最小产物。
+## 模型能力变化与指导退役
 
-判据：新增规则时先问"这是某条 meta-rule 的实例吗？"若是，写 meta-rule 不写实例；实例只进触发条件或示例。
+“强基模会吸收 Skill”可作为一个待检验的假设：某些通用方法可能已由模型掌握，或由工具承担，额外指导的边际价值因而下降。文章与单次成功都不能证明模型内部已经吸收某条规则；个人偏好、项目事实与授权仍须由实际上下文提供。
 
-## 4. 正向目标优先，窄禁止为例外（doctrine 借鉴上游，扩展原创）
+出现实际摩擦或修改相关技能时，可局部缩短、替换或移除指导，观察交付质量、返工、越界和沟通成本。负担明确而保留收益不明显时，可以收缩或退役。沿用必要边界与已有任务证据，不要求每条规则做 A/B、固定样本量或全模型矩阵。
 
-doctrine 来自上游 `docs/superpowers/specs/2026-06-10-positive-instruction-redesign-design.md`（随 v6.x 合并带入，非 fork 原创）：组合型禁止在模型对输出有自己的议程时会反噬，正向配方（"你的产出应包含 (1)…(5)"）才被稳定采纳。
+效果判断关注任务结果，不以遵循旧步骤、关键短语包含、文档数量或结构 lint 通过替代行为证据。正向、具体的表达通常更便于使用，但表达方式同样可以根据实际结果修订，不视为永久定律。
 
-fork 的扩展：把它从 skill 文本技巧升格为设计规则——对输出形状和条件路由使用正向契约："当条件 X 成立，产出 Y，并用 Z 证明"。只有三类情况使用窄范围禁止：真实安全边界、不可逆外部动作、已被行为评估证明会被模型绕过的纪律问题。
+## 个人品味如何演进
 
-执法：`tests/skill-content/test-positive-evidence-language.sh` mutation 测试保护正向证据契约（`5eebdce`、`bc83284`）。
+本人明确纠正偏好时，按实际授权更新既有规范源和受影响引用；跨项目品味沿用 USER_TASTE 的既有源与分发关系，不在本仓另建副本。项目例外保持项目范围。
 
-## Fork 维护纪律（自 CLAUDE.md 迁入）
+反复摩擦和新模型 / harness 能力可提供修订线索，Agent 可以用具体案例提出局部建议，但不从一次抱怨或新版本名称自动推导长期偏好。普通实施方法在已授权范围内调整；实质改变已确认品味、设计或权限边界时，只确认变化部分。
 
-本 fork 为多 Provider Codex 使用定制，刻意比上游轻。修改 skills 时：
+复用对话、现有文档与 Git 原位更新；历史记录保留当时含义，不继续作为现行命令。无需固定审计周期、到期豁免、自动晋升规则或新的审批管线。上游合并同样遵循这些维护取向，纳入步骤见 README。
 
-- 每个流程 skill 必须定义三件事：触发范围、显式退出条件、最小产物。
-- 每个审批/提问点走 brainstorming §1 Grill 协议；不发明新的审讯仪式。
-- 子代理 dispatch 必须携带验收证据（精确命令 + 期望输出）。
-- 新增任何 per-turn/per-session 义务前，先移除或合并一个既有义务。权重预算零和。
-- V1/V2 多 agent 指导双轨存于 `skills/using-superpowers/references/codex-tools.md`。
+## 设计来源
 
-## 证据索引
-
-| 模式 | 承载位置 |
-|---|---|
-| Grill 元规则 | brainstorming §1/§2 结构 · CLAUDE.md/AGENTS.md 指针 · commits bff72f7/fa76b4d |
-| 多模型路由 | references/codex-tools.md · spec 2026-07-31 · docs/superpowers/validation/ |
-| meta-rule 抽象 | using-superpowers L1/L2/L3 · executing-plans Rulings · 本文维护纪律 |
-| 正向优先 | spec 2026-06-10（上游）· spec 2026-07-31 语言形式节（fork 扩展）· test-positive-evidence-language.sh |
+- Grill 快路径来自本 fork 的 `bff72f7`、`fa76b4d`；上游 v6.3.0 的 #2063 也采用随任务缩放的方向。
+- 配置承载模型路由来自本 fork [2026-07-31 设计](specs/2026-07-31-adaptive-workflow-dual-provider-routing-design.html)；历史 Provider 分工是当时实践，不固定为当前规则。
+- 正向表达借鉴上游 [2026-06-10 设计](specs/2026-06-10-positive-instruction-redesign-design.md)；本 fork 曾采用的 prose mutation 检查已收敛为结构检查，不把旧执法说明当当前行为保证。
+- 2026-09-14 本人确认的消融设计整合了近期开发记录、模型判断空间、L3 路由收敛与品味演进。具体历史证据与实施边界由该设计保存，不复制成日常执行清单。

@@ -13,8 +13,8 @@ Task reviewer subagent:
   prompt: |
     You are reviewing one task's implementation: first whether it matches its
     requirements, then whether it is well-built. This is a task-scoped gate,
-    not a merge review — a broad whole-branch review happens separately after
-    all tasks are complete.
+    not automatically a whole-branch review. A broader review is selected
+    separately when the changed risk warrants it.
 
     ## What Was Requested
 
@@ -55,19 +55,17 @@ Task reviewer subagent:
 
     Do all of this review yourself. Never spawn a subagent to review part
     of the diff, and never spawn another reviewer for a second opinion.
-    This process already provides every review seat the work gets; a
-    reviewer you spawn duplicates one of them at full cost, and its
-    verdict counts for nothing. If the diff feels too large for one
-    pass, review it in passes yourself and say so in your report.
+    The controller coordinates review scope and additional seats. If the
+    diff needs a narrower package, report the context needed.
 
     ## Do Not Trust the Report
 
     Treat the implementer's report as unverified claims about the code. It
     may be incomplete, inaccurate, or optimistic. Verify the claims against
-    the diff. Design rationales in the report are claims too: "left it per
-    YAGNI," "kept it simple deliberately," or any other justification is the
-    implementer grading their own work. Judge the code on its merits — a
-    stated rationale never downgrades a finding's severity.
+    the diff. Assess implementation rationales against the actual code and
+    distinguish them from approved design decisions supplied with their source.
+    Either may be questioned with evidence; neither excuses a real defect or
+    requires reopening an already settled tradeoff.
 
     ## Tests
 
@@ -108,11 +106,11 @@ Task reviewer subagent:
     - **Misunderstood:** right feature built the wrong way, wrong problem
       solved
 
-    If the brief lists several files each with its own change (a batched
-    dispatch), check the diff against that list file by file: every listed
-    file must have its corresponding hunk. A listed file the diff never
-    touches is a Missing finding, no matter how clean the rest of the
-    batch looks.
+    Judge the requested behavior and binding design, including explicit
+    file-specific requirements. A plan's predicted file list is not a quota:
+    inspect relevant unchanged consumers when existing code may already meet
+    the requirement. Equivalent implementations may use different files.
+    Missing requested behavior remains a finding even if other tests pass.
 
     If a requirement cannot be verified from this diff alone (it lives in
     unchanged code or spans packages), inspect the smallest relevant context
@@ -134,13 +132,15 @@ Task reviewer subagent:
     - Edge cases handled?
 
     **Tests:**
-    - Do the new and changed tests verify real behavior, not mocks?
+    - Do the new and changed tests verify the owning behavior, using
+      controlled doubles where appropriate?
     - Are the task's edge cases covered?
 
     **Structure:**
     - Does each file have one clear responsibility with a well-defined interface?
     - Are units decomposed so they can be understood and tested independently?
-    - Is the implementation following the file structure from the plan?
+    - Does the implementation preserve the approved boundaries, including
+      justified changes to predicted file locations?
     - Did this change create new files that are already large, or
       significantly grow existing files? (Don't flag pre-existing file
       sizes — focus on what this change contributed.)

@@ -67,13 +67,14 @@ Implementer subagent:
 
     You reason best about code you can hold in context at once, and your edits are more
     reliable when files are focused. Keep this in mind:
-    - Follow the file structure defined in the plan
+    - Preserve approved interfaces and ownership. Plan file locations may be
+      adjusted for an equivalent implementation unless explicitly required.
     - Each file should have one clear responsibility with a well-defined interface
     - If a file you're creating grows beyond the plan's intent, split it or
       report the scope concern when that is the smallest safe design; do not
       launch an unrelated refactor without plan guidance
     - If an existing file you're modifying is already large or tangled, work carefully
-      and note it as a concern in your report
+      and report a concern only when it affects this task
     - In existing codebases, follow established patterns. Improve code you're touching
       the way a good developer would, but don't restructure things outside your task.
 

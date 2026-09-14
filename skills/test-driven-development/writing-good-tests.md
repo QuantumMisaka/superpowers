@@ -13,7 +13,7 @@ here:
 2. Every test exercises the owning behavior at an appropriate boundary
 ```
 
-Strict TDD produces both naturally: a test written first and watched
+For applicable behavior changes, TDD supports both: a test written first and watched
 failing against the baseline has already proven it can detect the missing
 behavior. Exercise real dependencies only when their side effects are
 authorized and controlled; a faithful offline double is also valid when a
@@ -198,10 +198,10 @@ deleting a redundant test when the remaining contract coverage is clear.
 | When you... | Do |
 |-------------|-----|
 | Write any test | Name the break it catches — a bug, not a decision |
-| Build an expected value | Derive it by hand; never with the code under test |
+| Build an expected value | Derive independently from the contract; not with the code under test |
 | Test a script or document | Prefer execution or consumer checks; source assertions serve stable public text or machine-consumed structure, not incidental wording |
 | Reach for a dependency test | Test your boundary contract, not their documented mechanics |
-| Want to assert on a mocked element | Test the real component, or unmock it |
+| Want to assert on a mocked element | Assert the owning behavior; use a controlled double when appropriate |
 | Are about to use a double | Identify relevant side effects; choose a suitable boundary |
 | Build a double response | Model the fields and semantics required by the contract |
 | Need cleanup only tests use | Put it in test utilities |

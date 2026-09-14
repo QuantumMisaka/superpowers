@@ -5,6 +5,9 @@ description: Use when a settled requirement needs a multi-step implementation pl
 
 # Writing Plans
 
+Use this skill for work selected for plan-based execution, not every multi-step
+edit or clarified question. Reuse an existing adequate plan.
+
 Write enough for another capable engineer to execute without inventing product
 decisions. Detail follows risk: a small local change needs a short plan; a
 public contract, migration, or coordinated change needs explicit interfaces,
@@ -46,12 +49,16 @@ Each task should state:
 - dependencies on earlier work, if any;
 - the check that can establish it, with an expected result when useful.
 
+File lists describe expected implementation locations unless the requirement
+explicitly makes a particular edit necessary. Equivalent implementations may
+use different locations while preserving the approved design and acceptance.
+
 Name exact functions, fields, paths, or error behavior only where the existing
 interface or settled design makes them relevant. Leave implementation choices
 open when they do not affect acceptance. Classify testing by behavior impact,
 not file type; documentation-only edits need no synthetic code RED/GREEN.
 
-For behavior changes, use `test-driven-development`. If the router has identified
+For applicable behavior changes, use `test-driven-development`. If the router has identified
 missing test infrastructure or another applicable alternative, record that
 constraint and the focused regression or manual check, its limits, and why it
 supports the requested claim; the plan does not independently waive TDD.

@@ -1,115 +1,59 @@
 ---
 name: verification-before-completion
-description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires current-workstate execution evidence and confirmed output before making success claims; evidence before assertions always
+description: Use before claiming work complete, fixed or passing, accepting delegated results, committing or requesting integration; match each claim to current-workstate evidence.
 ---
 
 # Verification Before Completion
 
-## Claim Contract
+Report what the work and its evidence establish. A confident explanation, a
+checklist tick or an agent's success summary does not establish completion.
 
-Before reporting a work-state claim:
+## Match the claim to evidence
 
-1. Name the exact command or observation that can support the claim.
-2. Use evidence produced for the current workstate: the exact revision, or an
-   identified dirty snapshot including staged, unstaged, and new files. "Fresh"
-   means current-state execution evidence, not that every agent or reviewer
-   must rerun the same command. Run it now when no valid retained evidence
-   covers the claim.
-3. Read the complete relevant raw output and exit code, and locate the
-   produced artifact when the check has one.
-4. Compare the result with the claim.
-5. If they match, report the claim with fresh evidence.
-6. If they do not match, report the actual status, failing check, and next
-   actionable step.
+Inspect the command or observation, relevant raw output and exit status, and
+any produced artifact. Check that they cover the requirement being claimed and
+the current work state: an exact revision, or an identifiable dirty scope
+including staged, unstaged and new files. HEAD alone does not identify dirty
+content. Use existing task records rather than manufacturing a separate ledger.
 
-Use the narrowest sufficient verification for the claim. A focused test can
-prove the changed behavior; a full build claim requires the full build command.
+| Claim | Supporting evidence |
+| --- | --- |
+| Tests pass | Matching test output with no failures; report the selected scope |
+| Build succeeds | Successful build output and the resulting artifact |
+| Bug fixed | Original symptom and relevant regression verified on the repair |
+| Regression detects the bug | Expected baseline failure and repaired result, not just a passing test |
+| Requirements met | Inspected behavior/artifacts against requirements and relevant checks |
+| Delegated work complete | Controller inspection of actual changes and the above evidence |
 
-## Claim-to-Evidence Mapping
+Use the narrowest sufficient check. A focused test does not establish a whole
+build; local success does not establish platform operation or scientific
+validity. Report material limitations rather than extending the claim.
 
-| Claim | Requires | Not Sufficient |
-|-------|----------|----------------|
-| Tests pass | Test command output: 0 failures | Unbound or stale run, "should pass" |
-| Linter clean | Linter output: 0 errors | Partial check, extrapolation |
-| Build succeeds | Build command: exit 0 | Linter passing, logs look good |
-| Bug fixed | Test original symptom: passes | Code changed, assumed fixed |
-| Regression test works | Red-green cycle verified | Test passes once |
-| Agent completed | VCS diff plus current-workstate-bound raw output, exit code, and artifacts | Agent reports "success" |
-| Requirements met | Requirements mapped to inspected artifacts and relevant execution evidence | Checklist ticks or tests passing alone |
+## Reuse and follow up
 
-Match the scope and freshness of the evidence to the claim. Output from a
-previous run is usable only when its relevant inputs match the current revision
-or identified dirty snapshot; otherwise it describes a previous state. A partial check
-supports only the boundary it exercised. An agent report becomes evidence
-after the controller inspects the resulting artifacts and verifies its raw
-command output, exit code, and acceptance coverage.
+Evidence is current when its relevant code, inputs and environment match the
+work under review, not when every reviewer reruns the command. Reuse retained
+valid evidence. Missing, changed or concretely doubtful inputs call for the
+smallest check that resolves the question; changes in unrelated files do not
+automatically invalidate it.
 
-For delegated work, the controller binds acceptance to the revision or identified dirty snapshot,
-retained raw command output, exit code, produced artifact, and the criterion it
-covers. A status or success summary alone is not evidence. If this package is
-complete and current, consume it without mechanically repeating the full
-suite; if it is missing, stale, or raises a concrete doubt, run the smallest
-focused check that resolves the gap.
+For delegated work, read the actual diff and relevant raw results. If a report
+is truncated, locate its referenced evidence before assuming it is absent.
+An accessible success summary still needs the underlying evidence inspected.
 
-## Evidence Patterns
+For a historical implementation, isolated baseline/candidate checks can prove
+a regression's sensitivity, but cannot be relabeled as test-first execution.
+Never revert shared/user changes to reconstruct RED. Behavior-preserving
+refactors need relevant baseline/candidate evidence, not an invented failure.
 
-**Tests:**
-```
-✅ [Run test command] [See: 34/34 pass] "All tests pass"
-Evidence gap: "Should pass now" / "Looks correct"
-```
+## Report the result
 
-**Regression tests:**
-```
-✅ Test fails for the missing behavior on baseline → candidate passes the same test
-For code already written, compare in an isolated baseline or use a safe targeted
-mutation; do not revert shared/user changes or claim retroactive test-first work.
-Behavior-preserving refactors use characterization checks on baseline and candidate.
-Evidence gap: a passing test alone does not show that it detects the original defect.
-```
+When evidence supports the claim, state the result and the check's scope.
+When it does not, report the actual status, first actionable failure or missing
+observation, and next step. Retain raw evidence in the existing task context or
+artifact when useful for review/recovery; the final answer can summarize it.
 
-**Build:**
-```
-✅ [Run build] [See: exit 0] "Build passes"
-Evidence gap: "Linter passed" for a build claim
-```
-
-**Requirements:**
-```
-✅ Re-read plan → Create checklist → Verify each → Report gaps or completion
-Evidence gap: "Tests pass, phase complete" without a requirements comparison
-```
-
-**Agent delegation:**
-```
-✅ Agent reports success → Check VCS diff → Verify changes → Report actual state
-Evidence gap: repeating the agent report without inspecting artifacts
-```
-
-## Failed Verification
-
-A failing verification command supplies useful status evidence. Report:
-
-- the claim you evaluated;
-- the exact command or observation;
-- the exit code and first actionable failure;
-- the raw output and produced artifact relevant to the check;
-- the narrower statement the evidence supports;
-- the next actionable step.
-
-This preserves the boundary between observed results and work still required.
-
-## When to Apply
-
-Apply the claim contract before:
-
-- reporting success, completion, correctness, or passing checks;
-- committing, creating a PR, or moving to the next task;
-- accepting delegated work as complete;
-- reporting a positive factual claim about work state.
-
-## Completion Record
-
-For every final work-state claim, name the matching current-workstate evidence
-and its result. Where evidence and claim differ, report the actual status and
-retain the failure as the next work item.
+Example: “The parser regression passes on this change; the full integration
+suite was not run.” This is preferable to inferring system-wide success from a
+focused test. An unresolved real acceptance gap stays incomplete even when
+unrelated checks pass.

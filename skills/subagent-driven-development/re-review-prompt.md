@@ -3,7 +3,7 @@
 Use this template when dispatching a re-review after a repair cycle. The
 re-reviewer verifies the findings were addressed and checks the changed
 surface for new breakage. It is not a fresh whole-branch review — the broader
-review already happened.
+review may be selected separately when needed.
 
 **Purpose:** Verify each finding from the previous review was addressed, and
 that the fix itself broke nothing.

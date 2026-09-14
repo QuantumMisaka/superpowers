@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: Use when you have a written implementation plan to execute in a separate session with review checkpoints
+description: Use when executing an existing implementation plan directly; ordinary unplanned L1/L2 work does not need this skill
 ---
 
 # Executing Plans
@@ -70,15 +70,16 @@ or when the plan leaves no reliable path forward. Existing authorization
 persists within its scope; harness permission checks still apply. Ask only for
 the missing decision, after resolving what the codebase can answer.
 
-<!-- fork-added begin · 元认知条款（2026-08-22 QuantumMisaka fork；依据 AutoResearchEval/arXiv:2608.14905 ARFT） -->
-## 元认知条款（fork）
+## Keep work tied to acceptance
 
-计划执行期间，以下三条与 Rulings 机制同等生效：
+Use the plan to retain scope and recovery state. A file list or step order is
+an implementation estimate unless the approved contract makes it binding.
+Resolve equivalent implementation changes within scope; record material
+tradeoffs in the existing plan or report. Address actual acceptance gaps,
+while routing unrelated observations outside the current work package.
+Completion evidence is owned by `verification-before-completion`; do not
+create a second checklist or repeat unchanged checks here.
 
-1. **诊断-行动绑定**：执行中写下任何"这里有问题"的判断，必须同轮转化为处置——修复、按停止条件上报、或记入 Ruling 并写明代价。禁止"记录在案然后继续走"（ARFT F.4：82.5% 的轨迹已诊断却未修正）。
-2. **目标重锚**：周期性对照计划的验收条件问"当前动作在服务验收吗"；发现跑偏先停再调，不带着偏差冲刺（ARFT 案例 c：正确诊断主导负分项后预算错配到已获胜实例）。
-3. **自审不算证据**：任务完成只认 verification 命令的实时输出与 diff；自检清单打勾、解释性文字不计入验收。
-<!-- fork-added end -->
 
 ## When to Revisit Earlier Steps
 
