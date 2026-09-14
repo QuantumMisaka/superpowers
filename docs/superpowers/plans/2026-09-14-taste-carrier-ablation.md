@@ -30,3 +30,7 @@ Ruling: 在 ~/scratch/superpowers-ablation-20260914 隔离工作树执行，携�
 - 范围外：没有修改上游同步脚本、其他项目规则/pin、模型配置，也没有平台/科学计算或跨harness模型驱动E2E。
 
 终审增量复核通过，两项发现已关闭。通过源仓基线/先前文档内容比较后，将本次15份技能/参考文件、场景及实施状态回填当前源仓；保留隔离工作树与原开发文档改动，未commit/push。
+
+## 后续状态（2026-09-14 17:26 CST）
+
+上段保留回填时的原时点状态。随后源仓已提交 `538b18e`（本消融改动）与 `7c33eae`（submodule 打包修复），并推送 Codeup `main`。GitHub `origin/main` 仍在 `ac35b3c`；父仓 `codex-sync/superpowers` gitlink 的 `ac35b3c -> 7c33eae` 变化尚未提交。当前审查结论、验证命令和剩余建议见[状态审查报告](../reports/2026-09-14-skill-status-review.md)。

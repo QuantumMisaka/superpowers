@@ -1,6 +1,6 @@
 # Fork 设计哲学
 
-本文件解释 QuantumMisaka/superpowers 的维护取向；开发判据见 [AGENTS.md](../../AGENTS.md)，本轮依据见[已确认消融设计](specs/2026-09-14-taste-carrier-ablation-design.html)。以下是后续优化原则，具体 Skill 的实施状态由设计记录区分。
+本文件解释 QuantumMisaka/superpowers 的维护取向；开发判据见 [AGENTS.md](../../AGENTS.md)，本轮依据见[已确认消融设计](specs/2026-09-14-taste-carrier-ablation-design.html)。以下是后续优化原则，具体 Skill 的实施状态见实施记录与[状态审查报告](reports/2026-09-14-skill-status-review.md)。
 
 ## 品味、方法与判断空间
 
@@ -14,7 +14,7 @@ Grill 保留中文澄清方式：先查可验证事实，只问影响实现的�
 
 需要澄清、需要设计文档与需要计划化执行分别判断。有界开发可以局部问清后继续；加载 brainstorming、涉及公共 API 或多个文件，不应自动升级 L3。真正需要统筹关联决策、迁移顺序、跨所有者交接或恢复进度的工作保留 PLAN。普通实施取舍在既有授权内自主处理，不重开已批准部分。
 
-这些路由目标已在本地技能中实施；范围与有限验证见[实施记录](plans/2026-09-14-taste-carrier-ablation.md)，不据此推断所有模型或外部消费仓均已验证。
+这些路由目标已在本地技能中实施；范围、有限验证与分发边界见[实施记录](plans/2026-09-14-taste-carrier-ablation.md)和[状态审查报告](reports/2026-09-14-skill-status-review.md)，不据此推断所有模型或外部消费仓均已验证。
 
 ## 任务支持与工具适配
 

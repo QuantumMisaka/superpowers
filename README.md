@@ -9,7 +9,7 @@
 - `skills/`：可组合的工程方法；按任务需要加载。
 - 本人的源仓位于 `codex-sync/superpowers/` 子模块，通过父仓 `sync-superpowers.sh --mount` 链接到 `~/.codex/skills/` 与 `~/.agents/skills/`。Codex 是主要消费入口；具体角色与模型选择归现行配置。
 - `skills/using-superpowers/references/` 保存具体工具适配；公共技能不固定模型、Provider 或某个 harness 的调用语法。
-- `docs/superpowers/` 保存设计、计划与验证记录；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施；验证与未发布边界见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)。
+- `docs/superpowers/` 保存设计、计划、验证与审查报告；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施。验证、分发边界和剩余优化见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)与[状态审查报告](docs/superpowers/reports/2026-09-14-skill-status-review.md)。
 
 ## 上游纳入与分发
 

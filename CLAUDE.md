@@ -13,4 +13,4 @@
 - **验证最小充分**：用当前有效证据支持交付声明，复用输入未变的检查；不为检查数量、覆盖率或流程完整感制造测试。方法参见 [writing-good-tests](skills/test-driven-development/writing-good-tests.md)。
 - **指导可演进**：优先消融重复义务、过宽触发和实现锁定，保留有用方法与清晰退出路径。依据本人当前明确要求和任务证据调整，历史案例与模型表现不自动成为通用禁令。
 
-[已确认 SPEC](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 是后续技能消融的设计依据。当前落地状态见该文档；开发准则更新不代表全部 Skill 已完成改造。
+[已确认 SPEC](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 是后续技能消融的设计依据。当前落地状态与剩余优化见[状态审查报告](docs/superpowers/reports/2026-09-14-skill-status-review.md)；开发准则更新不代表全部 Skill 已完成改造。
