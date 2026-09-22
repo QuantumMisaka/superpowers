@@ -219,7 +219,20 @@ max_concurrent_threads_per_session = 4
 That historical probe covered GPT → GPT on V2, plus Qwen → Qwen and Qwen → GPT
 on V1. It does not prove every route is currently registered or available.
 Respect the active session's actual concurrency budget, including its counting
-convention for the primary thread. For a
+convention for the primary thread.
+
+> **Concurrency note (measured 2026-09-22):** the `4`s in the block above are
+> 0.146-era historical values, not current settings. The owning project now sets
+> `max_concurrent_threads_per_session = 6` explicitly in all six profiles; the value
+> counts spawned children **excluding** the primary thread. Leaving the key **unset**
+> does not yield 4: a measured session admitted only **3** concurrent children before
+> rejecting the next spawn (`collab spawn failed: agent thread limit reached`).
+> Tighten per session for write-heavy work
+> (`-c agents.max_concurrent_threads_per_session=4`). Requirement basis for that
+> project decision: peak historical demand was <=4 in ~96% of parent sessions, and a
+> child costs roughly 33K input tokens at start-up (long-lived children go far higher).
+
+For a
 cross-model child, use an advertised role and an isolated child context
 (`fork_turns: "none"` when the schema offers it), then send the complete task
 contract in `message`.
