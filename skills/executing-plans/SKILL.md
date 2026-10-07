@@ -21,7 +21,7 @@ checkpoints.
 
 ### Step 1: Load and Review Plan
 1. Read plan file
-2. If present, read its `**Spec:**` file and the sections cited by tasks
+2. Read any referenced spec or requirement source and the sections cited by tasks
 3. Review critically - identify any questions or concerns about the plan
 4. Resolve concerns from code or within the approved scope using Rulings below.
    Ask through brainstorming's Grill only for a missing decision or authorization

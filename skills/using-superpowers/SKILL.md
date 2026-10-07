@@ -17,6 +17,7 @@ description: 行动型请求或要求遵循 repository/Skill instructions 时使
 
 需要问清楚、需要设计文档、需要计划化执行分别判断。公共 API 字样、多个文件、机械迁移、一次外部审批或加载 brainstorming 本身不决定等级。
 未知事实先查；普通技术选择自主决定。未定产品选择只暂停受影响部分，可用 `brainstorming` 澄清。查明后按剩余工作自然选择路径，无需降级报告。
+新建 SPEC / PLAN 以 Markdown 为规范源；可选 HTML 呈现归 `brainstorming` 的呈现参考，文档形式不决定流程等级。
 L3 设计未定时先 `brainstorming`，已定时直接 `writing-plans`；已有设计与同范围执行授权持续有效，不因固化文档重复批准。
 
 ## 验证与执行

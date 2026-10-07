@@ -11,6 +11,8 @@
 - `skills/using-superpowers/references/` 保存具体工具适配；公共技能不固定模型、Provider 或某个 harness 的调用语法。
 - `docs/superpowers/` 保存设计、计划、验证与审查报告；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施。验证、分发边界和剩余优化见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)与[状态审查报告](docs/superpowers/reports/2026-09-14-skill-status-review.md)。
 
+新建 spec / plan 以 Markdown 为唯一可编辑规范源，HTML 按需生成；历史 HTML 规范继续有效。具体用法见[呈现参考](skills/brainstorming/references/presentation.md)。
+
 ## 上游纳入与分发
 
 按上游版本人工纳入，保留 `sync(upstream-vX)` 合并历史：查询上游版本与 SHA，对比上次合入点，审阅相关差异，在隔离分支处理合并并验证受影响部分，再在实际授权内发布 fork、更新消费仓 gitlink。

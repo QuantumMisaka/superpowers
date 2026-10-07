@@ -13,17 +13,13 @@ assert_literal() {
   printf '  [PASS] %s\n' "$label"
 }
 
-printf 'Design artifact contract\n'
+printf 'Legacy HTML template compatibility (not a new-spec schema)\n'
 
 test -f "$TEMPLATE"
 printf '  [PASS] template exists\n'
 
 assert_literal '<!DOCTYPE html>' 'standalone HTML document'
 assert_literal '<meta name="viewport"' 'responsive viewport'
-
-for section in summary goals requirements decisions architecture errors testing rollout risks; do
-  assert_literal "id=\"$section\"" "section: $section"
-done
 
 if grep -Eqi '<script|https?://|@import' "$TEMPLATE"; then
   printf '  [FAIL] template must not load scripts or external resources\n'

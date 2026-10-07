@@ -5,97 +5,64 @@ description: Use when a settled requirement needs a multi-step implementation pl
 
 # Writing Plans
 
-Use this skill for work selected for plan-based execution, not every multi-step
-edit or clarified question. Reuse an existing adequate plan.
+Use for work selected for plan-based execution. Reuse an adequate existing
+plan; a clarified question or several edits alone does not require one.
 
-Write enough for another capable engineer to execute without inventing product
-decisions. Detail follows risk: a small local change needs a short plan; a
-public contract, migration, or coordinated change needs explicit interfaces,
-failure handling, and rollout. Do not turn a plan into a second implementation.
+Write enough for a capable engineer to continue without inventing product
+decisions. Preserve the decisions they cannot make alone and leave ordinary
+implementation choices open. Detail follows risk and handoff needs.
 
-## Header
+## Ground the plan
 
-Save plans under `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md` unless
-the project says otherwise. Start with:
+Save new plans as Markdown under
+`docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`, unless the project has
+another convention. Make the goal, requirement source, approach and verification
+easy to find; these are information needs, not mandatory header fields.
+Link and read the governing spec rather than copying it. When requirements
+come directly from the user, identify that source instead. Record authorization
+where it is needed to distinguish implementation from an unapproved action.
 
-```markdown
-# [Feature] Implementation Plan
+Markdown is the editable source. If an HTML reading view would help, use the
+[presentation reference](../brainstorming/references/presentation.md).
 
-**Goal:** [one sentence]
-**Spec:** [approved spec path, or `none - requirements supplied directly`]
-**Authorization:** [source of the settled requirement and execution authority]
-**Architecture:** [short approach and boundaries]
-**Verification:** [checks that can support the acceptance claims]
-```
+## Organize by outcomes
 
-When the Spec line already records the requirement source and its authority —
-the common `none - requirements supplied directly` case — Authorization may
-fold into that line instead of a separate field.
+Group changes that belong together and can be checked together. Split a task
+when its result can be meaningfully accepted independently, or dependencies
+and handoff make the boundary useful. Batch small same-shape edits.
 
-Read the referenced spec directly. Do not duplicate it; point to the sections
-that govern a task.
+Describe each task's deliverable and how to check it. Add affected components,
+dependencies, interfaces, failure handling or rollout order where they help
+execution. Expected file locations guide discovery; they are not an edit quota.
+Specify exact paths, signatures and values when an existing contract or agreed
+design requires them. Leave equivalent internal implementations available.
 
-## Plan structure
+For example, a task may simply say:
 
-Before listing steps, identify the files or components that change and the
-responsibility each owns. Group edits that must be tested together. Split work
-only when a reviewer could meaningfully accept one part while rejecting the
-other; batch small same-shape edits.
+> Extend the existing request validator to reject the newly excluded input
+> while preserving documented valid inputs. Check both cases and run the
+> owning suite. The parser task depends on this behavior.
 
-Each task should state:
+A cross-owner migration needs more detail about interfaces, sequencing and
+recovery. Neither case needs a transcript of the future code or a commit for
+every small step. Use checkboxes when they help resume work. If using the
+optional SDD `task-brief` extractor, give its tasks `### Task N: Title` headings;
+other plans need no fixed heading syntax.
 
-- the files or public boundary involved;
-- the behavior or artifact it delivers;
-- dependencies on earlier work, if any;
-- the check that can establish it, with an expected result when useful.
+## Review and continue
 
-File lists describe expected implementation locations unless the requirement
-explicitly makes a particular edit necessary. Equivalent implementations may
-use different locations while preserving the approved design and acceptance.
+Check coverage of the agreed goal, important boundaries, dependencies and
+verification. Consider realistic inputs and failures the spec leaves implicit;
+add meaningful checks to the affected task. Recheck changed parts when new
+facts affect the plan; unresolved product choices return to `brainstorming`.
 
-Name exact functions, fields, paths, or error behavior only where the existing
-interface or settled design makes them relevant. Leave implementation choices
-open when they do not affect acceptance. Classify testing by behavior impact,
-not file type; documentation-only edits need no synthetic code RED/GREEN.
+Follow the router's verification guidance and use `test-driven-development`
+for applicable behavior changes. If a different check is warranted, state
+the reason and material limits where they affect acceptance. Documentation
+edits need no synthetic code RED/GREEN.
 
-For applicable behavior changes, use `test-driven-development`. If the router has identified
-missing test infrastructure or another applicable alternative, record that
-constraint and the focused regression or manual check, its limits, and why it
-supports the requested claim; the plan does not independently waive TDD.
-Do not require a test
-inventory, exact prose, or a commit after every tiny step unless the project
-has a real consumer for that record.
-
-## Example task
-
-```markdown
-### Task 1: Validate the new input boundary
-
-**Files:** `src/validator.py`, nearest existing validator tests
-**Behavior:** reject malformed input with the existing error contract and
-accept the documented compatible form.
-**Dependencies:** none.
-**Verification:** focused test for both branches; then the owning suite.
-
-- [ ] inspect the existing boundary and add the smallest regression test
-- [ ] implement the validation using the existing helper
-- [ ] run the focused check and owning suite
-- [ ] remove temporary probes and review the resulting diff
-```
-
-This is a shape, not a requirement to copy every line. A task can be shorter
-when the change is mechanical; a risky task should expose its interfaces and
-rollback plan.
-
-## Self-review and handoff
-
-Check once that the plan covers the approved goal, non-goals, changed
-interfaces, dependencies, and verification. Recheck only the affected section
-when a producer, consumer, or requirement changes. Preserve unresolved product
-decisions for `brainstorming` instead of guessing.
-
-If execution is already authorized for the settled scope, proceed with the
-plan and retain the exact commands and outputs used for acceptance. Otherwise
-hand the concrete plan to the user for approval. Choose `executing-plans` for
-direct execution or `subagent-driven-development` when independent work
-packages and their reviews justify the coordination cost.
+When the settled scope is already authorized, continue with implementation;
+writing the plan does not reopen that approval. Otherwise present the concrete
+plan and ask only about the missing decision or authority. Use `executing-plans`
+for direct execution, or `subagent-driven-development` when independent work
+packages justify the coordination. Preserve actual acceptance evidence.
