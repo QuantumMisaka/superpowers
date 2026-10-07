@@ -27,4 +27,4 @@ if grep -Eqi '<script|https?://|@import' "$TEMPLATE"; then
 fi
 
 printf '  [PASS] no scripts or external resources\n'
-printf 'All design artifact contract checks passed\n'
+printf 'All legacy HTML template compatibility checks passed\n'

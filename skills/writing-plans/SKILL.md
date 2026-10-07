@@ -46,7 +46,8 @@ For example, a task may simply say:
 A cross-owner migration needs more detail about interfaces, sequencing and
 recovery. Neither case needs a transcript of the future code or a commit for
 every small step. Use checkboxes when they help resume work. If using the
-optional SDD `task-brief` extractor, give its tasks `### Task N: Title` headings;
+optional SDD `task-brief` extractor, use `Task N` headings (for example
+`### Task N: Title`);
 other plans need no fixed heading syntax.
 
 ## Review and continue

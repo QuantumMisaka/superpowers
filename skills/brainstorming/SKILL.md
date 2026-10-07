@@ -20,7 +20,7 @@ description: 用于影响实现的未决产品、UX、架构或安全选择，�
 
 ## 是否需要设计文档
 
-用户明确要求，或多项关联决定确需共同审阅、长期约定需要保存时，在 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` 保存 Markdown spec；项目已有位置与规范优先。公共 API、schema 或跨模块字样本身不要求新文档。
+用户明确要求，或多项关联决定确需共同审阅、长期约定需要保存时，在 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` 保存 Markdown spec；项目已有位置与规范优先，已有规范能承载时优先补充。公共 API、schema 或跨模块字样本身不要求新文档。
 
 围绕问题、推荐方案、关键边界与成功标准组织内容；接口、错误处理、迁移和替代方案按实际需要展开，章节不设配额。区分已定决定与未决取舍，自审范围和一致性。纯粹固化已批准设计直接交付；新增决定集中提交用户判断。
 
