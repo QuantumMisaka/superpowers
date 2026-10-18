@@ -26,3 +26,5 @@
 - `python3 -m pytest tests/hermes -q`：25 项通过；`bash tests/opencode/run-tests.sh`：2 项通过；`bash tests/hooks/test-session-start.sh`：现有 hook 场景通过。
 
 本报告只记载本次子仓选择性合入。dsh 分级编排、完成通知与跨模型验收由父仓相应变更及验证记录说明。
+
+边界：SDD 同名计划隔离已验证顺序初始化；工作区认领保留上游实现，并发首次认领不具备原子性。本轮控制器按计划串行初始化；若需要多控制器并发初始化，需另行加锁与验证。版本脚本依赖的 yq 本机未安装，本轮以 Python 核对九处版本清单一致，未声称该脚本通过。
