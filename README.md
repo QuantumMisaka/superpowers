@@ -17,6 +17,8 @@
 
 按上游版本人工纳入，保留 `sync(upstream-vX)` 合并历史：查询上游版本与 SHA，对比上次合入点，审阅相关差异，在隔离分支处理合并并验证受影响部分，再在实际授权内发布 fork、更新消费仓 gitlink。
 
+当前选择性基线为上游 v7.0.0；fork 清单版本 `7.0.0-qm.1` 表示已审阅并纳入部分修复，不表示技能或平台实现与上游完全一致。纳入范围与保留取舍见[本次合入记录](docs/superpowers/reports/2026-10-18-upstream-v7-selective.md)。
+
 `AGENTS.md` / `README.md` / `CLAUDE.md` / `GEMINI.md` 为 fork-owned 文件，冲突保留本地所有权。`skills/`、`hooks/`、`tests/` 的上游变更同样按本 fork 设计审阅；无文本冲突不等于应恢复已消融的流程。fork 定制不提交上游。
 
 父仓 `sync-superpowers.sh` 的默认模式同步 fork 与 origin，`--mount` 只负责本机链接；两者都不执行 obra 的版本合并。上游是否有更新以成功的远端查询与 Git 比较为准，不能把查询失败当作零差异。2026-09-14 的已核实基线与现有脚本限制见上述 SPEC。

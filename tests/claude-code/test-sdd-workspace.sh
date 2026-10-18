@@ -161,6 +161,14 @@ PLAN
         echo "    got: $rp_explicit"
     fi
 
+    # Reject ranges that would silently review the wrong or an empty change.
+    rc=0
+    (cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md HEAD HEAD >/dev/null 2>&1) || rc=$?
+    if [[ "$rc" -eq 3 ]]; then pass "empty review range is rejected"; else fail "empty review range is rejected"; fi
+    rc=0
+    (cd "$repo" && "$SDD_SCRIPTS/review-package" plan-a.md HEAD HEAD~1 >/dev/null 2>&1) || rc=$?
+    if [[ "$rc" -eq 3 ]]; then pass "reverse review range is rejected"; else fail "reverse review range is rejected"; fi
+
     # --- dirty, path-scoped review package ---
     local staged_owned="staged-owned.txt"
     local unstaged_owned="f"
@@ -279,6 +287,33 @@ PLAN
     else
         fail "worktree workspace invisible to git status"
         echo "    status: $wt_status"
+    fi
+
+    mkdir -p "$repo/docs/alpha" "$repo/docs/beta"
+    printf '# Alpha\n\n## Task 1: One\n\nAlpha only.\n' > "$repo/docs/alpha/plan.md"
+    printf '# Beta\n\n## Task 1: One\n\nBeta only.\n' > "$repo/docs/beta/plan.md"
+    local alpha beta alpha_again
+    alpha="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" docs/alpha/plan.md)"
+    beta="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" docs/beta/plan.md)"
+    alpha_again="$(cd "$repo" && "$SDD_SCRIPTS/sdd-workspace" "$repo/docs/alpha/plan.md")"
+    if [[ "$alpha" != "$beta" && "$alpha" == "$alpha_again" \
+        && "$(cat "$alpha/plan-path")" == 'docs/alpha/plan.md' \
+        && "$(cat "$beta/plan-path")" == 'docs/beta/plan.md' ]]; then
+        pass "same-name plans keep separate stable workspaces"
+    else
+        fail "same-name plans keep separate stable workspaces"
+    fi
+
+    local own="$TEST_ROOT/own-ignore"
+    git init -q -b main "$own"
+    mkdir -p "$own/.superpowers/sdd"
+    printf '*\n!.gitignore\n' > "$own/.superpowers/sdd/.gitignore"
+    printf '# Plan\n\n## Task 1: One\n\nOne.\n' > "$own/plan.md"
+    (cd "$own" && "$SDD_SCRIPTS/sdd-workspace" plan.md >/dev/null)
+    if [[ "$(cat "$own/.superpowers/sdd/.gitignore")" == $'*\n!.gitignore' ]]; then
+        pass "existing SDD ignore rules remain intact"
+    else
+        fail "existing SDD ignore rules remain intact"
     fi
 
     echo ""

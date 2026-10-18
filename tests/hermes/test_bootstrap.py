@@ -63,10 +63,13 @@ class TestBootstrapContent:
 
     def test_contains_using_superpowers_body(self):
         content = _bootstrap()
-        # A distinctive line from the skill body proves the real SKILL.md was
-        # embedded, not a stub.
+        m = _load()
+        skill_md = os.path.join(m._skills_dir(), "using-superpowers", "SKILL.md")
+        with open(skill_md, encoding="utf-8") as f:
+            body = m._strip_frontmatter(f.read())
+        # Compare with the current fork entry, whose wording can evolve.
         assert "You have superpowers" in content
-        assert "## The Rule" in content
+        assert body in content
 
     def test_frontmatter_stripped(self):
         content = _bootstrap()
