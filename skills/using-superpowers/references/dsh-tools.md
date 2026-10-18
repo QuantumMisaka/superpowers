@@ -50,3 +50,5 @@ Bot 私聊独立；每个 Bot 在每个群也有自己的会话，但沿用该 B
 ## 来源与维护
 
 工具语义核对安装包 ds-bot 的 src/host/{tools,groups,prompt,permissions,chat-index}.js；技能发现核对 @deepseek-ai/dsh-skill-filesystem。此说明随 Superpowers fork 同步，以项目挂载的固定版本消费，不在每个 home 复制另一份规则。发现同名技能覆盖时核对实际解析路径。
+
+用户指定 GPT调研/规划→DeepSeek实施→GPT验收时，使用[跨模型阶段编排](dsh-cross-model.md)；该模式按阶段新建执行会话，普通任务保持上述按需协作。
