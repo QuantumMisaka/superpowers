@@ -27,7 +27,7 @@ L3 设计未定时先 `brainstorming`，已定时直接 `writing-plans`；已有
 完成声明按 `verification-before-completion` 使用当前有效证据；输入未变可复用，实际疑点才补相关检查。
 
 已有计划的执行选择 `executing-plans`；独立工作包确有协调或上下文隔离收益时用 `subagent-driven-development`。普通 L1/L2 直接执行不因此加载计划链。
-委派按任务与实际能力选择可用角色，模型/effort 归 harness 配置；具体工具操作读取当前 `references/*-tools.md`。主代理保留设计决策与最终验收责任，子代理可调查、起草和实施。
+委派按任务与实际能力选择可用角色，模型/effort 归 harness 配置；具体工具操作读取当前 `references/*-tools.md`；dsh Web / ds-bot 使用 [dsh 适配](references/dsh-tools.md)。主代理保留设计决策与最终验收责任，子代理可调查、起草和实施。
 任务需要更多接地时补充相关入口、已定接口或必要例子，不因模型名称增加流程等级。独立审查按风险与项目要求选择。
 普通实施取舍自主推进，重要裁决可复用计划或报告记录 `Ruling: 决定 — 理由 — 错了的代价`，不另建台账。
 实质改变已批准目标、设计或授权时回到对应决策；尚缺破坏性、安全敏感或外部操作授权，或确已无可靠路径时暂停相关工作。既有同范围授权持续有效，仍遵守 harness 权限。
