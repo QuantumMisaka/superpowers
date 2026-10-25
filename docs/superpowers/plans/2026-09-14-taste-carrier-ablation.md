@@ -34,3 +34,9 @@ Ruling: 在 ~/scratch/superpowers-ablation-20260914 隔离工作树执行，携�
 ## 后续状态（2026-09-14 17:26 CST）
 
 上段保留回填时的原时点状态。随后源仓已提交 `538b18e`（本消融改动）与 `7c33eae`（submodule 打包修复），并推送 Codeup `main`。GitHub `origin/main` 仍在 `ac35b3c`；父仓 `codex-sync/superpowers` gitlink 的 `ac35b3c -> 7c33eae` 变化尚未提交。当前审查结论、验证命令和剩余建议见[状态审查报告](../reports/2026-09-14-skill-status-review.md)。
+
+<!-- local-worktree-closeout-20261024 -->
+
+**2026-10-24 本地工作树归档补记：** 下列旧临时路径已迁入所属仓库，原文保留历史时点含义；分支、未提交文件及验证材料保留，未据此宣称新增合入或生产部署。
+
+- `/home/james/scratch/superpowers-ablation-20260914` → [仓内归档](../../../.worktree-archive/20261024/superpowers-ablation-20260914)（`ac35b3c47d`）。
