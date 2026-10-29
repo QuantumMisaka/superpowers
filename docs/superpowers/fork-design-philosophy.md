@@ -44,3 +44,4 @@ Grill 保留中文澄清方式：先查可验证事实，只问影响实现的�
 - 配置承载模型路由来自本 fork [2026-07-31 设计](specs/2026-07-31-adaptive-workflow-dual-provider-routing-design.html)；历史 Provider 分工是当时实践，不固定为当前规则。
 - 正向表达借鉴上游 [2026-06-10 设计](specs/2026-06-10-positive-instruction-redesign-design.md)；本 fork 曾采用的 prose mutation 检查已收敛为结构检查，不把旧执法说明当当前行为保证。
 - 2026-09-14 本人确认的消融设计整合了近期开发记录、模型判断空间、L3 路由收敛与品味演进。具体历史证据与实施边界由该设计保存，不复制成日常执行清单。
+- 2026-10-29 的入口默认姿态、行动前自检与汇报/纠错契约见[优化记录](reports/2026-10-29-using-superpowers-default-action.md)；本轮以改默认动作和删减过载规则为主，不新增流程门禁。
