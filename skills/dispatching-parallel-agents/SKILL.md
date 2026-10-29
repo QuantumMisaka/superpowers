@@ -14,7 +14,7 @@ separate investigations, independent comparisons, or disjoint implementation
 tasks — handling them sequentially can waste time. The number of items is not
 the trigger; disjoint ownership and a real parallel benefit are.
 
-**Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
+**Core principle:** Dispatch one agent per independent work package. Let them work concurrently.
 
 ## When to Use
 
@@ -111,7 +111,7 @@ When agents return:
 ## Agent Prompt Structure
 
 Good agent prompts are:
-1. **Focused** - One clear problem domain
+1. **Focused** - One clear work package
 2. **Self-contained** - All context needed to understand the problem
 3. **Specific about output** - What should the agent return?
 

@@ -148,7 +148,7 @@ Then delete them with `git update-ref -d "refs/superpowers/work/$name"` and
 `git update-ref -d "refs/superpowers/base/$name"`, and remove or archive the
 worktree under the project's retention rules.
 
-**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then apply Steps 2–3 in place.
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. If the detached path already wrote a base ref for this attempt, delete it with `git update-ref -d "refs/superpowers/base/<name>"`. Then apply Steps 2–3 in place.
 
 ## Step 2: Task-Relevant Setup
 
