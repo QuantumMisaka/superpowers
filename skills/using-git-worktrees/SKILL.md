@@ -46,6 +46,10 @@ Report with branch state:
 git -C "<path>" update-ref "refs/superpowers/work/<name>" HEAD
 ```
 
+If the work ref already exists, verify it belongs to the current worktree or
+reuse the equivalent recorded ref; do not overwrite an active ref from another
+worktree.
+
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
 Has the user already indicated their worktree preference or the project's
