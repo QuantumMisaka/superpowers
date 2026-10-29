@@ -22,10 +22,11 @@ requirements recorded in a plan need no separate spec. Reuse its progress
 record for scope, material rulings, remaining work and recovery; optional helper
 artifacts should improve handoff, not create a duplicate ledger.
 
-Use `using-git-worktrees` to create or verify the isolated workspace for plan
-execution. Existing authorization covers ordinary reversible setup; do not
-start on main/master without explicit consent. Missing dependencies or facts
-are resolved within scope, with only the affected path paused when necessary.
+Choose the workspace through `using-git-worktrees` according to the project's
+collaboration mode. Existing authorization covers ordinary reversible setup;
+if the project develops on main directly, work there; use a detached worktree
+when isolation has a concrete benefit. Missing dependencies or facts are
+resolved within scope, with only the affected path paused when necessary.
 
 Reuse the plan's coverage/interface review when inputs are unchanged. Inspect
 changed dependencies or concrete gaps instead of repeating a full preflight.

@@ -17,6 +17,10 @@ Handle requested integration or cleanup using the authorized choice and verified
 
 Choose the path from the user's request (2026-09-06 authorized redundancy review):
 
+- The work was done directly on the target branch under the project's
+  collaboration mode: there is no integration step. Verify the current state
+  and report; do not create a branch, merge or PR just to have an integration
+  action.
 - An integration or retention choice is already authorized: execute that path
   without another menu. Ask only if a necessary target or authorization is missing.
 - An independent cleanup is authorized: verify absorption into the named target
@@ -50,7 +54,7 @@ Tests failing (<N> failures). Must fix before completing:
 
 [Show failures]
 
-Cannot proceed with merge/PR until tests pass.
+Cannot proceed with integration until tests pass.
 ```
 
 Stop. Don't proceed to Step 2.
@@ -73,9 +77,16 @@ This determines available actions and cleanup:
 
 | State | Available integration | Cleanup |
 |-------|------|---------|
-| `GIT_DIR == GIT_COMMON` (normal repo) | Merge / PR / retain | No worktree to clean up |
+| `GIT_DIR == GIT_COMMON`, work already on target | No integration; verify and report | No worktree to clean up |
+| `GIT_DIR == GIT_COMMON`, work on another branch | Merge / PR / retain | No worktree to clean up |
 | `GIT_DIR != GIT_COMMON`, named branch | Merge / PR / retain | Provenance-based (see Step 6) |
-| `GIT_DIR != GIT_COMMON`, detached HEAD | Name branch before PR / retain | Verify ownership; preserve commit before authorized cleanup |
+| `GIT_DIR != GIT_COMMON`, detached HEAD | Integrate the detached commit into the target branch, or retain | Verify ownership; preserve work commit and recovery ref before authorized cleanup |
+
+If the work is already on the target branch in a linked worktree, skip
+integration but verify ownership and follow Step 6 for cleanup.
+
+The listed actions are candidates, not defaults; Step 4 selects the applicable
+menu from the project's collaboration mode.
 
 ### Step 3: Determine Base Branch
 
@@ -87,6 +98,11 @@ plan, the conversation, or the branch's upstream:
 git merge-base HEAD main 2>/dev/null || git merge-base HEAD master 2>/dev/null
 ```
 
+For a detached worktree, use the base recorded at creation rather than inferring
+it from the current branch. The recovery ref for the work itself is
+`refs/superpowers/work/<name>` (or the equivalent recorded ref), pointing to the
+detached work commit; keep it until integration and cleanup are verified.
+
 Use the target already authorized and verify it against repository evidence.
 Ask only when the target remains ambiguous; merging into the wrong base is
 expensive to undo.
@@ -94,10 +110,22 @@ expensive to undo.
 ### Step 4: Choose an Unspecified Integration Method
 
 Use this step only when the user requested help choosing integration and has
-not already selected a method. Offer applicable choices:
+not already selected a method. Choose the menu from the project's collaboration
+mode.
 
-1. Merge locally into the verified base (named branch only).
-2. Push and create a PR (name the branch first for detached HEAD).
+Local-main or another direct-to-target mode:
+1. Integrate the current work into the verified target (fast-forward, merge or
+   cherry-pick as appropriate); no topic branch or PR.
+2. Retain the current workspace.
+
+If the target has advanced and fast-forward is not possible, follow the
+project's declared history policy. If none is declared, default to a merge
+commit and record the choice as a Ruling; ask only when the history shape is a
+project contract and remains ambiguous.
+
+Branch/PR collaboration:
+1. Merge locally into the verified base.
+2. Push and create a PR.
 3. Retain the current branch/workspace.
 
 Wait for the choice. Do not include discard in the normal menu; it is a
@@ -121,6 +149,11 @@ git merge <feature-branch>
 # Verify tests on merged result
 <test command>
 ```
+
+For a detached worktree, merge the verified detached commit SHA (or
+`refs/superpowers/work/<name>`) rather than a branch name; keep the recovery ref
+until the result is verified. If fast-forward is not possible, apply the Step 4
+history rule.
 
 If tests fail on the merged result: stop, leave the worktree and branch in
 place, and investigate — nothing has been pushed, so the merge is local
@@ -214,6 +247,10 @@ named `.worktrees/` does not prove ownership. Retain active or externally manage
 workspaces. Record branch/detached HEAD and absorption evidence; preserve a recovery
 ref for detached commits. Independent cleanup keeps branches unless their deletion
 was separately authorized.
+
+For a detached worktree, the recovery ref is `refs/superpowers/work/<name>`
+pointing to the work commit; keep it until integration and cleanup are verified,
+then delete it with `git update-ref -d`.
 
 Inspect parent and recursive submodule HEADs, gitlinks, staged/unstaged/untracked
 state and ignored evidence. Preserve historical differences rather than resetting

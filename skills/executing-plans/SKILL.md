@@ -95,12 +95,12 @@ report incomplete when no reliable path remains.
 - Follow the plan's acceptance intent and record justified deviations
 - Don't skip verifications
 - Reference skills when plan says to
-- Stop when blocked, don't guess
-- Never start implementation on main/master branch without explicit user consent
+- Pause only at the entry's decision gate: missing authorization for irreversible/destructive, security-sensitive or external actions; a changed approved design or deliverable identity; or no reliable path. Resolve ordinary implementation choices with a Ruling and continue.
+- Choose the workspace from the project's collaboration mode. If the project develops on main directly, implement there; if isolation is needed, use a detached worktree from the current main; create a branch, PR or MR only when the repository or user requires it.
 
 ## Integration
 
-**Required workflow skills:**
-- **superpowers:using-git-worktrees** - Ensures isolated workspace (creates one or verifies existing)
-- **superpowers:writing-plans** - Creates the plan this skill executes
-- **superpowers:finishing-a-development-branch** - When integration or cleanup is requested
+Use these skills when their condition applies, not as a fixed chain:
+- **superpowers:using-git-worktrees** - when the task needs isolation from the current workspace
+- **superpowers:writing-plans** - when the existing plan needs revision
+- **superpowers:finishing-a-development-branch** - when integration or cleanup is requested

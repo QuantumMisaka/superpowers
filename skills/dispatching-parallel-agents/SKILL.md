@@ -1,6 +1,6 @@
 ---
 name: dispatching-parallel-agents
-description: Use when facing 2+ independent tasks that can be worked on without shared state or sequential dependencies
+description: Use when parallel work has clear benefit over coordination cost, with disjoint write sets and no shared state or sequential dependency.
 ---
 
 # Dispatching Parallel Agents
@@ -9,7 +9,10 @@ description: Use when facing 2+ independent tasks that can be worked on without 
 
 You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. Prefer a fresh or bounded context and supply the task's required inputs explicitly, using the active harness's controls. This also preserves your own context for coordination work.
 
-When you have multiple unrelated failures (different test files, different subsystems, different bugs), investigating them sequentially wastes time. Each investigation is independent and can happen in parallel.
+When you have multiple independent work packages — unrelated failures,
+separate investigations, independent comparisons, or disjoint implementation
+tasks — handling them sequentially can waste time. The number of items is not
+the trigger; disjoint ownership and a real parallel benefit are.
 
 **Core principle:** Dispatch one agent per independent problem domain. Let them work concurrently.
 
@@ -17,57 +20,65 @@ When you have multiple unrelated failures (different test files, different subsy
 
 ```dot
 digraph when_to_use {
-    "Multiple failures?" [shape=diamond];
-    "Are they independent?" [shape=diamond];
-    "Single agent investigates all" [shape=box];
-    "One agent per problem domain" [shape=box];
+    "Multiple independent work packages?" [shape=diamond];
+    "Independent and disjoint?" [shape=diamond];
+    "Single agent handles them" [shape=box];
+    "One agent per work package" [shape=box];
     "Can they work in parallel?" [shape=diamond];
-    "Sequential agents" [shape=box];
-    "Parallel dispatch" [shape=box];
+    "Run sequentially" [shape=box];
+    "Run in parallel" [shape=box];
 
-    "Multiple failures?" -> "Are they independent?" [label="yes"];
-    "Are they independent?" -> "Single agent investigates all" [label="no - related"];
-    "Are they independent?" -> "Can they work in parallel?" [label="yes"];
-    "Can they work in parallel?" -> "Parallel dispatch" [label="yes"];
-    "Can they work in parallel?" -> "Sequential agents" [label="no - shared state"];
+    "Multiple independent work packages?" -> "Independent and disjoint?" [label="yes"];
+    "Multiple independent work packages?" -> "Single agent handles them" [label="no"];
+    "Independent and disjoint?" -> "Single agent handles them" [label="no - coupled"];
+    "Independent and disjoint?" -> "Can they work in parallel?" [label="yes"];
+    "Can they work in parallel?" -> "Run in parallel" [label="yes"];
+    "Can they work in parallel?" -> "Run sequentially" [label="no - shared state"];
 }
 ```
 
 **Use when:**
-- 3+ test files failing with different root causes
-- Multiple subsystems broken independently
+- Parallel benefit clearly exceeds coordination cost
+- Work packages are independent and have disjoint write sets
 - Each problem can be understood without context from others
 - No shared state between investigations
+- The harness has enough capacity to run them concurrently without starving the main task
+
+The number of failures or files is not itself a trigger: two independent
+packages can justify parallel work, while ten related failures may not.
 
 **Don't use when:**
-- Failures are related (fix one might fix others)
+- Work packages are related (fixing one may change another)
 - Need to understand full system state
 - Agents would interfere with each other
+- The main agent can finish the work in one pass with less coordination
 
 ## The Pattern
 
-### 1. Identify Independent Domains
+### 1. Identify Independent Work Packages
 
-Group failures by what's broken:
-- File A tests: Tool approval flow
-- File B tests: Batch completion behavior
-- File C tests: Abort functionality
+Group work by what it produces or investigates:
+- Failure triage: File A tests, File B tests, File C tests
+- Independent comparisons: image-parallel runs, parameter sweeps
+- Disjoint implementation packages: separate modules or repositories
 
-Each domain is independent - fixing tool approval doesn't affect abort tests.
+Each package should be understandable without the others and have a disjoint
+write set. A shared output directory, service or Git index makes the packages
+coupled even when their source files differ.
 
 ### 2. Create Focused Agent Tasks
 
 Each agent gets:
-- **Specific scope:** One test file or subsystem
-- **Clear goal:** Make these tests pass
-- **Constraints:** Don't change other code
-- **Acceptance evidence:** The exact command(s) that prove the domain done
-  and the expected output — so "fixed" is checkable, not claimed
+- **Specific scope:** One work package with disjoint ownership
+- **Clear goal:** The observable result the package must produce
+- **Constraints:** Don't change other packages' files, shared state or Git index
+- **Acceptance evidence:** The exact command(s) or observation that prove the
+  package done and the expected output — so "done" is checkable, not claimed
 - **Fatal-flaw binding (fork-added, ARFT F.4):** discovering a fatal defect
   means stop and report. Every "something is wrong" finding must carry a
   disposition — fix, escalate, or rule-and-record with its cost. Never log
   it and continue.
-- **Expected output:** Summary of what you found and fixed
+- **Expected output:** Summary of what was produced or found, plus evidence
 
 ### 3. Dispatch in Parallel
 
@@ -78,10 +89,10 @@ in your harness's routing reference (`references/*-tools.md`), classifying each
 domain independently as routine or standard.
 
 ```text
-Subagent (matching implementer capability): "Fix agent-tool-abort.test.ts failures"
-Subagent (matching implementer capability): "Fix batch-completion-behavior.test.ts failures"
-Subagent (matching implementer capability): "Fix tool-approval-race-conditions.test.ts failures"
-# All three run concurrently.
+Subagent (matching implementer capability): "Complete image-parallel comparison for the 3-image case"
+Subagent (matching implementer capability): "Complete image-parallel comparison for the 4-image case"
+Subagent (matching implementer capability): "Complete image-parallel comparison for the 5-image case"
+# Disjoint output directories; all three run concurrently.
 ```
 
 Concurrency depends on overlapping task execution, not response boundaries.
@@ -127,6 +138,9 @@ Return: Summary of what you found and what you fixed.
 
 ## Common Mistakes
 
+The examples below use test triage; the same rules apply to comparisons and
+implementation packages.
+
 **❌ Too broad:** "Fix all the tests" - agent gets lost
 **✅ Specific:** "Fix agent-tool-abort.test.ts" - focused scope
 
@@ -141,9 +155,9 @@ Return: Summary of what you found and what you fixed.
 
 ## When NOT to Use
 
-**Related failures:** Fixing one might fix others - investigate together first
+**Related packages:** Fixing or changing one may affect others - investigate together first
 **Need full context:** Understanding requires seeing entire system
-**Exploratory debugging:** You don't know what's broken yet
+**Exploratory work:** You do not yet know what the independent packages are
 **Shared state:** Agents would interfere (editing same files, using same resources)
 **Decision-phase artifacts (fork-added):** SPECs, plans, and acceptance
 criteria are main-agent work — their input is the conversation itself.
@@ -158,40 +172,6 @@ snapshot. Dependencies, shared files, and shared Git index mutations stay
 serial. A package's review follows its implementation; selected reviews still
 finish before acceptance.
 
-## Real Example from Session
-
-**Scenario:** 6 test failures across 3 files after major refactoring
-
-**Failures:**
-- agent-tool-abort.test.ts: 3 failures (timing issues)
-- batch-completion-behavior.test.ts: 2 failures (tools not executing)
-- tool-approval-race-conditions.test.ts: 1 failure (execution count = 0)
-
-**Decision:** Independent domains - abort logic separate from batch completion separate from race conditions
-
-**Dispatch:**
-```
-Agent 1 → Fix agent-tool-abort.test.ts
-Agent 2 → Fix batch-completion-behavior.test.ts
-Agent 3 → Fix tool-approval-race-conditions.test.ts
-```
-
-**Results:**
-- Agent 1: Replaced timeouts with event-based waiting
-- Agent 2: Fixed event structure bug (threadId in wrong place)
-- Agent 3: Added wait for async tool execution to complete
-
-**Integration:** All fixes independent, no conflicts, full suite green
-
-**Time saved:** 3 problems solved in parallel vs sequentially
-
-## Key Benefits
-
-1. **Parallelization** - Multiple investigations happen simultaneously
-2. **Focus** - Each agent has narrow scope, less context to track
-3. **Independence** - Agents don't interfere with each other
-4. **Speed** - 3 problems solved in time of 1
-
 ## Verification
 
 After agents return:
@@ -199,12 +179,3 @@ After agents return:
 2. **Check for conflicts** - Did agents edit same code?
 3. **Verify integration** - Run checks covering the combined changes; broaden when warranted
 4. **Spot check** - Agents can make systematic errors
-
-## Real-World Impact
-
-From debugging session (2025-10-03):
-- 6 failures across 3 files
-- 3 agents dispatched in parallel
-- All investigations completed concurrently
-- All fixes integrated successfully
-- Zero conflicts between agent changes

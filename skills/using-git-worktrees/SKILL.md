@@ -1,17 +1,23 @@
 ---
 name: using-git-worktrees
-description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - ensures an isolated workspace exists via native tools or git worktree fallback
+description: Use when feature work needs isolation from the current workspace; not every plan or local-main task needs a worktree. Prefer native tools, then git worktree fallback.
 ---
 
 # Using Git Worktrees
 
 ## Overview
 
-Ensure work happens in an isolated workspace. Prefer your platform's native worktree tools. Fall back to manual git worktrees only when no native tool is available.
+Choose the workspace that matches the task's isolation need and the project's
+collaboration mode. A project that develops on main directly should stay on
+main unless isolation has a concrete benefit. Prefer your platform's native
+worktree tools; fall back to manual git worktrees only when no native tool is
+available.
 
-**Core principle:** Detect existing isolation first. Then use native tools. Then fall back to git. Never fight the harness.
+**Core principle:** Detect existing isolation and the project's declared
+collaboration mode first. Then use native tools. Then fall back to git. Never
+fight the harness.
 
-**Announce at start:** "I'm using the using-git-worktrees skill to set up an isolated workspace."
+**Announce at start:** "I'm using the using-git-worktrees skill to choose the workspace."
 
 ## Step 0: Detect Existing Isolation
 
@@ -34,15 +40,27 @@ git rev-parse --show-superproject-working-tree 2>/dev/null
 
 Report with branch state:
 - On a branch: "Already in isolated workspace at `<path>` on branch `<name>`."
-- Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD, externally managed). Branch creation needed at finish time."
+- Detached HEAD: "Already in isolated workspace at `<path>` (detached HEAD). Record the base commit; ensure `refs/superpowers/work/<name>` points to the current worktree HEAD; integrate into the target branch at finish time unless the project requires a branch."
+
+```bash
+git -C "<path>" update-ref "refs/superpowers/work/<name>" HEAD
+```
 
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
-Has the user already indicated their worktree preference in your instructions? Honor any declared preference without asking. In a plan-execution or goal context, isolation is a ruling, not a question — the plan/goal approval already granted it, so create the worktree (Step 1) without prompting. Only in an interactive decision-phase context (no approved plan) ask once before creating:
+Has the user already indicated their worktree preference or the project's
+collaboration mode? Honor it without asking. If the project develops on main
+directly, stay in the current checkout and skip Step 1. If the project expects
+isolation for plan execution, create the worktree without prompting. If neither
+the project nor the task indicates isolation, default to the current checkout;
+create a worktree only when isolation has a concrete benefit (for example, a
+concurrent writer, a risky migration, or an explicit user request). Do not ask
+for consent merely to create a reversible workspace; ask only when the user
+requested a workspace choice or the workspace affects an irreversible operation.
 
-> "Would you like me to set up an isolated worktree? It protects your current branch from changes."
-
-If the user declines, work in place and skip to Step 2.
+A worktree isolates the checkout, not shared absolute paths, running services
+or external output directories. If a concurrent writer shares those, serialize
+or give each job a disjoint output path instead of relying on the worktree.
 
 ## Step 1: Create Isolated Workspace
 
@@ -50,9 +68,16 @@ If the user declines, work in place and skip to Step 2.
 
 ### 1a. Native Worktree Tools (preferred)
 
-The user has asked for an isolated workspace (Step 0 consent). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
+You have decided that isolation has a concrete benefit (Step 0). Do you already have a way to create a worktree? It might be a tool with a name like `EnterWorktree`, `WorktreeCreate`, a `/worktree` command, or a `--worktree` flag. If you do, use it and skip to Step 2.
 
 Native tools handle directory placement, branch creation, and cleanup automatically. Using `git worktree add` when you have a native tool creates phantom state your harness can't see or manage.
+
+If the native tool only creates branch-backed worktrees and the project requires
+detached work, use the git fallback instead.
+
+If the native tool creates a detached worktree, do not run `git worktree add`
+again. Record only the base and work refs, using the detached fallback commands
+after verifying `<target-branch>`.
 
 Only proceed to Step 1b if you have no native worktree tool available.
 
@@ -90,12 +115,35 @@ git check-ignore -q .worktrees 2>/dev/null || git check-ignore -q worktrees 2>/d
 #### Create the Worktree
 
 ```bash
-# Determine path based on chosen location
+# Named branch mode
 path="$LOCATION/$BRANCH_NAME"
-
 git worktree add "$path" -b "$BRANCH_NAME"
 cd "$path"
 ```
+
+For a project that uses detached worktrees, create without a topic branch and
+record the base commit and a recovery ref:
+
+```bash
+base=$(git rev-parse <target-branch>)
+name="<task-name>"
+git update-ref "refs/superpowers/base/$name" "$base"
+path="$LOCATION/$name"
+git worktree add --detach "$path" "$base"
+```
+
+Verify `<target-branch>` from the project's collaboration mode; do not assume
+the current checkout is the target. After committing in the detached worktree,
+protect the work commit:
+
+```bash
+git -C "$path" update-ref "refs/superpowers/work/$name" HEAD
+```
+
+Keep the work and base refs until integration and cleanup/archival are verified.
+Then delete them with `git update-ref -d "refs/superpowers/work/$name"` and
+`git update-ref -d "refs/superpowers/base/$name"`, and remove or archive the
+worktree under the project's retention rules.
 
 **Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then apply Steps 2–3 in place.
 

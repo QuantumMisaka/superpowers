@@ -22,6 +22,9 @@ for name in ('brainstorming', 'writing-plans'):
     assert re.search(r'^name: ' + name + '$', path.read_text(), re.M), path
 for path in (root / 'skills/using-superpowers/references').glob('*-tools.md'):
     assert path.stat().st_size > 0, path
+ref = root / 'skills/using-superpowers/references/behavior-failure-modes.md'
+assert ref.is_file(), ref
+assert 'behavior-failure-modes.md' in text, 'entry does not link the behavior reference'
 print('PASS: route identifiers, skill entry metadata, and reference files')
 print('NOT VERIFIED: authorization transitions or execution decisions; use the scenario evaluation')
 PY

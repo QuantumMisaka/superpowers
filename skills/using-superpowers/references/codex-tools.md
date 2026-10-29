@@ -309,7 +309,8 @@ BRANCH=$(git branch --show-current)
 
 - `GIT_DIR != GIT_COMMON` → check the submodule guard in using-git-worktrees
   before concluding that this is a linked worktree
-- `BRANCH` empty → detached HEAD (cannot branch/push/PR from sandbox)
+- `BRANCH` empty → detached HEAD. Some sandboxes block branch creation or
+  pushing; check the harness before deciding that integration is impossible.
 
 See `using-git-worktrees` Step 0 and `finishing-a-development-branch`
 Step 1 for how each skill uses these signals.

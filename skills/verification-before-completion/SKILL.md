@@ -53,6 +53,9 @@ When it does not, report the actual status, first actionable failure or missing
 observation, and next step. Retain raw evidence in the existing task context or
 artifact when useful for review/recovery; the final answer can summarize it.
 
+Report the delivered behavior and its scope, not the volume of checks. Test
+counts, review counts and log size are supporting evidence, not progress.
+
 Example: “The parser regression passes on this change; the full integration
 suite was not run.” This is preferable to inferring system-wide success from a
 focused test. An unresolved real acceptance gap stays incomplete even when
