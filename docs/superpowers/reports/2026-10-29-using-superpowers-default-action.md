@@ -78,9 +78,10 @@
 
 ## 集成状态
 
-- `codex-sync/superpowers` 本地 `main`：已包含上述提交，工作树干净。
-- 远端 `origin/main`：尚未推送，本地领先 6 个提交。
-- 父仓 `personal` 的 `codex-sync/superpowers` gitlink：尚未提交。
+- `codex-sync/superpowers` 本地 `main`：已包含优化提交与本记录，工作树干净。
+- `origin/main` 与 `codeup/main`：已推送同一 `main`。
+- 父仓 `personal` 的 `codex-sync/superpowers` gitlink：已记录该子仓 `main` 并推送父仓。
 - 本机 `~/.codex/skills/using-superpowers` 与 `~/.agents/skills/using-superpowers`：符号链接到本仓，已即时生效。
+- 父仓其余 `codex-sync` config 变更如经确认同步，属于独立的 config sync，不改变本优化范围。
 
-远端推送、父仓 gitlink 收口和跨机 pin 更新是独立的外部动作，需在实际授权内执行；本文不把它们变成合入门禁。
+远端推送、父仓 gitlink 收口和跨机 pin 更新按实际授权执行；本文不把它们变成合入门禁。
