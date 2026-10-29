@@ -76,8 +76,8 @@ If the native tool only creates branch-backed worktrees and the project requires
 detached work, use the git fallback instead.
 
 If the native tool creates a detached worktree, do not run `git worktree add`
-again. Record only the base and work refs, using the detached fallback commands
-after verifying `<target-branch>`.
+again. Record only the base and work refs, using the base/work ref-recording
+commands from the detached fallback after verifying `<target-branch>`.
 
 Only proceed to Step 1b if you have no native worktree tool available.
 
@@ -131,6 +131,9 @@ git update-ref "refs/superpowers/base/$name" "$base"
 path="$LOCATION/$name"
 git worktree add --detach "$path" "$base"
 ```
+
+Use a unique task name; if the ref already exists, verify it belongs to this
+worktree or choose a new name before updating it.
 
 Verify `<target-branch>` from the project's collaboration mode; do not assume
 the current checkout is the target. After committing in the detached worktree,

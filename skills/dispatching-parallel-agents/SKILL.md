@@ -86,7 +86,7 @@ Start independent tasks through the active harness's native dispatch interface
 before waiting for their results, where asynchronous or concurrent dispatch is
 supported. Apply the capability-aware routing and fallback rules
 in your harness's routing reference (`references/*-tools.md`), classifying each
-domain independently as routine or standard.
+work package independently as routine or standard.
 
 ```text
 Subagent (matching implementer capability): "Complete image-parallel comparison for the 3-image case"
