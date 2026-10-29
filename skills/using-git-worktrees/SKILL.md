@@ -46,9 +46,7 @@ Report with branch state:
 git -C "<path>" update-ref "refs/superpowers/work/<name>" HEAD
 ```
 
-If the work ref already exists, verify it belongs to the current worktree or
-reuse the equivalent recorded ref; do not overwrite an active ref from another
-worktree.
+If the work ref already exists, verify it belongs to the current worktree.
 
 **If `GIT_DIR == GIT_COMMON` (or in a submodule):** You are in a normal repo checkout.
 
@@ -131,13 +129,12 @@ record the base commit and a recovery ref:
 ```bash
 base=$(git rev-parse <target-branch>)
 name="<task-name>"
-git update-ref "refs/superpowers/base/$name" "$base"
 path="$LOCATION/$name"
 git worktree add --detach "$path" "$base"
 ```
 
-Use a unique task name; if the ref already exists, verify it belongs to this
-worktree or choose a new name before updating it.
+Use a task-specific name; if the work ref already exists, verify it belongs to
+this worktree.
 
 Verify `<target-branch>` from the project's collaboration mode; do not assume
 the current checkout is the target. After committing in the detached worktree,
@@ -150,12 +147,11 @@ git -C "$path" update-ref "refs/superpowers/work/$name" HEAD
 Refresh this ref after each later commit; it must match the worktree HEAD at
 handoff.
 
-Keep the work and base refs until integration and cleanup/archival are verified.
-Then delete them with `git update-ref -d "refs/superpowers/work/$name"` and
-`git update-ref -d "refs/superpowers/base/$name"`, and remove or archive the
-worktree under the project's retention rules.
+Keep the work ref until integration and cleanup/archival are verified. Then
+delete it with `git update-ref -d "refs/superpowers/work/$name"` and remove or
+archive the worktree under the project's retention rules.
 
-**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. If the detached path already wrote a base ref for this attempt, delete it with `git update-ref -d "refs/superpowers/base/<name>"`. Then apply Steps 2–3 in place.
+**Sandbox fallback:** If `git worktree add` fails with a permission error (sandbox denial), tell the user the sandbox blocked worktree creation and you're working in the current directory instead. Then apply Steps 2–3 in place.
 
 ## Step 2: Task-Relevant Setup
 
