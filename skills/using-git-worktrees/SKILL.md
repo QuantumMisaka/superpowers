@@ -140,6 +140,9 @@ protect the work commit:
 git -C "$path" update-ref "refs/superpowers/work/$name" HEAD
 ```
 
+Refresh this ref after each later commit; it must match the worktree HEAD at
+handoff.
+
 Keep the work and base refs until integration and cleanup/archival are verified.
 Then delete them with `git update-ref -d "refs/superpowers/work/$name"` and
 `git update-ref -d "refs/superpowers/base/$name"`, and remove or archive the

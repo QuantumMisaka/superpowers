@@ -54,7 +54,7 @@ Tests failing (<N> failures). Must fix before completing:
 
 [Show failures]
 
-Cannot proceed with integration until tests pass.
+Cannot claim completion or proceed with integration/cleanup until the required checks pass.
 ```
 
 Stop. Don't proceed to Step 2.
@@ -102,6 +102,8 @@ For a detached worktree, use the base recorded at creation rather than inferring
 it from the current branch. The recovery ref for the work itself is
 `refs/superpowers/work/<name>` (or the equivalent recorded ref), pointing to the
 detached work commit; keep it until integration and cleanup are verified.
+Before integrating, verify the worktree HEAD matches that ref; refresh the ref
+if the worktree has newer commits.
 
 Use the target already authorized and verify it against repository evidence.
 Ask only when the target remains ambiguous; merging into the wrong base is
