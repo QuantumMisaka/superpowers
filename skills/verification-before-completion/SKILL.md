@@ -56,6 +56,24 @@ artifact when useful for review/recovery; the final answer can summarize it.
 Report the delivered behavior and its scope, not the volume of checks. Test
 counts, review counts and log size are supporting evidence, not progress.
 
+### Delivery-first report shape
+
+Use this shape unless the project defines a stricter one:
+
+```text
+结论：本轮交付了 X / 当前能不能用 / 需要你做什么
+证据：最多 3 条，每条一行
+未纳入本轮：一句话，不展开完整缺口清单
+下一步：一个动作
+附录：文件、日志、review 链接
+```
+
+Report the delivered increment before the remaining scope. A plan, review
+report or handoff counts as delivery only when the user asked for it or the
+task is blocked; otherwise it is a process artifact and must be replaced by
+the next action. Do not make the reader reconstruct the result from a
+workstream-by-workstream account.
+
 Example: “The parser regression passes on this change; the full integration
 suite was not run.” This is preferable to inferring system-wide success from a
 focused test. An unresolved real acceptance gap stays incomplete even when

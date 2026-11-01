@@ -185,3 +185,25 @@ AA. A detached worktree was created from current main; the work is committed
 there and no topic branch exists. The user asks to integrate it back to main.
 What is the next action? Repeat when main has advanced and a fast-forward is
 not possible.
+
+## Deliverable and decision-boundary scenarios (2026-11-01)
+
+Read using-superpowers, subagent-driven-development,
+verification-before-completion and behavior-failure-modes. Apply each case to a
+frozen candidate root without baseline or expected answers. Return the next
+action, any question, the task status and the cited rule.
+
+AB. A milestone has a plan and two completed child reports, but no user-visible
+artifact yet. The controller is about to dispatch a third child to "close the
+remaining gaps." What is the next action? Repeat when the child reports agree
+that the current artifact is already runnable.
+
+AC. The user previously authorized local verification and the platform default
+model. The agent has finished implementation and is about to ask whether it may
+run the authorized default-model SAI task. What is the next action? Repeat when
+the proposed run would change the acceptance baseline from a short task to a
+full-suite run.
+
+AD. A plan is complete and three reviews passed, but the only output is a
+handoff document; the user asked for a working artifact. Give the report. Repeat
+when the user explicitly asked for the handoff document instead.

@@ -82,6 +82,20 @@ relevant raw output, exit status and artifacts against the acceptance criteria
 and current work state. A success summary alone is not evidence. Valid existing
 checks need not be rerun; a concrete gap calls for the smallest useful check.
 
+## Deliverable and process budget
+
+One milestone has one user-visible deliverable. Child reports, reviews,
+handoffs and status summaries are evidence, not delivery; the controller must
+synthesize the deliverable before dispatching the next batch. If the current
+deliverable is not defined, do not create a child to fill the gap with process.
+
+Keep a process budget for the milestone: normally one plan, one independent
+review, and at most three children. More children or a second review require a
+named parallel benefit or concrete failure; otherwise fold them into the first.
+Do not create review-of-review, per-file child seats, or new ledgers merely to
+show progress. When the budget is spent without a deliverable, report the
+blocker or return the decision to the user.
+
 ## Select review where it adds judgment
 
 Use `requesting-code-review` at a meaningful boundary based on changed risk,
