@@ -37,6 +37,16 @@ execution. Expected file locations guide discovery; they are not an edit quota.
 Specify exact paths, signatures and values when an existing contract or agreed
 design requires them. Leave equivalent internal implementations available.
 
+Describe the intended behavior and coordination positively: what each increment
+delivers, what it needs, and what it enables next. Link existing rules; place
+necessary limits beside the concrete risk or contract they protect.
+
+Separate correctness checks, representative usage observations and broader
+effect evaluation. Schedule them according to actual dependencies, so a verified
+increment can be delivered while independent evaluation continues. When an
+evaluation determines whether that increment is fit for its intended use, keep
+that dependency explicit.
+
 For example, a task may simply say:
 
 > Extend the existing request validator to reject the newly excluded input
@@ -56,6 +66,8 @@ Check coverage of the agreed goal, important boundaries, dependencies and
 verification. Consider realistic inputs and failures the spec leaves implicit;
 add meaningful checks to the affected task. Recheck changed parts when new
 facts affect the plan; unresolved product choices return to `brainstorming`.
+Consolidate repeated qualifications and remove accidental approval steps,
+blanket revalidation or dependencies unrelated to the deliverable.
 
 Follow the router's verification guidance and use `test-driven-development`
 for applicable behavior changes. If a different check is warranted, state

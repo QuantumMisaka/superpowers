@@ -24,6 +24,7 @@ description: 行动型请求、状态/归属/进度问题或要求遵循 reposit
 路由用于选择方法，无需每轮播报等级或宣告进入执行相。需要确认、设计和计划分别判断；文件数量、公共 API 字样或加载某个 Skill 不自动升级流程。
 设计有未决选择时用 `brainstorming`；已定的复杂工作用 `writing-plans`。已有计划需要执行时用 `executing-plans`，沿用已确认的范围与授权。
 新建 SPEC/PLAN 以 Markdown 为规范源；需要阅读视图时按 `brainstorming` 的呈现参考处理。
+设计与计划以目标、工作方式和交付成果引导行动，条件与检查服务具体决策；写作方法分别见 `brainstorming` 与 `writing-plans`。
 按项目协作方式选择工作区。并行工作确有收益且边界可分时再委派；需要独立工作包的方法可用 `subagent-driven-development`。
 委派按实际能力选择角色，模型/effort 归 harness 配置；工具操作见当前 `references/*-tools.md`，dsh Web/ds-bot 见 [dsh 适配](references/dsh-tools.md)。主代理负责整合与最终交付。
 
