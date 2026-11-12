@@ -5,37 +5,19 @@ description: Use when an implementation has enough risk, scope, or independent j
 
 # Requesting Code Review
 
-Review is a risk-control tool. Request it at a meaningful work-package
-boundary when the change affects public behavior, security, data, architecture,
-multiple owners, or an integration decision. A tiny low-risk mechanical change
-may use self-review plus focused verification; policy text and configuration
-can change behavior or permissions and are not automatically low risk.
+Use independent review where a second perspective can catch regressions, cross-module issues, security/data risks, or gaps against requirements. Group related small tasks into a coherent review package; small, low-risk mechanical edits can rely on self-review and focused checks.
 
-For a plan with several small tasks, group them into a coherent review package;
-do not create a review gate for every edit or checklist step. A final review is
-appropriate before merge or another external integration when the change is
-substantial or high risk.
+## 1. Prepare and Dispatch the Review
 
-## Review request
+Select the appropriate review role (`task-reviewer` for a work package, `final-reviewer` for a whole delivery, or `document-reviewer` for specs/plans) via the active harness adapter (`references/*-tools.md`), and supply the review brief ([code-reviewer.md](code-reviewer.md)):
+- **Delivery goal and completion criteria**: The user requirement, approved design, or plan section.
+- **Actual changes**: The commit range (`BASE..HEAD`) or an attributable dirty worktree snapshot (including staged, unstaged, and untracked files).
+- **Relevant context and verification**: Key interfaces, affected callers, and the test or command outputs already collected.
 
-Give the reviewer a concise description, the settled requirements or relevant
-plan sections, the exact review scope (revision range or identified dirty
-snapshot), and the evidence already collected.
-Use [code-reviewer.md](code-reviewer.md) for the prompt shape. The reviewer
-should inspect the diff, check real behavior and security boundaries, and cite
-findings with file and line references. Resolve the dispatch schema through the
-applicable `references/*-tools.md` when the harness exposes one.
+## 2. Evaluate and Act on Findings
 
-## Act on findings
-
-- Fix a valid Critical/Important issue before claiming the package complete.
-- Record a Minor for later when it does not affect the approved behavior.
-- If evidence disproves a finding, record the reasoning instead of silently
-  dropping it.
-- Re-review a changed review surface when the fix can alter the original risk;
-  a one-line typo or isolated documentation correction needs only its focused
-  check.
-
-Do not pre-judge findings or ask for a review merely to satisfy a fixed count.
-The purpose is an independent, useful check at the point where it can change
-the result.
+When the reviewer returns:
+- **Address actionable issues**: Fix valid Critical or Important findings and verify the updated behavior.
+- **Triage minor suggestions**: Apply low-cost improvements in scope or note them in the project record when deferred.
+- **Verify disputed findings**: If code and execution evidence show a finding does not hold, document the technical reason.
+- **Re-review when risk changes**: Request a follow-up check only when a fix alters a non-trivial logic or interface path; isolated fixes need only their focused verification.

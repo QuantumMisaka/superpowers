@@ -1,49 +1,15 @@
-# Plan Document Reviewer Prompt Template
+# 执行计划审阅说明
 
-Use this template when dispatching a plan document reviewer subagent.
+计划需要独立判断时，选择适合的审阅角色，提供计划和对应的需求来源。
 
-**Purpose:** Verify the plan is complete, matches the spec, and has proper task decomposition.
-
-**Dispatch after:** The complete plan is written.
-
-```
-Subagent (general-purpose):
-  description: "Review plan document"
-  prompt: |
-    You are a plan document reviewer. Verify this plan is complete and ready for implementation.
-
-    **Plan to review:** [PLAN_FILE_PATH]
-    **Spec for reference:** [SPEC_FILE_PATH]
-
-    ## What to Check
-
-    | Category | What to Look For |
-    |----------|------------------|
-    | Completeness | TODOs, placeholders, incomplete tasks, missing steps |
-    | Spec Alignment | Plan covers spec requirements, no major scope creep |
-    | Task Decomposition | Tasks have clear boundaries, steps are actionable |
-    | Buildability | Could an engineer follow this plan without getting stuck? |
-
-    ## Calibration
-
-    **Only flag issues that would cause real problems during implementation.**
-    An implementer building the wrong thing or getting stuck is an issue.
-    Minor wording, stylistic preferences, and "nice to have" suggestions are not.
-
-    Approve unless there are serious gaps — missing requirements from the spec,
-    contradictory steps, placeholder content, or tasks so vague they can't be acted on.
-
-    ## Output Format
-
-    ## Plan Review
-
-    **Status:** Approved | Issues Found
-
-    **Issues (if any):**
-    - [Task X, Step Y]: [specific issue] - [why it matters for implementation]
-
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
+```text
+计划：[文件路径]
+需求依据：[用户要求或已有设计文档]
+审阅问题：[需要确认的依赖、工作安排或完成标准]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+以只读方式判断计划能否引导执行者完成目标。核对任务是否覆盖所需成果、依赖顺序是否可行、完成标准是否可观察，并结合现有实现判断工作拆分是否合适。
+
+优先指出会造成做错、返工或无法验证的具体问题，说明位置、影响和调整方向。普通实现细节留给执行者结合代码确定。
+
+计划足以开工时直接给出结论与关键依据；存在待定取舍时说明需要作出的选择，完成其余部分的审阅后交回协调者。

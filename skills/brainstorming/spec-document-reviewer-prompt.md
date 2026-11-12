@@ -1,53 +1,15 @@
-# Spec Document Reviewer Prompt Template
+# 设计文档审阅说明
 
-Use this template when dispatching a spec document reviewer subagent.
+设计稿需要交接检查时，选择文档审阅角色，提供设计稿、用户目标和需要判断的问题。
 
-**Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
-
-**Dispatch after:** An HTML or Markdown spec is written to docs/superpowers/specs/
-
-```
-Subagent (general-purpose):
-  description: "Review spec document"
-  prompt: |
-    You are a spec document reviewer. Verify this spec is complete and ready for planning.
-
-    **Spec to review:** [SPEC_FILE_PATH]
-
-    Read the supplied `.html` or `.md` file directly. For HTML, review the
-    meaning of its rendered content and section structure; do not grade CSS
-    aesthetics.
-
-    ## What to Check
-
-    | Category | What to Look For |
-    |----------|------------------|
-    | Completeness | TODOs, placeholders, "TBD", incomplete sections |
-    | Consistency | Internal contradictions, conflicting requirements |
-    | Clarity | Requirements ambiguous enough to cause someone to build the wrong thing |
-    | Scope | Focused enough for a single plan — not covering multiple independent subsystems |
-    | YAGNI | Unrequested features, over-engineering |
-
-    ## Calibration
-
-    **Only flag issues that would cause real problems during implementation planning.**
-    A missing section, a contradiction, or a requirement so ambiguous it could be
-    interpreted two different ways — those are issues. Minor wording improvements,
-    stylistic preferences, and "sections less detailed than others" are not.
-
-    Approve unless there are serious gaps that would lead to a flawed plan.
-
-    ## Output Format
-
-    ## Spec Review
-
-    **Status:** Approved | Issues Found
-
-    **Issues (if any):**
-    - [Section X]: [specific issue] - [why it matters for planning]
-
-    **Recommendations (advisory, do not block approval):**
-    - [suggestions for improvement]
+```text
+设计稿：[文件路径]
+需求依据：[用户要求及已确认选择]
+审阅问题：[执行者需要据此确定什么]
 ```
 
-**Reviewer returns:** Status, Issues (if any), Recommendations
+以只读方式判断文稿能否支持下一步设计或实施：目标是否清楚，方案能否满足目标，关键决定是否一致，执行者是否具备所需信息。Markdown 与 HTML 按实际内容审阅，版式与语言依本次要求检查。
+
+发现理解歧义时说明可能导致的不同实现，给出具体改进建议。来源冲突时定位受影响的决定，并完成其余内容的审阅。
+
+返回最值得处理的问题及位置，说明对后续工作的影响；设计已足以推进时直接给出结论与关键依据。协调者接回需要用户选择的事项。

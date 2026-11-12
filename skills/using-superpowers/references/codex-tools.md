@@ -1,305 +1,49 @@
-## Codex native subagent mechanism
+# Codex native subagent adapter
 
-Checked 2026-09-13: local CLI 0.154.0 and this session's advertised tool schema.
-Codex is the primary development entry; OpenCode uses its own
-[native adapter](opencode-tools.md), not nested Codex invocations.
-The [official documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
-describes parallel threads, model/effort inheritance, and inherited sandbox policy.
-Installed CLI version and a hosted session's tool surface need not be identical.
+Codex is the primary development entry; OpenCode and dsh use their own native adapters (`opencode-tools.md`, `dsh-tools.md`). Always inspect the active session's tool schema and advertised roles first, since CLI versions, profiles, and transport surfaces differ.
 
-Use the active schema first. This session exposes `spawn_agent`,
-`followup_task`, `send_message`, `interrupt_agent`, `list_agents`, and
-`wait_agent`. A follow-up starts an idle agent; a message alone does not.
-The current `fork_turns` control supports none, all, or bounded history; a
-full-history fork inherits model/effort and rejects overrides. Separate context
-does not create a separate worktree or private Git index.
+## Dispatch, continuation, and lifecycle
 
-## Multi-agent availability
-
-Current documented releases enable subagents by default. On a profile that
-still gates them, the historical feature flag is:
-
-```toml
-[features]
-multi_agent = true
-```
-
-This enables the multi-agent tools that skills like
-`dispatching-parallel-agents` and `subagent-driven-development` use.
-Which tools you get depends on the active profile and transport. Trust your
-actual tool list over any table — including this one — when they
-disagree.
-
-### Profile split: V2 vs V1
-
-The following is this fork's historical profile mapping, not a guarantee about
-every current installation; transport follows the active schema:
-
-- **Default OpenAI profile (GPT):** `multi_agent_v2 = true` → V2 surface
-  (`followup_task`, no `close_agent`).
-- **bailian / deepseek / scnet profiles:** overlay `multi_agent_v2 = false`
-  → V1 surface (`send_input`, `wait_agent`, `close_agent`).
-
-Rules below that apply to only one surface say so; untagged rules apply to
-both. See `## Bailian Multi-Agent V1 Compatibility` for the proven matrix.
-
-- **Spawning:** give children a clean context with
-  `spawn_agent {fork_turns: "none"}`; the default `"all"` copies your
-  entire transcript into the child. Select an advertised `agent_type`
-  when its configured capability fits. The current full-history fork surface
-  inherits model/effort and rejects their overrides; use an isolated or
-  bounded-history fork when the active schema permits a deliberate override.
-  Recheck the schema after harness updates, rather than extrapolating from
-  a version number or an old successful call.
-- **Fix rounds:** reuse an implementer when its context helps; use a fresh
-  one when the task needs a different perspective. V2 `followup_task` starts
-  a retained child; V1 uses `send_input`. If continuation is unavailable,
-  supply the needed requirements, changes and findings to a new child.
-- **Lifecycle:** This V2 surface has no `close_agent`. Do not invent it.
-  Concurrent slots and total thread limits are separate constraints: this
-  session rejected new threads even when earlier children had finished.
-  Reuse a suitable retained child or continue locally; completion is not proof
-  that spawning capacity was released. On V1 surfaces with `close_agent`, close
-  reviewers when their review returns, and close each implementer
-  after its task's review passes.
-- **Model names:** never copy a model name from a skill, table, or old
-  session into `spawn_agent` without checking it against your current
-  spawn allowlist — V2 accepts only V2-capable presets and hard-errors
-  on the rest.
+- **Spawning (`spawn_agent`)**: Select an advertised `agent_type` whose configured capability fits the task. Pass `fork_turns: "none"` when supported so the child starts with a clean context; put the task goal, owned files, relevant context, and completion criteria in `message`. A full-history fork (`"all"`) copies the entire transcript and inherits parent model/effort without allowing overrides.
+- **Continuation (`followup_task` / `send_input`)**: Reuse a retained implementer when its context helps; spawn a fresh child when an independent perspective is needed. On V2 surfaces, `followup_task` wakes an idle retained agent (`send_message` queues without waking). On V1 surfaces, use `send_input`.
+- **Lifecycle and concurrency**: V2 surfaces do not expose `close_agent`; reuse retained agents or continue locally when thread limits are reached. On V1 surfaces with `close_agent`, close reviewers after their review returns and close implementers once the package passes. Respect the active profile's concurrency limit (`max_concurrent_threads_per_session`).
+- **Shared checkout**: Separate agent context does not create a separate worktree or private Git index. Assign disjoint file ownership for concurrent writers and serialize shared index or generated-state operations.
 
 ## Waiting on children
 
-(V1 and V2 alike.) `wait_agent` is an event subscription, not a poll: a long wait wakes
-the moment a child produces mailbox activity, with the same latency as
-a short one. Short-timeout polling buys nothing and costs a tool call —
-and a context rebill — per poll. In measured sessions, roughly
-two-thirds of all wait calls were short polls that timed out.
+`wait_agent` is an event subscription that wakes as soon as a child produces mailbox activity:
 
-- While you still have local work, do not wait at all. A completed
-  child's final answer is pushed into your mailbox and arrives with
-  your next turn.
-- When idle with children outstanding, use an event wait bounded by the
-  active harness's communication deadline. Do not use short repeated polling;
-  after a timeout, report status and reconcile agent state before waiting again.
-- Completion mail cannot wake an idle controller (it is delivered
-  without triggering a turn); covering that idle window is
-  `wait_agent`'s only job. A stretch that times out with no activity
-  is your cue to reconcile, not to shorten the next stretch.
+- While local work remains, continue working locally; completed children deliver results to your mailbox for the next turn.
+- When idle with children running, call `wait_agent` with a timeout bounded by the active communication deadline rather than polling in short loops. If the wait times out without activity, report status and reconcile state before waiting again.
 
-## Model routing on spawns
+## Role and model selection
 
-Use one routing source per dispatch (2026-09-05 authorized consistency review):
+1. **Project and profile priority**: Follow routes declared in the project's `AGENTS.md` first, then select the matching role from the active profile's native family (`agent_type`). Role files own model, `model_reasoning_effort`, and sandbox settings; omit manual model/effort overrides when dispatching a configured role.
+2. **Role mapping**:
 
-1. Inspect the active schema and project routing, then choose an advertised
-   role whose capability and tier fit. Role-file model/effort settings take
-   precedence; omit those overrides when the role fixes them.
-2. Without a fitting role, use a generic subagent and the configured backstop.
-   For a task-authorized tier change, use a generic isolated fork and set both
-   `model` and `reasoning_effort`, only if the schema supports them and the
-   model/effort are advertised. Keep the full task and permission contract.
-3. If the needed tier cannot be expressed, report that gap instead of claiming
-   an upgrade. Use another authorized route or ask only for the missing decision.
-
-Check existing `[agents].default_subagent_model` and
-`default_subagent_reasoning_effort` before proposing a backstop change. These
-settings avoid accidentally inheriting an expensive parent model; they do not
-supersede a role file. Use a model's supported effort domain, not a universal
-`medium` value. Selecting only a model without an effort may select its default
-effort; it is not a reliable way to preserve the parent's tier.
-
-The [official subagent documentation](https://learn.chatgpt.com/docs/agent-configuration/subagents)
-describes role-file precedence. Actual tool schema and live runtime overrides
-remain authoritative for each dispatch; role sandbox defaults alone do not
-prove stronger isolation than the parent session grants.
-Generic forks inherit the active permission profile. A read-only task prompt
-is a behavior contract, not enforced sandbox isolation; if the task requires
-enforced isolation, use a route that actually provides it rather than treating
-a generic tier change as an equivalent replacement.
-
-## Capability-Aware Routing
-
-Inspect the active `spawn_agent` schema; optional routing fields differ by
-Codex surface and version. Skills use abstract roles, while Codex configuration
-owns role identifiers, models, reasoning effort, sandboxing, and limits.
-
-| Abstract role | Select an advertised role described for |
+| Role | Responsibility |
 | --- | --- |
-| Routine implementer | Bounded, mechanical implementation |
-| Standard implementer | Bounded multi-file integration or debugging |
-| Task reviewer | Task-scoped, read-only requirement and quality review |
-| Final reviewer | Whole-change, high-judgment read-only review |
-| Context analyst / progress reviewer | Bounded source analysis or acceptance/progress auditing |
-| Document / paper writer or reviewer | Approved drafting or evidence-grounded document review |
-| Monitor | Read-only external-job waiting |
+| `context-analyst` | Read-only code, document, and history analysis; execution tracing and root-cause diagnosis |
+| `routine-worker` | Well-specified local implementation or independent behavior reproduction |
+| `standard-worker` | Multi-file implementation, interface integration, and debugging |
+| `task-reviewer` | Read-only task-scoped requirement, regression, and verification review |
+| `final-reviewer` | Read-only whole-delivery review across integration, architecture, and verification |
+| `document-writer` | Reader-focused specification, plan, and report drafting |
+| `document-reviewer` | Read-only review of document structure, factual grounding, coherence, and tone |
+| `paper-analyst` | Read-only analysis of scientific claims, methods, evidence, and competing explanations |
+| `paper-writer` | Scientific manuscript drafting and revision from confirmed claims and cited sources |
+| `progress-reviewer` | Read-only outcome and gap check against goals and completion criteria |
+| `monitor` | Read-only tracking of long-running jobs and logs until completion or actionable error |
 
-The local preset catalog is the reusable design mechanism: each advertised
-role packages a model/effort selection, permission defaults, and a bounded
-input/output contract. Different task categories can therefore use different
-models without changing the controller model. Inspect the live role descriptions
-and their config files; this reference does not duplicate concrete model names.
-A role name is not proof of enforced isolation.
+3. **Generic fallback and overrides**: If `agent_type` is unavailable or no advertised role fits, dispatch a generic subagent using `[agents].default_subagent_model` and `default_subagent_reasoning_effort`. For an authorized explicit override on a generic isolated fork, set both `model` and `reasoning_effort` to values advertised in the active allowlist/catalog. A read-only prompt is a behavioral instruction, not sandbox enforcement.
 
-For example, send a fully specified mechanical edit to the routine implementer,
-a dependency integration to the standard implementer, a source-only diagnosis
-to the context analyst, and the combined change to the final reviewer when its
-risk warrants that review. Keep their task and evidence contracts explicit.
-Choose a generic isolated fork when a fitting preset is absent or a permitted
-tier adjustment needs it; follow the routing precedence above.
+## Cross-session review packages
 
-Keep controller work, unresolved architecture decisions, and escalation in the
-parent. Planned implementation of an approved design may still use an
-implementer role. Serialize dependent work and shared writes. Parallel dispatch
-requires independent domains, disjoint ownership, and a review snapshot that
-identifies each package's actual changes; the calling workflow owns that choice.
+When an independent review runs in a separate top-level session without direct subagent tools, exchange context through a repository-local package directory (`.superpowers/review-packages/<handoff-id>/` with `request.md`, `result.md`, and `decision.md`), or use the repository's governance review helper when applicable. The main session verifies cited evidence and owns the final accept/follow-up decision.
 
-When `agent_type` is visible, prefer the matching configured role and let its
-configuration select model and effort. If `agent_type` is absent or no
-advertised role matches, dispatch a generic subagent using the backstop or
-the task-authorized tier change described above; required reviews still proceed. When `fork_turns` is available, pass
-`fork_turns: "none"`; otherwise omit it. Always put the complete task contract
-in `message`.
+## Environment Detection and Codex App Finishing
 
-Treat provider specialization as a local routing hypothesis, not a universal
-model claim. Within routes actually advertised by the active profile, prefer the GPT engineering group for complex implementation,
-debugging, code-detail review, and final architecture review. Prefer the Qwen
-information group for large-context synthesis, progress review, document
-review, and approved HTML/Markdown drafting. A GPT-only profile uses its own
-matching roles; this preference does not authorize spawning an unavailable
-Qwen role or opening a paid provider session. Ordinary bounded implementation
-may use either engineering group. The parent owns unresolved decisions,
-dependency ordering, and final synthesis.
-
-Give the Qwen information group a bounded handoff that uses its large context
-window while keeping exploration tied to the task:
-
-- Inputs: named source paths or artifacts, the exact question or decision
-  boundary, and the acceptance evidence.
-- Output contract: source-backed findings or
-  an HTML/Markdown draft grounded in approved decisions, explicit gaps, and a
-  recommended next action.
-- Stop condition: the named inputs have been reviewed and the output contract
-  is satisfied. A missing decision or source is returned to the parent as a
-  gap; further material starts with a new parent handoff.
-
-## Project-Configured Subagent Routing
-
-Prefer subagent routing declared by the current project over generic role
-routing: read the nearest project `AGENTS.md` (and project `.codex`
-configuration) for explicitly configured subagent routes first, then fall
-back to the capability-aware roles above, then to the configured generic
-fallback. Skills never maintain project subagent lists — the project owns its
-routes; this file only declares the priority.
-
-## Bailian Multi-Agent V1 Compatibility
-
-The following is historical compatibility evidence from Codex 0.146.0, not
-a prescription to rewrite current configuration. The installed profile and
-active tools decide which routes are available:
-
-```toml
-# config.toml
-[features]
-multi_agent = true
-multi_agent_v2 = true
-
-[agents]
-enabled = true
-max_concurrent_threads_per_session = 4
-
-# bailian.config.toml overlay
-[features]
-multi_agent = true
-multi_agent_v2 = false
-
-[agents]
-enabled = true
-max_concurrent_threads_per_session = 4
-```
-
-That historical probe covered GPT → GPT on V2, plus Qwen → Qwen and Qwen → GPT
-on V1. It does not prove every route is currently registered or available.
-Respect the active session's actual concurrency budget, including its counting
-convention for the primary thread.
-
-> **Concurrency note (measured 2026-09-22):** the `4`s in the block above are
-> 0.146-era historical values, not current settings. The owning project now sets
-> `max_concurrent_threads_per_session = 6` explicitly in all six profiles; the value
-> counts spawned children **excluding** the primary thread. Leaving the key **unset**
-> does not yield 4: a measured session admitted only **3** concurrent children before
-> rejecting the next spawn (`collab spawn failed: agent thread limit reached`).
-> Tighten per session for write-heavy work
-> (`-c agents.max_concurrent_threads_per_session=4`). Requirement basis for that
-> project decision: peak historical demand was <=4 in ~96% of parent sessions, and a
-> child costs roughly 33K input tokens at start-up (long-lived children go far higher).
-
-For a
-cross-model child, use an advertised role and an isolated child context
-(`fork_turns: "none"` when the schema offers it), then send the complete task
-contract in `message`.
-
-GPT → Qwen task delivery failed on that tested V2 transport.
-The file package is the compatibility fallback for that direction. Keep the Qwen
-templates installed for Bailian routing, while the default GPT profile
-advertises only routes that can receive their task payload.
-
-## Provider-per-session main-only file handoff
-
-Use this contract when the target Provider runs as a main session and its
-multi-agent tool surface is disabled or unavailable. Create one stable,
-repository-local package directory per handoff:
-
-```text
-.superpowers/review-packages/<handoff-id>/
-├── request.md
-├── result.md
-└── decision.md
-```
-
-Use a collision-resistant `<handoff-id>` such as
-`YYYYMMDDTHHMMSSZ-short-topic`. The default GPT parent creates
-`.superpowers/review-packages/<handoff-id>/request.md` with this contract:
-
-```markdown
-# Review Request
-
-### Inputs
-- Exact repository-relative source and artifact paths.
-- Resolve every Input path from the repository root, not the package directory.
-- The question or decision boundary.
-- Acceptance evidence the review must evaluate.
-
-### Output
-- Required findings, source references, explicit gaps, and recommended action.
-- Write the completed review to `result.md` in this package.
-
-### Stop condition
-- Stop after every named input is reviewed and the output contract is met.
-- Report a missing source or unresolved decision as a gap; do not expand scope.
-
-### Parent decision
-- Reserved for the default GPT parent after it reads `result.md`.
-- The Qwen reviewer recommends; it does not make or record the final decision.
-```
-
-A user or controller opens an independent Bailian main session at the same
-repository root. That session reads only the request and named inputs, writes the result file at
-`.superpowers/review-packages/<handoff-id>/result.md`, and returns the result
-path plus a concise completion status. It stops at the request boundary.
-
-The default GPT main session reads the result file, checks its cited evidence,
-and owns the accept, reject, follow-up, architecture, and final-synthesis
-decision. It records that bounded outcome and rationale in
-`.superpowers/review-packages/<handoff-id>/decision.md`.
-
-Ordinary production handoff uses independently opened top-level sessions.
-Do not invent nested `codex exec` orchestration. A project-authorized bounded
-review launcher may provide a separate controlled path; follow its current
-contract and authorization rather than generalizing that exception.
-
-## Environment Detection
-
-Skills that create worktrees or finish branches should detect their
-environment with read-only git commands before proceeding:
+Before creating worktrees or integrating branches, check workspace state with read-only git commands:
 
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
@@ -307,22 +51,5 @@ GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
 BRANCH=$(git branch --show-current)
 ```
 
-- `GIT_DIR != GIT_COMMON` → check the submodule guard in using-git-worktrees
-  before concluding that this is a linked worktree
-- `BRANCH` empty → detached HEAD. Some sandboxes block branch creation or
-  pushing; check the harness before deciding that integration is impossible.
-
-See `using-git-worktrees` Step 0 and `finishing-a-development-branch`
-Step 1 for how each skill uses these signals.
-
-## Codex App Finishing
-
-When the sandbox blocks branch/push operations (detached HEAD in an
-externally managed worktree), the agent commits all work and informs
-the user to use the App's native controls:
-
-- **"Create branch"** — names the branch, then commit/push/PR via App UI
-- **"Hand off to local"** — transfers work to the user's local checkout
-
-The agent can still run tests, stage files, and output suggested branch
-names, commit messages, and PR descriptions for the user to copy.
+- `GIT_DIR != GIT_COMMON`: check `git rev-parse --show-superproject-working-tree` to distinguish a submodule from a linked worktree (`using-git-worktrees`).
+- Empty `BRANCH`: detached HEAD. When a managed Codex App sandbox blocks branch or push operations, commit the verified work locally and let the user finish via the App's **"Create branch"** or **"Hand off to local"** controls (`finishing-a-development-branch`).

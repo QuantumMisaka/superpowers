@@ -5,60 +5,28 @@ description: Use for applicable feature and bugfix behavior tests; use baseline/
 
 # Test-Driven Development
 
-Protect the behavior the user needs at its nearest stable boundary. For a
-feature or bugfix that can be tested reliably, test-first is the default:
-observe the missing behavior, implement it, then verify the result. The point
-is a test that catches a real error, not a RED record for every function or file.
+Protect the behavior the user needs at its nearest stable interface. For features and bugfixes that can be tested reliably, observe the missing or failing behavior first, implement the change, and verify that the test passes.
 
-## Choose the evidence path
+## 1. Choose the Verification Path
 
-- **Changed behavior:** add or extend a focused regression, observe the expected
-  baseline failure, implement the change and observe the test pass.
-- **Behavior-preserving refactor:** inspect relevant coverage and compare the
-  existing baseline and candidate checks. Do not invent a failing test.
-- **Prose, formatting or trivial forwarding:** use an appropriate direct check
-  or existing consumer coverage. Add a test only for an independently meaningful
-  validation, transformation, default, side effect or other behavior.
-- **Configuration:** classify by effect. Runtime behavior changes need behavior
-  evidence; metadata-only changes may need a parser or build check.
-- **Agent instructions:** assess routing and semantics through review or bounded
-  consumer scenarios; machine-consumed fields may need structure checks. Exact
-  wording assertions do not establish that an agent follows the guidance.
+Match the check to what actually changed:
+- **Changed behavior**: Add or extend a focused regression test in the owning suite, observe the expected failure on the baseline, implement the change, and confirm the test passes.
+- **Behavior-preserving refactor**: Compare baseline and candidate runs on the existing test suite so behavior equivalence is verified directly.
+- **Documentation, prose, or formatting**: Check rendering, links, or formatting directly.
+- **Configuration**: Verify runtime behavior when the config alters execution; run parser or schema validation when it updates metadata.
+- **Agent instructions and skills**: Evaluate through structural checks, link validation, or realistic task scenarios (`writing-skills`).
 
-For prototypes, generated artifacts, unavailable test infrastructure or costly
-external dependencies, choose a suitable focused regression, integration check,
-controlled double or observation for the task. Explain a material limitation;
-do not use missing infrastructure to declare important behavior verified.
-User or project requirements for a particular test strategy remain applicable.
+When external services or heavy dependencies are involved, use a controlled test double or focused integration check and note any environment conditions alongside the result. For boundary selection and test maintenance, see [writing-good-tests.md](writing-good-tests.md).
 
-When writing or reorganizing tests, use [writing-good-tests.md](writing-good-tests.md)
-for boundary selection, doubles and test maintenance. Group related cases in
-an existing owning suite; a new helper does not automatically need its own test.
+## 2. Establish Sensitivity (RED)
 
-## RED: establish that the test detects the gap
+Write the test around the requested behavior and interface rather than internal implementation details. Run the focused test to confirm it fails for the expected functional reason (or, if the code change was already drafted, verify against the prior revision or a targeted check that the test catches the regression).
 
-Derive expectations from the requested behavior, not the implementation under
-test. Run the focused test against the baseline and inspect why it fails. A
-setup, syntax or dependency problem is not evidence of the intended gap unless
-that failure is itself the behavior being added or fixed.
+## 3. Implement and Verify (GREEN & Refactor)
 
-If it passes, check whether existing tests already protect the behavior or the
-new case fails to distinguish it. Refine the relevant case rather than adding
-assertions just to obtain a red result.
+Implement the smallest coherent change that satisfies the requirement, following existing codebase conventions. Run the focused test and related suite to confirm everything passes, and fold any useful diagnostic checks into the test suite while removing temporary probes.
 
-If implementation already exists, an isolated prior revision or a safe targeted
-mutation can establish test sensitivity. Do not overwrite shared/user work or
-call retrospective baseline evidence historical test-first execution.
-
-## GREEN: implement and verify
-
-Make the smallest coherent change that satisfies the behavior, using existing
-interfaces and patterns where suitable. Run the focused check and affected
-owning checks; interpret failures before expanding scope. Unrelated third-party
-warnings do not by themselves require repairs outside this task.
-
-For example, a retry helper's test should check both the eventual returned
-value and the attempt bound, rather than merely inspecting a retry constant:
+Example of a behavior-focused test covering both the return value and retry limit:
 
 ```typescript
 test('returns the successful result after two transient failures', async () => {
@@ -73,18 +41,6 @@ test('returns the successful result after two transient failures', async () => {
 });
 ```
 
-The callback is controlled input; real external calls are unnecessary here.
-Other cases follow the contract actually being changed, such as exhaustion
-when that boundary matters. One test is not proof of every retry policy.
+## 4. Report Evidence
 
-## Refactor and finish
-
-Clean up only when needed, keeping relevant checks green. Merge redundant
-cases and remove development probes or fold them into the owning regression.
-A named realistic failure helps judge a test's value; exhaustive mutation
-proof is not a prerequisite for deleting clear duplication.
-
-Report the selected evidence path honestly: observed RED/GREEN when present,
-baseline/candidate for behavior preservation, or the direct check and its scope.
-Use `verification-before-completion` for evidence freshness and completion
-claims; do not repeat a valid unchanged suite solely for another checkpoint.
+Report the verification result under `verification-before-completion`: state the behavior verified, the command and outcome (RED/GREEN, baseline/candidate equivalence, or direct check), and any condition that affects how the result applies.

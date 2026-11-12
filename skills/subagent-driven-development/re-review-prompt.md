@@ -1,126 +1,16 @@
-# Scoped Re-Review Prompt Template
+# 修复复核说明
 
-Use this template when dispatching a re-review after a repair cycle. The
-re-reviewer verifies the findings were addressed and checks the changed
-surface for new breakage. It is not a fresh whole-branch review — the broader
-review may be selected separately when needed.
+修复需要独立复核时，给审阅者以下材料。
 
-**Purpose:** Verify each finding from the previous review was addressed, and
-that the fix itself broke nothing.
-
-```
-Re-reviewer subagent:
-  description: "Re-review Task N repair cycle R"
-  prompt: |
-    You are re-reviewing one task's repair cycle. A previous review produced
-    findings; an implementer has attempted to fix them. Your job is to
-    verdict each finding and inspect the fix diff — nothing else.
-
-    ## The Task
-
-    Read the task brief when supplied: [BRIEF_FILE]
-    If no brief was created, use the requirements supplied in this prompt.
-
-    ## The Findings Under Verification
-
-    [FINDINGS]
-
-    ## The Fix
-
-    Read the implementer's report when supplied (fix reports may be appended):
-    [REPORT_FILE]
-
-    **Fix base:** [FIX_BASE_SHA, when committed] (the head the previous review saw)
-    **Head/work state:** [HEAD_SHA or current work-state identifier]
-    **Diff/status file:** [DIFF_FILE]
-
-    Read the supplied diff/status artifact first. A committed artifact contains
-    the fix commits, stat summary, and diff with context; a dirty artifact
-    names the owned paths, status, and path-scoped diff. Inspect a changed file
-    or the smallest relevant unchanged context when a finding needs it, and
-    record that check. Do not crawl unrelated code.
-
-    Your review is read-only on this checkout. Do not mutate the working
-    tree, the index, HEAD, or branch state in any way.
-
-    ## You Do Not Dispatch Subagents
-
-    Do all of this review yourself. Never spawn a subagent to review part
-    of the diff, and never spawn another reviewer for a second opinion.
-    This process already provides every review seat the work gets; a
-    reviewer you spawn duplicates one of them at full cost, and its
-    verdict counts for nothing. If the diff feels too large for one
-    pass, review it in passes yourself and say so in your report.
-
-    ## Scope
-
-    Your scope is the findings list and the changed fix surface. Verdict every
-    finding. Inspect the fix surface for new problems the repair introduced.
-    If a named finding depends on a nearby unchanged call site, configuration,
-    or interface, inspect that smallest context or run one focused check. An
-    issue entirely outside the fix surface belongs under Out-of-Scope
-    Observations for controller triage; do not silently change its severity or
-    treat it as part of this repair cycle. A broad whole-branch review happens
-    separately when selected.
-
-    ## Tests
-
-    When a report was supplied, treat its evidence as unverified claims:
-    confirm it identifies the exact revision/work state, covering command or
-    inspection, relevant raw output, exit status when applicable, produced
-    artifact when applicable, and criterion coverage, then verify the claims
-    against the diff. A status or success summary alone is not evidence. Do
-    not mechanically rerun a complete current check; run the smallest focused
-    check when evidence is missing, stale, or a specific doubt remains, and
-    broaden it only when the changed risk warrants it. No repair-count limit
-    closes a real Critical/Important gap.
-
-    ## Output Format
-
-    Your final message is the report itself: begin directly with the first
-    finding's verdict. Every line is a verdict, a finding with file:line,
-    or a check you ran — no preamble, no process narration.
-
-    ### Finding Verdicts
-
-    For each finding in The Findings Under Verification, in order:
-    - **[finding one-liner]** — ADDRESSED | NOT ADDRESSED, with file:line
-      evidence. "Attempted" is not addressed: the specific defect must no
-      longer exist. A finding can be excluded only through concrete evidence
-      that disproves it; the controller records that Ruling. Minor findings
-      may be deferred with a progress-record entry, but a real
-      Critical/Important acceptance gap remains open regardless of the number
-      of repair cycles or whether the finding is outside the changed hunk.
-
-    ### New Breakage in the Fix Diff
-
-    Anything the fix itself broke or introduced, with severity
-    (Critical/Important/Minor) and file:line. "None" if clean.
-
-    ### Out-of-Scope Observations
-
-    Issues you noticed entirely outside the fix surface. Route them to the
-    controller/progress record for final triage with their original severity;
-    they are not silently downgraded or added to this repair cycle. "None" if
-    none.
-
-    ### Verdict
-
-    **Repair cycle:** [All findings addressed, no new Critical/Important
-    breakage | Findings remain open] — list the open ones.
+```text
+原任务要求：[相关需求与完成标准]
+待核对发现：[上轮问题及其依据]
+实际修复：[修复前后提交范围，或文件归属明确的工作区变更]
+验证依据：[相关命令、退出状态、输出及产物入口]
 ```
 
-**Placeholders:**
-- `[BRIEF_FILE]` — the task brief file, when one was created
-- `[FINDINGS]` — the Critical/Important findings and spec gaps from the
-  previous review, copied verbatim, one per bullet
-- `[REPORT_FILE]` — the implementer's report file, when one was requested
-- `[FIX_BASE_SHA]` — the head the previous review saw, when committed
-- `[HEAD_SHA]` — current commit, when applicable
-- `[DIFF_FILE]` — the scoped diff/status artifact supplied by the controller;
-  `scripts/review-package PLAN_FILE FIX_BASE HEAD` prints one for committed
-  history
+以只读方式逐项核对问题是否解决，再检查修复对相关行为的影响。已提交工作查看完整修复范围；工作区变更覆盖暂存、未暂存及新文件，并由协调者保持审查状态稳定。需要理解调用关系时查看相关使用方。
 
-**Re-reviewer returns:** per-finding verdicts (ADDRESSED / NOT ADDRESSED),
-new breakage in the fix surface, out-of-scope observations, and a repair-cycle
-verdict.
+复用能证明当前行为的证据；具体疑点通过代码阅读或当前权限允许的只读检查核实；需要写入式测试或重跑构建时，向协调者提供补充验证命令。结合原始需求和事实判断发现是否成立，说明支持解决、保留或撤销该发现的依据。
+
+按待核对发现返回结果，给出位置和关键证据；新增问题说明触发条件、影响及严重程度。其他工作包的发现交协调者处理。最后简洁说明修复是否达到要求，以及仍影响验收的事项，由协调者安排下一步。
