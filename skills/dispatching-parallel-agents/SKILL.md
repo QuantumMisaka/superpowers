@@ -22,9 +22,9 @@ Group work by independent deliverable or investigation target, and give each chi
 - **Goal and completion criteria**: The observable result to produce and the command or check that verifies it.
 - **File ownership**: The exact files or directories this agent may read/write, noting concurrent work to preserve.
 - **Relevant context**: Error traces, test names, interface expectations, or artifact paths needed to start immediately.
-- **Return format**: Summary of findings or changes, modified files, and verification evidence (plus any blocker or decision needed from the coordinator).
+- **Expected result**: The answer or deliverable the coordinator needs, with the evidence needed to verify and use it.
 
-Example prompt:
+Example: assign this debugging package to the active profile’s `standard-worker` with the following brief.
 
 ```markdown
 Fix the 3 failing tests in `src/agents/agent-tool-abort.test.ts`:
@@ -39,11 +39,13 @@ Return the root cause, files changed, and test output.
 
 ## 3. Dispatch and Coordinate
 
-Select the matching role for each package (`context-analyst`, `routine-worker`, `standard-worker`, etc.) using the active harness adapter (`references/*-tools.md`). Launch independent tasks concurrently within the session's slot limit, queue any excess packages, and continue useful local work before waiting on completion events.
+Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the result needed: `context-analyst` for a technical question, `routine-worker` for a well-specified local change, and `standard-worker` for multi-file implementation or debugging. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
+
+Launch independent packages within the session’s slot limit, queue any excess work, and continue useful local work before waiting on completion events.
 
 ## 4. Verify and Integrate
 
 When children return:
 1. Inspect each agent's summary, actual diff, and verification output.
-2. Confirm write sets did not conflict and shared state remains clean.
+2. Reconcile the combined changes with the starting workspace and preserve concurrent work.
 3. Run the check that covers the combined changes (or broaden verification if interfaces interact), then integrate and report the combined outcome.

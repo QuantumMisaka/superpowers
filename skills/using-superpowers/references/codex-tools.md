@@ -28,10 +28,10 @@ Codex is the primary development entry; OpenCode and dsh use their own native ad
 | `standard-worker` | Multi-file implementation, interface integration, and debugging |
 | `task-reviewer` | Read-only task-scoped requirement, regression, and verification review |
 | `final-reviewer` | Read-only whole-delivery review across integration, architecture, and verification |
-| `document-writer` | Reader-focused specification, plan, and report drafting |
+| `document-writer` | Engineering proposals, project plans, and handoff memos organized for one primary reader |
 | `document-reviewer` | Read-only review of document structure, factual grounding, coherence, and tone |
 | `paper-analyst` | Read-only analysis of scientific claims, methods, evidence, and competing explanations |
-| `paper-writer` | Scientific manuscript drafting and revision from confirmed claims and cited sources |
+| `paper-writer` | Scientific papers and research progress reports organized around the whole document’s scientific question and primary reader |
 | `progress-reviewer` | Read-only outcome and gap check against goals and completion criteria |
 | `monitor` | Read-only tracking of long-running jobs and logs until completion or actionable error |
 

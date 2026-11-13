@@ -16,9 +16,12 @@ for name in skills:
     content = path.read_text()
     assert content.startswith('---\n'), path
     assert re.search(r'^name: ' + re.escape(name) + r'$', content, re.M), path
-    # A real reference pointer, without forcing harness-specific prose on leaf skills.
-    assert 'references/*-tools.md' in content, path
-    assert 'codex-tools.md' not in content, path
+    # Accept a shared adapter pointer or explicit links to the supported adapters.
+    adapters = ('codex', 'opencode', 'dsh')
+    assert 'references/*-tools.md' in content or all(
+        f'../using-superpowers/references/{adapter}-tools.md' in content
+        for adapter in adapters
+    ), path
     for target in re.findall(r'\]\(([^)]+\.md)\)', content):
         if not re.match(r'\w+://', target) and '<' not in target:
             assert (path.parent / target).is_file(), (path, target)
