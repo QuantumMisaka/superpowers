@@ -1,37 +1,110 @@
-# Superpowers — QuantumMisaka 个人定制 Fork
+# Superpowers — QuantumMisaka Fork
 
-本仓是 [obra/superpowers](https://github.com/obra/superpowers) 的个人定制 fork，承载本人当前的开发品味，为模型提供可借用的工程方法和必要的协作边界。在已确认的目标、设计与授权内，保留模型选择实现和工作方法的空间。
+一套面向 Codex 协作者的工程 Skills：从需求与方案讨论，到实现、调试、审查和验证，按任务需要选择工作方法。基于 [obra/superpowers](https://github.com/obra/superpowers) 定制，强调目标清楚、授权内自主推进和以实际成果验收。
 
-是否保留某项指导，以其对真实交付的作用判断。随着模型、工具和本人需求变化，已有指导可以缩小、替换或退役。具体维护判据见 [AGENTS.md](AGENTS.md)，演进依据见[设计哲学](docs/superpowers/fork-design-philosophy.md)。上游安装说明不直接代表本 fork 的消费方式。
+本 fork 同时提供 13 个[子代理角色](skills/using-superpowers/references/role-selection.md)。安装 Skills 后即可将角色正文用于通用子代理；需要固定模型分工时，可额外安装 GPT 或 DeepSeek 原生角色。协作者可以独立使用，无需访问维护者的个人配置仓。
 
-## 消费与结构
+## Codex 快速开始
 
-- `skills/`：可组合的工程方法；按任务需要加载。
-- `using-superpowers` 随附完整子代理角色定义，协作者可直接用于通用子代理，或按[安装说明](skills/using-superpowers/references/subagent-install.md)选装 Codex GPT／DeepSeek 原生角色。角色和公共预设在本仓维护，个人配置仓作为消费者。
-- 本人的源仓位于 `codex-sync/superpowers/` 子模块，通过父仓 `sync-superpowers.sh --mount` 链接到 `~/.codex/skills/` 与 `~/.agents/skills/`。Codex 是主要消费入口；具体角色与模型选择归现行配置。
-- `skills/using-superpowers/references/` 保存 harness 工具适配；公共技能不固定模型、Provider 或某个 harness 的调用语法。
-- `docs/superpowers/` 保存设计、计划、验证与审查报告；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施。验证、分发边界和剩余优化见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)与[状态审查报告](docs/superpowers/reports/2026-09-14-skill-status-review.md)。
+以下源码安装适用于 Linux、macOS 和 WSL。需要已安装并配置好可用模型的 Codex、Git、Python 3.11+；原生角色已在 Codex CLI 0.169.0 验证。先确认本机入口：
 
-新建 spec / plan 以 Markdown 为唯一可编辑规范源，HTML 按需生成；历史 HTML 规范继续有效。具体用法见[呈现参考](skills/brainstorming/references/presentation.md)。
+```bash
+codex --version
+git --version
+python3 --version
+```
 
-## 上游纳入与分发
+Codex 的账号或 provider 沿用你自己的配置。已有本 fork 源码安装时，按原位置更新，尚未配置工作入口的继续第 2 步；通过插件安装者直接从第 2 步开始，第 3 步使用插件内的实际技能路径。已有其他来源的同名技能时，先选择要保留的来源。下方默认使用一个独立源码目录。
 
-按上游版本人工纳入，保留 `sync(upstream-vX)` 合并历史：查询上游版本与 SHA，对比上次合入点，审阅相关差异，在隔离分支处理合并并验证受影响部分，再在实际授权内发布 fork、更新消费仓 gitlink。
+### 1. 获取并挂载整套 Skills
 
-当前选择性基线为上游 v7.0.0；Codex fork 清单版本 `7.0.0-qm.2` 增加共享角色与可选原生安装，其他 harness 清单按各自发布维护，不表示技能或平台实现与上游完全一致。上游纳入范围与保留取舍见[合入记录](docs/superpowers/reports/2026-10-18-upstream-v7-selective.md)。
+```bash
+mkdir -p ~/.local/share
+git clone https://github.com/QuantumMisaka/superpowers.git ~/.local/share/quantummisaka-superpowers
+```
 
-`AGENTS.md` / `README.md` / `CLAUDE.md` / `GEMINI.md` 为 fork-owned 文件，冲突保留本地所有权。`skills/`、`hooks/`、`tests/` 的上游变更同样按本 fork 设计审阅；无文本冲突不等于应恢复已消融的流程。fork 定制不提交上游。
+执行下面的脚本，将整套技能逐个挂载到 Codex 可发现的 `~/.agents/skills/`。脚本会先检查所有同名路径；冲突时列出路径并停止，已有正确软链可重复使用。
 
-父仓 `sync-superpowers.sh` 的默认模式同步 fork 与 origin，`--mount` 只负责本机链接；两者都不执行 obra 的版本合并。上游是否有更新以成功的远端查询与 Git 比较为准，不能把查询失败当作零差异。2026-09-14 的已核实基线与现有脚本限制见上述 SPEC。
+```bash
+python3 - <<'PY_INSTALL'
+from pathlib import Path
 
-## 验证入口
+source = Path.home() / ".local/share/quantummisaka-superpowers/skills"
+target = Path.home() / ".agents/skills"
+skills = sorted(p for p in source.iterdir() if (p / "SKILL.md").is_file())
+if not skills:
+    raise SystemExit(f"未找到 Skills：{source}")
+conflicts = [target / p.name for p in skills
+             if ((target / p.name).exists() or (target / p.name).is_symlink())
+             and (target / p.name).resolve() != p.resolve()]
+if conflicts:
+    raise SystemExit("请先处理同名技能来源：\n" + "\n".join(map(str, conflicts)))
+target.mkdir(parents=True, exist_ok=True)
+for skill in skills:
+    link = target / skill.name
+    if not link.is_symlink():
+        link.symlink_to(skill, target_is_directory=True)
+print(f"已挂载 {len(skills)} 个 Skills；入口：{target / 'using-superpowers/SKILL.md'}")
+PY_INSTALL
+```
 
-`bash tests/skill-content/run-tests.sh` 检查技能元数据、链接、部分结构与适配契约；`tests/codex/*.sh` 覆盖打包和 manifest。按实际变更选择相关检查；结构通过不代表模型已正确执行工作流。
+### 2. 配置工作入口
 
-`python3 -m unittest discover -s tests/codex -p 'test_subagent_installer.py'` 检查独立角色安装、配置保留、冲突与本地模型覆盖。真实模型可用性需要使用者自己的账号验证。
+在需要使用这套方法的项目 `AGENTS.md` 中加入以下内容；希望所有项目采用时，加入自己的 `~/.codex/AGENTS.md`（自定义 `CODEX_HOME` 时使用该目录下的 `AGENTS.md`）。保留文件中的其他项目约定。
 
-[2026-09-13 子代理路由验证](docs/superpowers/validation/subagent-routing-2026-09-13.md) 记录了预置角色、线程复用与 dirty 审查包的已有证据及局限。后续效果判断结合真实任务，不以文档、测试或代理数量为目标。
+```markdown
+行动型请求、开发治理和进度核对，先读取 using-superpowers Skill，按任务规模选择工作流。
+对可独立交付且分工收益明确的工作，按角色定义主动委派；主代理负责协调、验收和完整交付。
+```
 
-## 致谢与许可
+挂载让 Codex 能发现技能，这段入口让工作请求能够触发使用。`using-superpowers` 会按需要引用其余 Skills，因此默认安装整套目录。
 
-上游项目：[obra/superpowers](https://github.com/obra/superpowers)（Jesse Vincent / Primeradiant），MIT 许可。本 fork 沿用 MIT（见 `LICENSE`）；借鉴与原创背景见设计哲学。
+### 3. 选择子代理使用方式
+
+默认可以沿用 Codex 已有的通用子代理模型，按需读取角色正文。要启用或核对原生子代理工具，先运行 `codex features list`；在已验证的 0.169.0 中，可用 `codex features enable multi_agent_v2` 启用 V2。其他版本按该版本实际提供的开关操作。
+
+如需采用 GPT 的角色模型预设，执行：
+
+```bash
+cd ~/.local/share/quantummisaka-superpowers/skills/using-superpowers
+python3 scripts/codex-subagents.py preview --family gpt --codex-home ~/.codex
+```
+
+先核对 preview 中的模型在你的账号可用。需要替换模型时，先按[子代理配置说明](skills/using-superpowers/references/subagent-install.md)准备本地覆盖文件；确认后再应用：
+
+```bash
+python3 scripts/codex-subagents.py apply --family gpt --codex-home ~/.codex
+python3 scripts/codex-subagents.py check --family gpt --codex-home ~/.codex
+```
+
+使用独立 `CODEX_HOME` 时将 `--codex-home` 换成实际目录。DeepSeek 使用 `--family deepseek`，需要已有可用 provider。配置继承、冲突处理及权限边界见子代理配置说明。其中 Codex 0.169.0 V2 的角色只读设置未在实测中收窄父会话权限，需要强制只读时应使用只读父会话并核对权限。
+
+### 4. 开启新会话并验证
+
+重启 Codex，在自己的项目中先发送：
+
+> 请读取 using-superpowers，说明实际读取路径，并根据当前项目列出适用的工作方法；暂不修改文件。
+
+确认路径指向你选择的 fork，且能读取角色定义。若装了原生角色，再发送：
+
+> 请让 gpt_context_analyst 只读查看项目入口并概述结构，等待它返回后总结。
+
+DeepSeek 对应使用 `ds_context_analyst`。以实际子代理调用及返回结果验收；静态 check 通过只表示安装内容一致，模型调用还取决于你的账号、provider 和运行版本。
+
+## 日常更新
+
+源码安装者在安装目录执行：
+
+```bash
+git -C ~/.local/share/quantummisaka-superpowers pull --ff-only
+```
+
+软链会读取更新后的内容。若版本新增了技能目录，重新执行挂载脚本；若安装了原生角色，重新执行对应族的 apply/check，再开启新会话。本地模型覆盖会保留。通过插件安装者更新所选 QuantumMisaka fork 插件来源，并使用其实际技能路径；无需重复源码安装。
+
+OpenCode 用户可复用同一套 Skills，入口见[OpenCode 接入说明](https://github.com/QuantumMisaka/superpowers/blob/main/.opencode/INSTALL.md)；当前公共原生角色安装器面向 Codex。
+
+## 维护与许可
+
+贡献与维护请从[AGENTS.md](https://github.com/QuantumMisaka/superpowers/blob/main/AGENTS.md)进入，源布局、验证、上游纳入与发布流程集中在[维护文档](https://github.com/QuantumMisaka/superpowers/blob/main/docs/superpowers/maintenance.md)。
+
+上游作者 Jesse Vincent / Primeradiant；本 fork 沿用 [MIT 许可](LICENSE)。

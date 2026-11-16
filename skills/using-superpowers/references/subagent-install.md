@@ -2,21 +2,17 @@
 
 本技能附带 13 个通用角色的[完整定义](role-selection.md)。加载技能后，可以将选定正文与具体任务一起交给通用子代理。下面的可选安装把它们注册为 Codex 原生 `gpt_*` 或 `ds_*` 角色，并配置模型、effort 与沙箱。需要 Python 3.11+；已在 Codex CLI 0.169.0 验证 GPT 原生角色发现与实际调用，两族安装均有隔离配置测试。DeepSeek 的账号连通性由使用者验证，其他 Codex 版本先检查其子代理配置接口。
 
-## 1. 取得同一个 Superpowers 源
+## 1. 从已安装的技能目录开始
 
-已有 QuantumMisaka fork 的使用者更新原安装来源即可。新使用者可以检出：
+首次接入请先按仓库 [README 的 Codex 快速开始](../../../README.md#codex-快速开始)安装整套 Skills、配置 AGENTS 入口，并确认子代理工具可用。本页继续说明原生角色配置。
 
-```bash
-git clone https://github.com/QuantumMisaka/superpowers.git ~/.local/share/quantummisaka-superpowers
-```
-
-将该 checkout 的 `skills/` 按你的 Codex 技能发现方式挂载。使用 `~/.agents/skills/` 的环境，可以逐个创建同名技能软链；已有同名技能时先确定要使用哪个来源。保留项目中已有的技能入口，也可以加入一句：“行动型任务先读取 using-superpowers，按任务规模选择流程和角色。”插件安装者使用插件提供的技能路径，无需再检出第二份。
-
-下文命令从 `skills/using-superpowers/` 目录执行。源码安装者可先运行：
+下文命令从实际安装的 `skills/using-superpowers/` 目录执行。README 默认源码安装对应：
 
 ```bash
 cd ~/.local/share/quantummisaka-superpowers/skills/using-superpowers
 ```
+
+已有其他检出位置或插件安装时，换成该安装中的技能目录。
 
 ## 2. 选择模型族并预览
 
