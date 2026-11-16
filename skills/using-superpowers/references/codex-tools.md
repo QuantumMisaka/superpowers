@@ -24,6 +24,7 @@ Codex is the primary development entry; OpenCode and dsh use their own native ad
 | Role | Responsibility |
 | --- | --- |
 | `context-analyst` | Read-only code, document, and history analysis; execution tracing and root-cause diagnosis |
+| `design-analyst` | Read-only comparison of candidate solutions, assumptions, downstream effects, and trade-offs |
 | `routine-worker` | Well-specified local implementation or independent behavior reproduction |
 | `standard-worker` | Multi-file implementation, interface integration, and debugging |
 | `task-reviewer` | Read-only task-scoped requirement, regression, and verification review |

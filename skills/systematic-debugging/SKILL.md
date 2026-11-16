@@ -19,7 +19,7 @@ Example: a request succeeds in a direct local call but fails through a launcher.
 
 State the likely cause and what observation would distinguish it from an alternative. Run a small, reversible check or experiment while keeping changes separable enough to interpret the result. Remove temporary probes once the cause is clear.
 
-When an experiment disproves the hypothesis, use the new observation to narrow the next check or adjust the diagnostic approach.
+When an experiment disproves the hypothesis, use the new observation to narrow the next check or adjust the diagnostic approach. For recurring symptoms, compare failing and successful paths across incidents to test whether they share an upstream cause; use the [retrospective guide](../using-superpowers/references/retrospective.md) when the improvement spans multiple incidents or workflow stages.
 
 ## 3. Repair and Verify
 

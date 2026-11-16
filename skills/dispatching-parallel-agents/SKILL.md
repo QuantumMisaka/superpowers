@@ -39,7 +39,7 @@ Return the root cause, files changed, and test output.
 
 ## 3. Dispatch and Coordinate
 
-Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the result needed: `context-analyst` for a technical question, `routine-worker` for a well-specified local change, and `standard-worker` for multi-file implementation or debugging. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
+Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the result needed: `context-analyst` for a technical question, `design-analyst` for a reasoned comparison of candidate solutions, `routine-worker` for a well-specified local change, and `standard-worker` for multi-file implementation or debugging. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
 
 Launch independent packages within the session’s slot limit, queue any excess work, and continue useful local work before waiting on completion events.
 

@@ -1,6 +1,6 @@
 ---
 name: using-superpowers
-description: 行动型请求、状态/归属/进度问题或要求遵循 repository/Skill instructions 时使用；主代理选择 L1/L2/L3 工作流，子代理按任务调用所需技能。
+description: 行动型请求、开发治理与复盘、状态/归属/进度问题或要求遵循 repository/Skill instructions 时使用；主代理选择 L1/L2/L3 工作流，子代理按任务调用所需技能。
 ---
 
 # Using Superpowers
@@ -10,6 +10,7 @@ description: 行动型请求、状态/归属/进度问题或要求遵循 reposit
 ## 1. 理解任务并确定做法
 
 - **先查事实与入口**：先读适用的仓库入口及任务所需 Skills；查版本、状态或归属时先定位事实来源。修改既有设计前查看相关实现与使用方。
+- **校准问题与目标**：从期望的实际结果理解请求，区分目标、手段、症状与原因。发现问题定义与事实不符时，给出依据和更合适的提法；沿用已明确的目标与决定，实质调整按双相协作契约处理。
 - **双相协作契约**：未知事实先调查；影响产品、架构、科学结论或不可逆外部动作的未决选择交由用户拍板（仅暂停受影响部分，其余工作继续）。目标、设计与授权明确后，同范围实现、验证与可逆调整自主推进。
 
 ## 2. 按耦合与返工风险选择工作流
@@ -22,16 +23,17 @@ description: 行动型请求、状态/归属/进度问题或要求遵循 reposit
 - 存在影响实现的未决选择 → `brainstorming`；
 - 复杂工作需拆解依赖与完成标准 → `writing-plans`（新建 SPEC/PLAN 以 Markdown 为唯一可编辑源）；
 - 执行既有计划 → `executing-plans`；独立工作包并行收益明显且写集互不重叠 → `subagent-driven-development` 或 `dispatching-parallel-agents`。
-- 主代理选择工作流并对整合与最终交付负责；子代理按任务调用所需技能，模型与 effort 由 harness 配置管理（工具映射见 `references/*-tools.md`，dsh 见 [dsh 适配](references/dsh-tools.md)）。
+- 主代理选择工作流并对整合与最终交付负责；按[所需成果选择角色](references/role-selection.md)，子代理按任务调用所需技能，模型与 effort 由 harness 配置管理（工具映射见 `references/*-tools.md`，dsh 见 [dsh 适配](references/dsh-tools.md)）。
 
 ## 3. 实施与相称验证
 
-- **最小动作探路**：先做能暴露前提错误的最小动作，再铺开工作量。根因不明的复杂故障用 `systematic-debugging`；已定位问题直接修复。
+- **检验关键前提**：围绕决定方案成败的前提，先做能区分候选解释或推翻关键假设的最小检查，再铺开工作量。根因不明的复杂故障用 `systematic-debugging`；已定位问题直接修复。
 - **按行为与风险验证**：可自动验证的功能与修复默认采用 `test-driven-development`；行为等价重构比对前后行为；文档、文案或简单配置直接核对实际效果。
 - **治理服务交付**：优先修复实现本身；确需新增检查时放在真实失败边界，并顺手清理本次触达的重复门禁与冗余约束。
 
 ## 4. 交付与收口
 
 - **结论先行**：沿用 `verification-before-completion`，先报交付结果与关键证据，会改变使用判断的条件随对应结果说明。
+- **按需复盘**：用户要求复盘，或重复故障、返工显示共同机制时，按[复盘指南](references/retrospective.md)确定改进落点；本轮范围内完成修复，独立治理事项另列后续工作。
 - **自然收口**：回答状态询问时先准确作答，再继续未完的已授权工作；被指出错误时立即修正并复验。达成目标即收口。
 - 常见取舍示例见 [行为案例](references/behavior-failure-modes.md)。

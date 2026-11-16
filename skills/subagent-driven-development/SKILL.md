@@ -15,7 +15,7 @@ Coordinate multi-package plans by delegating independent work packages to specia
 
 ## 2. Dispatch Work Packages
 
-Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the work package’s goal: `context-analyst` to resolve a technical question, `routine-worker` for a well-specified local change, or `standard-worker` for multi-file implementation and integration. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
+Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the work package’s goal: `context-analyst` to resolve a technical question, `design-analyst` to compare candidate solutions, `routine-worker` for a well-specified local change, or `standard-worker` for multi-file implementation and integration. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
 
 Provide a focused brief ([implementer-prompt.md](implementer-prompt.md)):
 - **Goal and completion criteria**: Observable behavior or artifact to deliver, plus existing verification commands.
