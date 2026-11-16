@@ -7,7 +7,7 @@ The QuantumMisaka fork now carries 13 role definitions, shared metadata, GPT and
 - Installer suite: 18 tests passed. Covers both families, standalone copied skill, preview/check without writes, idempotence, unrelated settings, conflicting unmanaged roles, local override persistence, provider inheritance, feature notices, modified managed files, malformed inputs, and failed activation preserving the previous configuration and references.
 - Personal integration: 56 tests and 12 subtests passed across shared-source migration, agent matrix, dsh catalog/runtime and OpenCode GLM/Gemini adapters. All 104 effective role configurations and 13 role bodies match the pre-migration local baseline. Generator check: 104 role files and eight registration blocks match.
 - The personal runtime source was deployed in explicit standalone snapshot mode. Runtime generator and matrix checks passed. Existing personal models and role bodies were preserved.
-- Skill structure and relative-link checks passed. Package verification is recorded below after building the committed source.
+- Skill structure and relative-link checks passed. The committed source passed the Codex ZIP/tar.gz packaging suite, including content, metadata, permissions and reproducibility checks. A separate archive containing only `skills/using-superpowers/` was extracted without personal; both GPT and DeepSeek apply/check passed from that archive.
 
 ## Actual Codex calls
 
