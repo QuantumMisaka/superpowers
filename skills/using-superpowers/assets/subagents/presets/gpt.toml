@@ -1,0 +1,68 @@
+schema_version = 1
+family = "gpt"
+name_prefix = "gpt"
+
+[roles."capability-advisor"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+
+[roles."context-analyst"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+
+[roles."design-analyst"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+
+[roles."document-reviewer"]
+model_provider = "openai"
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+
+[roles."document-writer"]
+model_provider = "openai"
+model = "gpt-6-luna"
+model_reasoning_effort = "high"
+
+[roles."final-reviewer"]
+model_provider = "openai"
+model = "gpt-6-astra"
+model_reasoning_effort = "high"
+
+[roles."monitor"]
+model_provider = "openai"
+model = "gpt-6-luna"
+model_reasoning_effort = "medium"
+
+[roles."paper-analyst"]
+model_provider = "openai"
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+
+[roles."paper-writer"]
+model_provider = "openai"
+model = "gpt-6-astra"
+model_reasoning_effort = "low"
+
+[roles."progress-reviewer"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+
+[roles."routine-worker"]
+model_provider = "openai"
+model = "gpt-6-luna"
+model_reasoning_effort = "high"
+
+[roles."standard-worker"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "high"
+
+[roles."task-reviewer"]
+model_provider = "openai"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"

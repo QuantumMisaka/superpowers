@@ -7,6 +7,7 @@
 ## 消费与结构
 
 - `skills/`：可组合的工程方法；按任务需要加载。
+- `using-superpowers` 随附完整子代理角色定义，协作者可直接用于通用子代理，或按[安装说明](skills/using-superpowers/references/subagent-install.md)选装 Codex GPT／DeepSeek 原生角色。角色和公共预设在本仓维护，个人配置仓作为消费者。
 - 本人的源仓位于 `codex-sync/superpowers/` 子模块，通过父仓 `sync-superpowers.sh --mount` 链接到 `~/.codex/skills/` 与 `~/.agents/skills/`。Codex 是主要消费入口；具体角色与模型选择归现行配置。
 - `skills/using-superpowers/references/` 保存 harness 工具适配；公共技能不固定模型、Provider 或某个 harness 的调用语法。
 - `docs/superpowers/` 保存设计、计划、验证与审查报告；[2026-09-14 消融设计](docs/superpowers/specs/2026-09-14-taste-carrier-ablation-design.html) 已确认，本地技能消融已实施。验证、分发边界和剩余优化见[实施记录](docs/superpowers/plans/2026-09-14-taste-carrier-ablation.md)与[状态审查报告](docs/superpowers/reports/2026-09-14-skill-status-review.md)。
@@ -17,7 +18,7 @@
 
 按上游版本人工纳入，保留 `sync(upstream-vX)` 合并历史：查询上游版本与 SHA，对比上次合入点，审阅相关差异，在隔离分支处理合并并验证受影响部分，再在实际授权内发布 fork、更新消费仓 gitlink。
 
-当前选择性基线为上游 v7.0.0；fork 清单版本 `7.0.0-qm.1` 表示已审阅并纳入部分修复，不表示技能或平台实现与上游完全一致。纳入范围与保留取舍见[本次合入记录](docs/superpowers/reports/2026-10-18-upstream-v7-selective.md)。
+当前选择性基线为上游 v7.0.0；Codex fork 清单版本 `7.0.0-qm.2` 增加共享角色与可选原生安装，其他 harness 清单按各自发布维护，不表示技能或平台实现与上游完全一致。上游纳入范围与保留取舍见[合入记录](docs/superpowers/reports/2026-10-18-upstream-v7-selective.md)。
 
 `AGENTS.md` / `README.md` / `CLAUDE.md` / `GEMINI.md` 为 fork-owned 文件，冲突保留本地所有权。`skills/`、`hooks/`、`tests/` 的上游变更同样按本 fork 设计审阅；无文本冲突不等于应恢复已消融的流程。fork 定制不提交上游。
 
@@ -26,6 +27,8 @@
 ## 验证入口
 
 `bash tests/skill-content/run-tests.sh` 检查技能元数据、链接、部分结构与适配契约；`tests/codex/*.sh` 覆盖打包和 manifest。按实际变更选择相关检查；结构通过不代表模型已正确执行工作流。
+
+`python3 -m unittest discover -s tests/codex -p 'test_subagent_installer.py'` 检查独立角色安装、配置保留、冲突与本地模型覆盖。真实模型可用性需要使用者自己的账号验证。
 
 [2026-09-13 子代理路由验证](docs/superpowers/validation/subagent-routing-2026-09-13.md) 记录了预置角色、线程复用与 dirty 审查包的已有证据及局限。后续效果判断结合真实任务，不以文档、测试或代理数量为目标。
 

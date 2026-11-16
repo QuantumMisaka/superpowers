@@ -1,0 +1,68 @@
+schema_version = 1
+family = "deepseek"
+name_prefix = "ds"
+
+[roles."capability-advisor"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."context-analyst"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."design-analyst"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."document-reviewer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."document-writer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."final-reviewer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."monitor"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "low"
+
+[roles."paper-analyst"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."paper-writer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."progress-reviewer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."routine-worker"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "low"
+
+[roles."standard-worker"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"
+
+[roles."task-reviewer"]
+model_provider = "deepseek"
+model = "deepseek-flash"
+model_reasoning_effort = "high"

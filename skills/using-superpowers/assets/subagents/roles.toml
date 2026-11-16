@@ -1,0 +1,53 @@
+schema_version = 1
+
+[roles."capability-advisor"]
+description = "结合项目现状与可用能力，提出有依据、可启动的委派建议。"
+sandbox_mode = "read-only"
+
+[roles."context-analyst"]
+description = "查阅代码、文档与历史，追踪执行关系并回答有出处的技术问题。"
+sandbox_mode = "read-only"
+
+[roles."design-analyst"]
+description = "围绕目标与约束比较候选方案，检验关键假设并给出有依据的推荐。"
+sandbox_mode = "read-only"
+
+[roles."document-reviewer"]
+description = "审阅文档的事实依据、论述结构、可读性与作者表达。"
+sandbox_mode = "read-only"
+
+[roles."document-writer"]
+description = "围绕读者与目标撰写文档，让结论、依据和行动建议连贯清楚。"
+sandbox_mode = "workspace-write"
+
+[roles."final-reviewer"]
+description = "审查整体交付及相关使用方，判断变更与证据能否支持验收。"
+sandbox_mode = "read-only"
+
+[roles."monitor"]
+description = "跟踪长任务与关键日志，在完成或需要处理时报告实际状态。"
+sandbox_mode = "read-only"
+
+[roles."paper-analyst"]
+description = "围绕研究问题分析论文与稿件的方法、证据和结论，形成可追溯的科学判断。"
+sandbox_mode = "read-only"
+
+[roles."paper-writer"]
+description = "围绕科学问题与证据撰写论文和科研进展报告，形成连贯论证。"
+sandbox_mode = "workspace-write"
+
+[roles."progress-reviewer"]
+description = "对照成果与证据判断目标是否达成，明确收口或下一项行动。"
+sandbox_mode = "read-only"
+
+[roles."routine-worker"]
+description = "完成要求明确的局部实现，或独立复现并核验指定行为。"
+sandbox_mode = "workspace-write"
+
+[roles."standard-worker"]
+description = "完成多文件功能实现、接口集成与调试，以实际行为验证结果。"
+sandbox_mode = "workspace-write"
+
+[roles."task-reviewer"]
+description = "核对任务实现与相关使用方，给出有具体影响和依据的审查发现。"
+sandbox_mode = "read-only"

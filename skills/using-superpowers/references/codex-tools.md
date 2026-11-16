@@ -37,7 +37,7 @@ Codex is the primary development entry; OpenCode and dsh use their own native ad
 | `progress-reviewer` | Read-only outcome and gap check against goals and completion criteria |
 | `monitor` | Read-only tracking of long-running jobs and logs until completion or actionable error |
 
-3. **Generic fallback and overrides**: If `agent_type` is unavailable or no advertised role fits, dispatch a generic subagent using `[agents].default_subagent_model` and `default_subagent_reasoning_effort`. For an authorized explicit override on a generic isolated fork, set both `model` and `reasoning_effort` to values advertised in the active allowlist/catalog. A read-only prompt is a behavioral instruction, not sandbox enforcement.
+3. **Generic fallback and overrides**: If the matching `agent_type` is unavailable, read its full definition through [role selection](role-selection.md) and include that text with the bounded task in a generic subagent's prompt. Use the runtime's configured generic model and effort; on versions exposing them, these are `[agents].default_subagent_model` and `default_subagent_reasoning_effort`. For an authorized explicit override on a generic isolated fork, set both `model` and `reasoning_effort` to values advertised in the active allowlist/catalog. A read-only prompt is a behavioral instruction, not sandbox enforcement. Optional [native role installation](subagent-install.md) supplies GPT or DeepSeek registrations without requiring the maintainer's personal configuration repository.
 
 ## Cross-session review packages
 

@@ -2,18 +2,20 @@
 
 L1/L2/L3 决定工作的组织方式，角色承接具体成果。主代理负责理解用户、确定范围、收束决定与整合交付；委派是否有益，取决于工作能否独立交付及其协调成本。
 
+完整职责见下表链接，按本次任务需要读取。已有匹配的原生角色时使用该角色；只有通用子代理时，将对应正文与具体任务一起传入，模型沿用当前配置。没有子代理工具时，主代理可借用角色方法完成工作，并如实说明执行方式。Codex 的 GPT／DeepSeek 原生角色可按[安装说明](subagent-install.md)选装；角色文字中的读写要求由实际工具权限和沙箱落实。
+
 | 所需成果 | 角色 | 派发时说清 |
 | --- | --- | --- |
-| 发现可推动项目的能力与工作机会 | `capability-advisor` | 项目目标、当前状态、已有任务与本次可用能力 |
-| 查清事实、根因或设计历史 | `context-analyst` | 要回答的问题、相关来源与证据范围 |
-| 比较候选方案并给出推荐 | `design-analyst` | 期望结果、实际约束、已有决定及关键取舍 |
-| 完成局部实现或行为复现 | `routine-worker` | 目标行为、可改文件与检查方式 |
-| 完成跨文件实现或集成修复 | `standard-worker` | 接口、相关使用方、写集与完成标准 |
-| 核验工作包或整体交付 | `task-reviewer` / `final-reviewer` | 实际变更、验收目标、已有证据及疑点 |
-| 形成文稿或审阅表达 | `document-writer` / `document-reviewer` | 主读者、文档用途、来源与已定取舍 |
-| 分析科学证据或撰写论文 | `paper-analyst` / `paper-writer` | 研究问题、主张、证据及体裁 |
-| 判断是否达成目标、下一步做什么 | `progress-reviewer` | 当前目标、产物与完成标准 |
-| 跟踪长任务与关键日志 | `monitor` | 运行身份、观察入口及需报告的事件 |
+| 发现可推动项目的能力与工作机会 | [`capability-advisor`](roles/capability-advisor.md) | 项目目标、当前状态、已有任务与本次可用能力 |
+| 查清事实、根因或设计历史 | [`context-analyst`](roles/context-analyst.md) | 要回答的问题、相关来源与证据范围 |
+| 比较候选方案并给出推荐 | [`design-analyst`](roles/design-analyst.md) | 期望结果、实际约束、已有决定及关键取舍 |
+| 完成局部实现或行为复现 | [`routine-worker`](roles/routine-worker.md) | 目标行为、可改文件与检查方式 |
+| 完成跨文件实现或集成修复 | [`standard-worker`](roles/standard-worker.md) | 接口、相关使用方、写集与完成标准 |
+| 核验工作包或整体交付 | [`task-reviewer`](roles/task-reviewer.md) / [`final-reviewer`](roles/final-reviewer.md) | 实际变更、验收目标、已有证据及疑点 |
+| 形成文稿或审阅表达 | [`document-writer`](roles/document-writer.md) / [`document-reviewer`](roles/document-reviewer.md) | 主读者、文档用途、来源与已定取舍 |
+| 分析科学证据或撰写论文 | [`paper-analyst`](roles/paper-analyst.md) / [`paper-writer`](roles/paper-writer.md) | 研究问题、主张、证据及体裁 |
+| 判断是否达成目标、下一步做什么 | [`progress-reviewer`](roles/progress-reviewer.md) | 当前目标、产物与完成标准 |
+| 跟踪长任务与关键日志 | [`monitor`](roles/monitor.md) | 运行身份、观察入口及需报告的事件 |
 
 ## 能力发现与提醒
 

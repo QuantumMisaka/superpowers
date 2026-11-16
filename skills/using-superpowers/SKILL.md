@@ -25,7 +25,7 @@ description: 行动型请求、开发治理与复盘、状态/归属/进度问�
 - 存在影响实现的未决选择 → `brainstorming`；
 - 复杂工作需拆解依赖与完成标准 → `writing-plans`（新建 SPEC/PLAN 以 Markdown 为唯一可编辑源）；
 - 执行既有计划 → `executing-plans`；独立工作包并行收益明显且写集互不重叠 → `subagent-driven-development` 或 `dispatching-parallel-agents`。
-- 主代理选择工作流并对整合与最终交付负责；按[所需成果选择角色](references/role-selection.md)，子代理按任务调用所需技能，模型与 effort 由 harness 配置管理（工具映射见 `references/*-tools.md`，dsh 见 [dsh 适配](references/dsh-tools.md)）。
+- 对可独立交付且分工收益明确的工作，主代理主动按[所需成果选择角色](references/role-selection.md)，优先当前 profile 的匹配角色，并负责协调、验收和最终交付；简单或紧耦合任务直接完成。角色正文随本技能分发，子代理按任务调用所需技能，模型与 effort 由 harness 配置管理（工具映射见 `references/*-tools.md`，dsh 见 [dsh 适配](references/dsh-tools.md)）。
 
 ## 3. 实施与相称验证
 
