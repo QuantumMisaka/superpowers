@@ -23,6 +23,7 @@ Codex is the primary development entry; OpenCode and dsh use their own native ad
 
 | Role | Responsibility |
 | --- | --- |
+| `capability-advisor` | Read-only project opportunity analysis and actionable recommendations using available roles, skills, and tools |
 | `context-analyst` | Read-only code, document, and history analysis; execution tracing and root-cause diagnosis |
 | `design-analyst` | Read-only comparison of candidate solutions, assumptions, downstream effects, and trade-offs |
 | `routine-worker` | Well-specified local implementation or independent behavior reproduction |
