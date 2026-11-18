@@ -34,6 +34,10 @@ report conflicting paths if the text cannot decide.
 7. A completed plan's project requires retaining workspaces under ~/scratch.
    Its final ledger and verification files have not yet been persisted outside
    that workspace. What does cleanup do?
+8. A user asks to "add export to the report" without format, scope, or a
+   definition of done; the codebase already contains three export-like
+   helpers. What is the next action? Repeat with the same request after the
+   user states format, scope and acceptance.
 
 Record candidate revision/diff identity, evaluator route, supplied inputs,
 raw response, and the parent's assessment. Compare before/after results when
