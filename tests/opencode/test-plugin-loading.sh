@@ -60,14 +60,20 @@ else
     exit 1
 fi
 
-# Test 5: Verify bootstrap text does not reference a hardcoded skills path
-echo "Test 5: Checking bootstrap does not advertise a wrong skills path..."
-if grep -q 'configDir}/skills/superpowers/' "$SUPERPOWERS_PLUGIN_FILE"; then
-    echo "  [FAIL] Plugin still references old configDir skills path"
-    exit 1
-else
-    echo "  [PASS] Plugin does not advertise a misleading skills path"
-fi
+# Test 5: Discover bundled skills without replacing existing search paths.
+echo "Test 5: Checking skills registration..."
+node --input-type=module - "$plugin_link" "$SUPERPOWERS_SKILLS_DIR" <<'JS'
+import assert from 'node:assert/strict';
+import { pathToFileURL } from 'node:url';
+const [, , pluginLink, skillsDir] = process.argv;
+const { SuperpowersPlugin } = await import(pathToFileURL(pluginLink));
+const plugin = await SuperpowersPlugin({});
+const config = { skills: { paths: ['existing-path'] } };
+await plugin.config(config);
+await plugin.config(config);
+assert.deepEqual(config.skills.paths, ['existing-path', skillsDir]);
+JS
+echo "  [PASS] Plugin registers the installed skills directory exactly once"
 
 # Test 6: Verify personal test skill was created
 echo "Test 6: Checking test fixtures..."

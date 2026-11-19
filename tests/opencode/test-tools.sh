@@ -87,9 +87,12 @@ echo ""
 echo "Test 3: Testing native skill tool with a superpowers skill..."
 echo "  Running opencode with brainstorming skill..."
 
-run_opencode output "$TEST_HOME/test-project" "Call the skill tool with name \"brainstorming\". Then tell me the loaded skill title."
-assert_contains "$output" '"name":"brainstorming"' "native skill tool loaded bundled brainstorming skill"
-assert_contains "$output" "Brainstorming Ideas Into Designs" "brainstorming skill content was returned"
+# Only the test installation contains this marker; the prompt does not reveal it.
+bundled_marker="BUNDLED_SOURCE_${RANDOM}_${RANDOM}"
+printf '\nTest installation marker: %s\n' "$bundled_marker" >> "$SUPERPOWERS_SKILLS_DIR/brainstorming/SKILL.md"
+run_opencode output "$TEST_HOME/test-project" 'Call the skill tool with name "brainstorming" and report the test installation marker from its content.'
+assert_contains "$output" '"tool":"skill"' "OpenCode called the native skill tool"
+assert_contains "$output" "$bundled_marker" "skill content came from the bundled installation"
 
 echo ""
 echo "=== All native skill tool tests passed ==="

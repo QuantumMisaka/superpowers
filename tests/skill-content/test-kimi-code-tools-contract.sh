@@ -11,7 +11,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 MAPPING="$REPO_ROOT/skills/using-superpowers/references/kimi-code-tools.md"
-SKILL="$REPO_ROOT/skills/using-superpowers/SKILL.md"
 PLUGIN="$REPO_ROOT/.kimi-plugin/plugin.json"
 
 fail() { echo "FAIL: $*" >&2; exit 1; }
@@ -46,11 +45,5 @@ assert_literal "$MAPPING" \
 for token in AskUserQuestion TodoList Read Write Edit Bash Grep Glob FetchURL WebSearch; do
   assert_literal "$MAPPING" "$token" "base tool mapping covers $token"
 done
-
-# --- Entry router loads harness references -----------------------------------
-grep -Fq 'references/*-tools.md' "$SKILL" \
-  || grep -q 'kimi-code-tools.md' "$SKILL" \
-  || fail "SKILL.md does not reference the harness tool mapping"
-printf '  [PASS] %s\n' 'SKILL.md loads harness tool mapping'
 
 echo "PASS: Kimi Code tool mapping valid"

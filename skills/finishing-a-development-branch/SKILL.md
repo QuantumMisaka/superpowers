@@ -23,23 +23,14 @@ If the user asked for help choosing an integration method without specifying one
 
 ## 2. Inspect Workspace and Target
 
-Capture the workspace paths before switching directories:
-
-```bash
-GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
-GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)
-WORKTREE_PATH=$(git rev-parse --show-toplevel)
-MAIN_ROOT=$(git -C "$GIT_COMMON/.." rev-parse --show-toplevel)
-```
-
-For a detached worktree, confirm `refs/superpowers/work/<name>` points to `HEAD` before leaving the worktree so the work commit stays reachable during integration.
+Record the current worktree root (`git rev-parse --show-toplevel`) and identify the target checkout with `git worktree list --porcelain` before switching directories. For detached work, verify the task's recorded worktree, recovery ref and tip match this checkout and `HEAD`; a name or matching commit alone is not ownership.
 
 ## 3. Integrate Changes (When Requested)
 
 ### Local Merge or Fast-Forward
 
 ```bash
-cd "$MAIN_ROOT"
+cd "$target_checkout"
 git checkout <target-branch>
 git merge <feature-branch-or-work-ref>
 ```
@@ -56,4 +47,4 @@ When cleaning up after a verified local merge or an independent cleanup request:
 
 1. **Verify ownership and absorption**: Confirm the worktree is not used by another active session and its commits are reachable from the target branch (or archived).
 2. **Preserve state under project retention rules**: Inspect `git status --porcelain` and submodule state. Instead of destructive deletion, prefer moving or archiving residual files/worktrees to `~/scratch/` with a clear recovery note. If submodules prevent `git worktree move`, archive the directory with intact metadata before removing the worktree registration.
-3. **Release registration and temporary refs**: Once the target branch or archive is verified, remove the worktree registration and delete temporary `refs/superpowers/work/<name>` refs. Keep named branches unless branch deletion is part of the confirmed operation.
+3. **Release registration and owned refs**: After verifying the target or recoverable archive, release only this worktree's registration. From a remaining checkout, delete its recorded recovery ref with `git update-ref -d "$ref" "$tip"` using the expected owned tip. On mismatch, keep the ref and investigate. Keep named branches unless deletion was requested.

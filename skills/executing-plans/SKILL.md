@@ -21,7 +21,7 @@ Choose direct execution when coordination is simple; delegate independent packag
 For each work package:
 1. Mark the package `in_progress`.
 2. Implement the planned outcome. File lists and step orders in a plan are estimates unless marked as external contracts; adapt ordinary implementation details when the codebase calls for it, and note significant technical tradeoffs in the plan or delivery record (using `Ruling: <decision> — <reason> — <cost if wrong>` when a structured log is helpful).
-3. Run the verification specified for the package (`test-driven-development` for behavior changes, or direct checks for docs/config) and resolve any failures within scope.
+3. Verify the package's acceptance criteria at the affected interface. Use `test-driven-development` to choose the check when the plan does not specify one; resolve failures within scope.
 4. Mark the package `completed`.
 
 If an unexpected finding invalidates a later step, update the plan record and adjust the affected tasks while keeping completed work intact.

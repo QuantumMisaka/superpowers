@@ -25,5 +25,5 @@ If one item requires a product or architectural decision, isolate that item and 
 ## 3. Explain Decisions with Code and Evidence
 
 Summarize how each finding was handled using the resulting code and verification output:
-- Fixed items: state the change location and passing check.
+- Fixed items: state the change location and passing check. Request another review only if the repair creates a new risk that needs independent judgment.
 - Declined or deferred items: state the technical reason (for example, "Legacy callers still pass `null` on this path, so the guard remains; covered by `test_legacy_input`").

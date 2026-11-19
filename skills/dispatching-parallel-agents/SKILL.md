@@ -5,8 +5,6 @@ description: Use when parallel work has clear benefit over coordination cost, wi
 
 # Dispatching Parallel Agents
 
-Delegate independent work packages to concurrent subagents when parallel execution saves real time over doing the work sequentially or in one pass.
-
 ## 1. Decide Whether to Parallelize
 
 Dispatch in parallel when:
@@ -18,34 +16,12 @@ Handle work sequentially or in the main agent when failures share a root cause, 
 
 ## 2. Prepare Focused Work Packages
 
-Group work by independent deliverable or investigation target, and give each child a self-contained brief:
-- **Goal and completion criteria**: The observable result to produce and the command or check that verifies it.
-- **File ownership**: The exact files or directories this agent may read/write, noting concurrent work to preserve.
-- **Relevant context**: Error traces, test names, interface expectations, or artifact paths needed to start immediately.
-- **Expected result**: The answer or deliverable the coordinator needs, with the evidence needed to verify and use it.
-
-Example: assign this debugging package to the active profile’s `standard-worker` with the following brief.
-
-```markdown
-Fix the 3 failing tests in `src/agents/agent-tool-abort.test.ts`:
-1. "should abort tool with partial output capture" — expects 'interrupted at' in message
-2. "should handle mixed completed and aborted tools" — fast tool aborted instead of completed
-3. "should properly track pendingToolCount" — expects 3 results but gets 0
-
-You own `src/agents/agent-tool-abort.test.ts` and `src/agents/agent-tool-abort.ts`.
-Trace the race condition, replace arbitrary timeouts with event-based waiting or fix the abort state tracking, and run `npx vitest run src/agents/agent-tool-abort.test.ts`.
-Return the root cause, files changed, and test output.
-```
+Give each child its question or deliverable, starting evidence, allowed writes, and what to return. For example, three failures in one abort handler belong to one investigation; a separate read-only review of an unrelated parser can proceed alongside it.
 
 ## 3. Dispatch and Coordinate
 
-Follow the project and active adapter’s role routing, using the current profile’s family by default. Choose an existing role by the result needed: `context-analyst` for a technical question, `design-analyst` for a reasoned comparison of candidate solutions, `routine-worker` for a well-specified local change, and `standard-worker` for multi-file implementation or debugging. Use the role’s configured model and reasoning effort. Resolve the registered role name and dispatch call through the active adapter: [Codex](../using-superpowers/references/codex-tools.md), [OpenCode](../using-superpowers/references/opencode-tools.md), or [dsh](../using-superpowers/references/dsh-tools.md).
-
-Launch independent packages within the session’s slot limit, queue any excess work, and continue useful local work before waiting on completion events.
+Choose a [role by deliverable](../using-superpowers/references/role-selection.md). Launch within the session’s slot limit, queue excess packages, and continue independent local work while they run.
 
 ## 4. Verify and Integrate
 
-When children return:
-1. Inspect each agent's summary, actual diff, and verification output.
-2. Reconcile the combined changes with the starting workspace and preserve concurrent work.
-3. Run the check that covers the combined changes (or broaden verification if interfaces interact), then integrate and report the combined outcome.
+For investigations, inspect the cited evidence and reconcile conflicting findings. For implementation, compare each diff with its assigned scope, preserve concurrent changes, and check the combined behavior before reporting the result.

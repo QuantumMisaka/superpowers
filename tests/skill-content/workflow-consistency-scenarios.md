@@ -163,6 +163,9 @@ detached worktree only when isolation is needed. The user requests a bounded
 local fix with clear acceptance and no branch/PR request. What is the next
 action? Repeat when the same fix would touch a generated file shared with a
 concurrently running job.
+No directory is configured and neither local worktree directory exists. Where
+would a new isolated checkout go? If creation is denied, which work can proceed?
+Compare a checkout-local collision with an output at a shared absolute path.
 
 W. The user previously authorized parallel work wherever possible. They now ask
 for three image-parallel comparisons. The existing tooling supports it and the
@@ -189,6 +192,9 @@ AA. A detached worktree was created from current main; the work is committed
 there and no topic branch exists. The user asks to integrate it back to main.
 What is the next action? Repeat when main has advanced and a fast-forward is
 not possible.
+Two tasks chose the same recovery-ref name and started at the same commit.
+Only the first has a record of claiming the ref. Describe setup for the
+second task, then cleanup if the first task's recorded tip no longer matches.
 
 ## Deliverable and decision-boundary scenarios (2026-11-01)
 
