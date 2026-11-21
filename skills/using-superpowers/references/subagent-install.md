@@ -1,28 +1,28 @@
 # Codex 共享角色：安装与更新
 
-本技能附带 13 个通用角色的[完整定义](role-selection.md)。加载技能后，可以将选定正文与具体任务一起交给通用子代理。下面的可选安装把它们注册为 Codex 原生 `gpt_*` 或 `ds_*` 角色，并配置模型、effort 与沙箱。需要 Python 3.11+；已在 Codex CLI 0.169.0 验证 GPT 原生角色发现与实际调用，两族安装均有隔离配置测试。DeepSeek 的账号连通性由使用者验证，其他 Codex 版本先检查其子代理配置接口。
+本技能内置 13 个通用角色的[完整定义](role-selection.md)。加载技能后，即可将选定角色正文与具体任务一并交由通用子代理执行；下方可选安装步骤可将其注册为 Codex 原生 `gpt_*` 或 `ds_*` 角色，并自动配置对应的模型、推理强度（effort）与沙箱模式。运行环境需 Python 3.11+；当前已在 Codex CLI 0.169.0 上完成 GPT 原生角色的发现与实跑验证，两族安装器均通过隔离配置测试。DeepSeek 账号连通性由使用者自测确认，使用其他 Codex 版本前建议先核对其子代理配置接口。
 
-## 1. 从已安装的技能目录开始
+## 1. 进入已安装的技能目录
 
-首次接入请先按仓库 [README 的 Codex 快速开始](../../../README.md#codex-快速开始)安装整套 Skills、配置 AGENTS 入口，并确认子代理工具可用。本页继续说明原生角色配置。
+首次接入请先按仓库 [README 的 Codex 快速开始](../../../README.md#codex-快速开始)安装整套 Skills、配置 AGENTS 入口并确认子代理工具可用，随后按本页完成原生角色注册。
 
-下文命令从实际安装的 `skills/using-superpowers/` 目录执行。README 默认源码安装对应：
+以下命令均从实际安装的 `skills/using-superpowers/` 目录执行。使用 README 默认源码安装路径时：
 
 ```bash
 cd ~/.local/share/quantummisaka-superpowers/skills/using-superpowers
 ```
 
-已有其他检出位置或插件安装时，换成该安装中的技能目录。
+若使用其他检出路径或插件目录，切换至对应安装位置即可。
 
-## 2. 选择模型族并预览
+## 2. 选择模型族并预览配置
 
 ```bash
 python3 scripts/codex-subagents.py preview --family gpt --codex-home ~/.codex
 ```
 
-GPT 预设使用此 fork 当前维护的模型分工。DeepSeek 使用 `--family deepseek`，要求有效配置已注册所选 provider；指定其他配置文件时，安装器会同时读取 Codex home 下的基础 `config.toml` 来检查继承的 provider。安装器不配置服务地址或认证。角色的模型必须对你的账号和渠道可用。
+GPT 预设沿用当前 fork 维护的模型分工；DeepSeek 使用 `--family deepseek`，要求有效配置中已注册对应 provider（指定自定义配置文件时，安装器会同步读取 Codex home 下的基础 `config.toml` 以校验继承的 provider）。安装前确认所选模型对当前账号与渠道可用；服务地址与认证凭证由本地 Codex 配置管理。
 
-如需更换模型，创建自己的 TOML 覆盖文件。例如下例中的值应替换为你已验证可用的模型与 effort：
+如需自定义模型或推理强度，可新建本地 TOML 覆盖文件（将示例值替换为你账号下已验证可用的模型与 effort）：
 
 ```toml
 [defaults]
@@ -34,25 +34,25 @@ model = "your-review-model"
 model_reasoning_effort = "high"
 ```
 
-通过 `--overrides /path/to/your-overrides.toml` 使用它。支持覆盖 `model`、`model_provider`、`model_reasoning_effort`；角色职责和读写类别由共享源维护。安装后更新时保留本地模型映射。
+通过 `--overrides /path/to/your-overrides.toml` 传入覆盖文件。支持覆盖 `model`、`model_provider` 与 `model_reasoning_effort`，角色职责与读写分类继续由共享源统一维护；后续更新角色时会自动保留本地模型映射。
 
-## 3. 应用与核对
+## 3. 应用配置与核验
 
 ```bash
 python3 scripts/codex-subagents.py apply --family gpt --codex-home ~/.codex
 python3 scripts/codex-subagents.py check --family gpt --codex-home ~/.codex
 ```
 
-使用覆盖文件时，在首次 preview 和 apply 中都传入 `--overrides`。需要安装到另一个配置文件时，显式传入 `--config /path/to/target.config.toml`，并确保实际启动入口会加载它。一个目标配置管理一个所选族；其他族可以安装到另一配置入口。
+使用覆盖文件时，在 `preview` 与 `apply` 中均传入 `--overrides`。若需写入其他配置文件，显式传入 `--config /path/to/target.config.toml`，并确保对应启动入口会加载该文件；单个配置文件管理一个模型族，另一模型族可安装至独立的配置入口。
 
-安装器只管理其角色文件和注册区块。主模型、认证、MCP、项目设置与其他角色保留；同名非受管角色先报告冲突。修改配置前会备份。它不会在加载技能时自动运行。
+安装器采用显式手动触发，且只接管自身维护的角色文件与注册区块：主模型、认证、MCP、项目配置与其他自定义角色均原样保留；遇同名非受管角色时先报冲突，修改配置前自动创建备份。
 
-检查通过说明配置与共享源一致。开启新 Codex 会话，确认对应 `gpt_*` 或 `ds_*` 出现在可用角色中，再执行一个有界任务，才能确认当前版本、账号和模型调用正常。子代理功能需由当前 Codex 入口启用；检查输出会提示运行配置要求。
+`check` 通过表明本地配置已与共享源对齐。接下来重启新 Codex 会话，确认对应的 `gpt_*` 或 `ds_*` 角色已出现在可用列表中，并用一个边界清晰的小任务实跑一次，即可完整确认当前版本、账号与模型链路畅通（子代理开关须在当前 Codex 入口启用，检查输出会给出对应配置提示）。
 
-**Codex 0.169.0 V2 的权限边界**：本次实测中，角色文件的 `sandbox_mode = "read-only"` 未将子线程权限收窄，子线程继承了父会话的 `workspace-write`，独立探针成功写入测试文件。因此，角色的只读正文与配置不能在该版本下充当强制隔离。需要强制只读审查时，从只读父会话执行，并核对实际权限；共享工作会话中的只读角色按职责约束工作。安装器的静态检查不验证沙箱执行效果。
+**Codex 0.169.0 V2 权限注意事项**：实测发现，该版本中角色配置的 `sandbox_mode = "read-only"` 尚未收窄子线程写入权限，子线程会继承父会话的 `workspace-write`（独立探针实测可写入测试文件）。因此，若审查场景需要硬性只读隔离，应从只读父会话发起并复核实际权限；在共享可写会话中，只读角色依托职责约定自律执行。安装器的 `check` 命令用于静态核对配置一致性，沙箱隔离效果须按实际版本行为确认。
 
-## 4. 更新
+## 4. 后续更新
 
-更新所选 fork 的 checkout 或插件版本后，角色正文立即随技能可用。对已经安装的原生角色，再运行同一组 apply/check 命令，并开启新会话；本地模型覆盖继续生效。安装器会识别受管文件的人工改动，处理差异后再更新。
+拉取新版本 fork 源码或更新插件后，最新角色正文即刻随技能生效。若已安装原生角色，重新执行一次 `apply` 与 `check` 并开启新会话即可同步更新（本地模型覆盖自动保留）；若受管文件存在人工修改，安装器会先提示差异以便合并处理。
 
-共享角色和模型预设属于该 fork 的同一版本；个人服务和账号配置由各使用者管理。贡献角色改动时修改 `references/roles/`；通用简介和权限在 `assets/subagents/roles.toml`，两族默认模型在 `assets/subagents/presets/`。详细调用规则见 [Codex adapter](codex-tools.md)。
+共享角色定义与模型预设随该 fork 版本同步演进，个人服务地址与账号配置由使用者本地维护。贡献角色改动时：正文修改 `references/roles/`，通用简介与权限分类修改 `assets/subagents/roles.toml`，两族默认模型修改 `assets/subagents/presets/`。详细调用规范见 [Codex adapter](codex-tools.md)。
